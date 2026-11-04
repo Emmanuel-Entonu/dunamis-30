@@ -1,4 +1,10 @@
-export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+// Used in link previews, the sitemap and robots.txt. Vercel supplies its production domain when the
+// site address isn't set by hand, so previews work from the very first deploy.
+const vercelDomain = process.env.VERCEL_PROJECT_PRODUCTION_URL
+export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || (vercelDomain ? `https://${vercelDomain}` : 'http://localhost:3000')).replace(/\/$/, '')
+
+/** The picture shown when a link to the site is shared. Rendered by scripts/render-og.mjs. */
+export const shareImage = { url: '/og-dunamis-30.jpg', width: 1200, height: 630, alt: 'Dunamis at 30. Same Mission. Greater Impact.' }
 
 export const siteName = 'Dunamis at 30'
 

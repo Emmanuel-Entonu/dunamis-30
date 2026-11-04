@@ -8,6 +8,7 @@ import { ShareButtons } from '@/components/ShareButtons'
 import { TestimonyVideo } from '@/components/TestimonyVideo'
 import { categoryLabels } from '@/lib/categories'
 import { getTestimonyBySlug, mediaUrl } from '@/lib/content'
+import { shareImage } from '@/lib/site'
 import { embedUrl } from '@/lib/video'
 
 export const revalidate = 60
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     title: t.title,
     description: t.summary,
-    openGraph: { type: 'article', title: t.title, description: t.summary, images: og ? [{ url: og, width: 1200, height: 630 }] : undefined },
+    openGraph: { type: 'article', title: t.title, description: t.summary, images: og ? [{ url: og, width: 1200, height: 630 }] : [shareImage] },
   }
 }
 

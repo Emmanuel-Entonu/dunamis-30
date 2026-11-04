@@ -5,7 +5,7 @@ import React from 'react'
 
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
-import { defaultDescription, siteName, siteUrl } from '@/lib/site'
+import { defaultDescription, shareImage, siteName, siteUrl } from '@/lib/site'
 import './styles.css'
 
 // Self-hosted Onest (OFL) variable font: no Google request at build or run time.
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     'Dunamis anniversary',
     'Dunamis 30 years',
   ],
-  openGraph: { type: 'website', siteName, locale: 'en_NG' },
+  openGraph: { type: 'website', siteName, locale: 'en_NG', images: [shareImage] },
   twitter: { card: 'summary_large_image' },
 }
 

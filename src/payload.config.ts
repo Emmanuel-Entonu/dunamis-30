@@ -50,7 +50,6 @@ database.init = (args) => {
 }
 
 export default buildConfig({
-  serverURL: process.env.NEXT_PUBLIC_SITE_URL,
   admin: {
     user: Users.slug,
     meta: { titleSuffix: ' — Dunamis@30 Admin' },

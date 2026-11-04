@@ -23,7 +23,6 @@ export const revalidate = 300
 export const metadata: Metadata = {
   title: 'Our Senior Pastor: Dr. Paul Enenche',
   description: 'The life and calling of Dr. Paul Enenche, founder and senior pastor of Dunamis International Gospel Centre.',
-  openGraph: { images: [{ url: photos.pastorPaulPreaching.src, width: photos.pastorPaulPreaching.width, height: photos.pastorPaulPreaching.height }] },
 }
 
 const asMedia = (value: unknown) => (value && typeof value === 'object' ? (value as Media) : null)

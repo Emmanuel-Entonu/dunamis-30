@@ -206,9 +206,30 @@ export async function prepareVideo(file: File, details: VideoDetails, maxBytes: 
   }
 }
 
+const statusOf = (error: unknown) => (error as { originalResponse?: { getStatus(): number } | null })?.originalResponse?.getStatus() ?? 0
+
+/** Waits for the phone to report signal again, or for a while in case it never says so. */
+async function waitForSignal(signal: AbortSignal) {
+  await new Promise<void>((resolve) => {
+    const finish = () => {
+      window.clearTimeout(timer)
+      window.removeEventListener('online', finish)
+      signal.removeEventListener('abort', finish)
+      resolve()
+    }
+    // Already online means the server was unreachable, so just leave it a moment.
+    const timer = window.setTimeout(finish, navigator.onLine ? 3000 : 120_000)
+    window.addEventListener('online', finish)
+    signal.addEventListener('abort', finish)
+  })
+  if (signal.aborted) throw cancelled()
+}
+
 /**
- * Uploads in 6 MB pieces, picking up from the last good piece when a connection drops, so a weak
- * signal doesn't mean starting again. Returns the address of the upload so a later retry can resume.
+ * Uploads in 6 MB pieces, picking up from the last good byte when a connection drops. The library
+ * retries weak connections by itself but gives up at once when the phone reports no signal at all,
+ * so this waits for the signal to return and carries on, up to about a quarter of an hour.
+ * Returns only once the file is stored. `resume` lets a later Try again continue the same upload.
  */
 export async function uploadVideo(
   video: PreparedVideo,
@@ -216,36 +237,57 @@ export async function uploadVideo(
   onProgress: (share: number) => void,
   signal: AbortSignal,
   resume: { url?: string | null },
+  onWaiting?: (waiting: boolean) => void,
 ): Promise<void> {
   const { Upload } = await import('tus-js-client')
-  await new Promise<void>((resolve, reject) => {
-    const upload = new Upload(video.blob, {
-      endpoint: ticket.endpoint,
-      uploadUrl: resume.url ?? undefined,
-      chunkSize: CHUNK_BYTES,
-      retryDelays: [0, 1000, 3000, 5000, 10_000, 20_000, 30_000],
-      storeFingerprintForResuming: false,
-      headers: { apikey: ticket.apikey, 'x-signature': ticket.token },
-      metadata: { bucketName: ticket.bucket, objectName: ticket.path, contentType: video.contentType, cacheControl: '86400' },
-      onProgress: (sent, total) => onProgress(total ? sent / total : 0),
-      onSuccess: () => resolve(),
-      onError: (error) => {
-        resume.url = upload.url
-        reject(error)
-      },
-      onAfterResponse: () => {
-        resume.url = upload.url
-      },
-    })
-    signal.addEventListener(
-      'abort',
-      () => {
+
+  const attempt = () =>
+    new Promise<void>((resolve, reject) => {
+      const stop = () => {
         resume.url = upload.url
         void upload.abort()
         reject(cancelled())
-      },
-      { once: true },
-    )
-    upload.start()
-  })
+      }
+      const settle = () => signal.removeEventListener('abort', stop)
+      const upload = new Upload(video.blob, {
+        endpoint: ticket.endpoint,
+        uploadUrl: resume.url ?? undefined,
+        chunkSize: CHUNK_BYTES,
+        retryDelays: [0, 1000, 3000, 5000, 10_000, 20_000],
+        storeFingerprintForResuming: false,
+        headers: { apikey: ticket.apikey, 'x-signature': ticket.token },
+        metadata: { bucketName: ticket.bucket, objectName: ticket.path, contentType: video.contentType, cacheControl: '86400' },
+        onProgress: (sent, total) => onProgress(total ? sent / total : 0),
+        onSuccess: () => {
+          settle()
+          resolve()
+        },
+        onError: (error) => {
+          settle()
+          resume.url = upload.url
+          reject(error)
+        },
+        onAfterResponse: () => {
+          resume.url = upload.url
+        },
+      })
+      signal.addEventListener('abort', stop, { once: true })
+      upload.start()
+    })
+
+  for (let round = 0; ; round++) {
+    try {
+      await attempt()
+      return
+    } catch (error) {
+      if (error instanceof VideoProblem) throw error
+      const status = statusOf(error)
+      // A refusal, such as an expired ticket, won't change by waiting. 409 and 423 mean try again shortly.
+      const refused = status >= 400 && status < 500 && status !== 409 && status !== 423
+      if (refused || round >= 7) throw error
+      onWaiting?.(true)
+      await waitForSignal(signal)
+      onWaiting?.(false)
+    }
+  }
 }

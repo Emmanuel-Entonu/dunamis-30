@@ -7,7 +7,7 @@ import type { VideoTicket } from '@/lib/videoStorage'
 import { Play } from '../icons'
 import { Field } from './Field'
 
-type Stage = { kind: 'idle' } | { kind: 'preparing'; share: number } | { kind: 'uploading'; share: number } | { kind: 'failed'; message: string }
+type Stage = { kind: 'idle' } | { kind: 'preparing'; share: number } | { kind: 'uploading'; share: number; waiting?: boolean } | { kind: 'failed'; message: string }
 
 export type SentVideo = { path: string; proof: string; width: number; height: number; durationSec: number }
 
@@ -81,8 +81,19 @@ export function useVideoAttachment() {
           work.current.prepared = await prepareVideo(file, details, activeTicket.maxBytes, (share) => setStage({ kind: 'preparing', share }), controller.signal)
         }
         const prepared = work.current.prepared
+        let sentShare = 0
         setStage({ kind: 'uploading', share: 0 })
-        await uploadVideo(prepared, activeTicket, (share) => setStage({ kind: 'uploading', share }), controller.signal, work.current.resume)
+        await uploadVideo(
+          prepared,
+          activeTicket,
+          (share) => {
+            sentShare = share
+            setStage({ kind: 'uploading', share })
+          },
+          controller.signal,
+          work.current.resume,
+          (waiting) => setStage({ kind: 'uploading', share: sentShare, waiting }),
+        )
         work.current.sent = { path: activeTicket.path, proof: activeTicket.proof, width: prepared.width, height: prepared.height, durationSec: prepared.durationSec }
         setStage({ kind: 'idle' })
         return work.current.sent
@@ -203,14 +214,20 @@ export function VideoProgress({ video, onRetry, onSendWithout, withoutLabel }: {
   return (
     <div role="status" aria-live="polite" className="mt-6 rounded-lg border border-line bg-hair p-4">
       <div className="flex items-baseline justify-between gap-3 text-[15px] text-fg">
-        <span>{stage.kind === 'preparing' ? 'Getting your video ready' : 'Uploading your video'}</span>
+        <span>{stage.kind === 'preparing' ? 'Getting your video ready' : stage.waiting ? 'Waiting for your signal to return' : 'Uploading your video'}</span>
         <span className="tabular-nums">{percent}%</span>
       </div>
       <div className="mt-3 h-1.5 overflow-hidden rounded-sm bg-line">
         <div className="h-full rounded-sm bg-gold transition-[width] duration-300" style={{ width: `${percent}%` }} />
       </div>
       <div className="mt-3 flex items-center justify-between gap-3">
-        <p className="text-sm">Please keep this page open{stage.kind === 'preparing' ? ' while we make it smaller.' : '. If your signal drops, it will carry on when it returns.'}</p>
+        <p className="text-sm">
+          {stage.kind === 'preparing'
+            ? 'Please keep this page open while we make it smaller.'
+            : stage.waiting
+              ? 'Nothing is lost. Your upload carries on from here as soon as you’re connected.'
+              : 'Please keep this page open. If your signal drops, it will carry on when it returns.'}
+        </p>
         <button type="button" onClick={video.cancel} className="shrink-0 text-sm text-fg underline underline-offset-2">
           Cancel
         </button>

@@ -8,6 +8,7 @@ import { StarList } from '@/components/blocks'
 import { ArrowRight, ChevronLeft } from '@/components/icons'
 import { ShareButtons } from '@/components/ShareButtons'
 import { getSonsStoryBySlug, mediaUrl } from '@/lib/content'
+import { shareImage } from '@/lib/site'
 import { embedUrl } from '@/lib/video'
 import { TestimonyVideo } from '@/components/TestimonyVideo'
 
@@ -20,11 +21,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   if (!s) return { title: 'Story not found' }
   const title = s.headline ? `${s.headline}: ${s.name}` : s.name
   const description = s.before?.slice(0, 180) || `The story of ${s.name}, a son of the ministry at Dunamis International Gospel Centre.`
-  const og = mediaUrl(s.afterPhoto ?? s.beforePhoto ?? null, 'og')
+  const og = mediaUrl(s.afterPhoto ?? s.beforePhoto ?? s.videoPoster ?? null, 'og')
   return {
     title,
     description,
-    openGraph: { type: 'article', title, description, images: og ? [{ url: og, width: 1200, height: 630 }] : undefined },
+    openGraph: { type: 'article', title, description, images: og ? [{ url: og, width: 1200, height: 630 }] : [shareImage] },
   }
 }
 
