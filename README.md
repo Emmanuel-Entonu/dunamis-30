@@ -71,4 +71,4 @@ The glass objects in `src/assets/glass` and `src/assets/renders` are rendered fr
 
 ## Link previews
 
-The image people see when a link is shared is `public/og-dunamis-30-card.jpg`. Run `node scripts/render-og.mjs` to redraw it. Testimonies and stories with a photo use that photo instead. WhatsApp and Facebook cache previews, so give a new image a new file name.
+The image people see when a link is shared is `public/og-dunamis-30-slip.jpg`. Run `node scripts/render-og.mjs` to redraw it. Testimonies and stories with a photo use that photo instead. WhatsApp and Facebook cache previews, so give a new image a new file name.

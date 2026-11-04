@@ -1,5 +1,6 @@
 // Renders the link preview image from the real brand files. The slip and gold card here follow
-// src/components/home/CardCase.tsx and src/components/AnniversaryCard.tsx, so keep them in step.
+// src/components/home/CardCase.tsx and src/components/AnniversaryCard.tsx, so keep them in step. The
+// slip has no notch here: at this size the gold showing through it looked like an orange blob.
 // WhatsApp, Facebook and X only load JPEG or PNG previews reliably, and WhatsApp skips large ones.
 // They also keep old previews for a while, so a new design needs a new file name (see shareImage
 // in src/lib/site.ts).
@@ -10,7 +11,7 @@ import sharp from 'sharp'
 
 const WIDTH = 1200
 const HEIGHT = 630
-const OUTPUT = 'public/og-dunamis-30-card.jpg'
+const OUTPUT = 'public/og-dunamis-30-slip.jpg'
 
 const inline = (file, type = 'image/webp') => `data:${type};base64,${fs.readFileSync(file).toString('base64')}`
 const font = inline('src/fonts/onest-variable.woff2', 'font/woff2')
@@ -36,8 +37,6 @@ const crosses = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 // Where the card comes out of the slip, which the light fans out from.
 const LIGHT_X = 1012
 const LIGHT_Y = 336
-
-const notch = 'radial-gradient(circle at 50% 0%, transparent 17%, #000 17.4%)'
 
 const html = `<!doctype html>
 <html>
@@ -86,14 +85,12 @@ const html = `<!doctype html>
     container-type: inline-size; border-radius: 22px; }
   .slip .shadow { position: absolute; inset: 0; border-radius: 22px; -webkit-mask-image: none; box-shadow: 0 -18px 40px rgb(0 0 0 / .55), 0 6px 10px rgb(0 0 0 / .45); clip-path: inset(-80px -80px 0 -80px); }
   .slip .body { position: absolute; inset: 0; overflow: hidden; border-radius: 22px;
-    background: linear-gradient(180deg, #2c2c2c 0%, #181818 46%, #0c0c0c 100%);
-    -webkit-mask-image: ${notch}; }
+    background: linear-gradient(180deg, #2c2c2c 0%, #181818 46%, #0c0c0c 100%); }
   .slip .burst { position: absolute; inset: 0;
     background: repeating-conic-gradient(from 90deg at 50% 0%, rgb(255 255 255 / .07) 0deg .5deg, transparent .5deg 5.5deg);
     -webkit-mask-image: radial-gradient(120% 95% at 50% 0%, #000 15%, transparent 78%); }
   .slip .shine { position: absolute; inset: 0; background: radial-gradient(110% 55% at 0% 0%, rgb(255 255 255 / .13), transparent 62%); }
   .slip .reflect { position: absolute; inset: 0; background: linear-gradient(118deg, transparent 36%, rgb(255 255 255 / .075) 46%, transparent 57%); }
-  .slip .lit { position: absolute; inset: 0; background: radial-gradient(circle at 50% 0%, transparent 17.3%, rgb(255 255 255 / .28) 17.7%, transparent 20%); }
   .slip .edge { position: absolute; inset: 0; border-radius: 22px; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .08), inset 0 1px 0 rgb(255 255 255 / .16); }
   .slip .mark { position: absolute; left: 8%; top: 9%; display: flex; flex-direction: column; align-items: center; gap: 2.5cqw; color: #fff; }
   .slip .mark img { width: 17cqw; height: auto; transform: rotate(90deg); }
@@ -144,7 +141,6 @@ const html = `<!doctype html>
       <div class="burst"></div>
       <div class="shine"></div>
       <div class="reflect"></div>
-      <div class="lit"></div>
       <div class="edge"></div>
       <div class="mark">
         <img src="${emblem}" />

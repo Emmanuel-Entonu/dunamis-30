@@ -4,7 +4,7 @@ const LIVE_SITE = 'https://www.dunamis30thanniversary.com'
 export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL ? LIVE_SITE : 'http://localhost:3000')).replace(/\/$/, '')
 
 /** The picture shown when a link to the site is shared. Rendered by scripts/render-og.mjs. */
-export const shareImage = { url: '/og-dunamis-30-card.jpg', width: 1200, height: 630, alt: 'Dunamis at 30. Same Mission. Greater Impact.' }
+export const shareImage = { url: '/og-dunamis-30-slip.jpg', width: 1200, height: 630, alt: 'Dunamis at 30. Same Mission. Greater Impact.' }
 
 export const siteName = 'Dunamis at 30'
 
