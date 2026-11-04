@@ -5,6 +5,8 @@ import React from 'react'
 
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
+import { PerformanceWatch } from '@/components/PerformanceWatch'
+import { liteScript } from '@/lib/lite'
 import { defaultDescription, shareImage, siteName, siteUrl } from '@/lib/site'
 import './styles.css'
 
@@ -42,7 +44,10 @@ const gaId = process.env.NEXT_PUBLIC_GA_ID
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={onest.variable}>
+    <html lang="en" className={onest.variable} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: liteScript }} />
+      </head>
       <body>
         <noscript>
           <style>{'.reveal-wait{opacity:1}'}</style>
@@ -56,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SiteHeader />
         <main id="main">{children}</main>
         <SiteFooter />
+        <PerformanceWatch />
         {gaId && (
           <>
             <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />

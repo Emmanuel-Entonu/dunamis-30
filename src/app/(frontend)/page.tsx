@@ -31,7 +31,8 @@ const moments = momentKeys.flatMap((key) => {
   if (!photo) return []
   // Sized for the ring's cards, rather than the full original.
   const { src } = getImageProps({ src: photo.src, alt: photo.title, width: 320, height: 320 }).props
-  return [{ src, alt: photo.title, title: photo.title, subtitle: photo.event === photo.title ? undefined : photo.event }]
+  const liteSrc = getImageProps({ src: photo.src, alt: photo.title, width: 192, height: 192 }).props.src
+  return [{ src, liteSrc, alt: photo.title, title: photo.title, subtitle: photo.event === photo.title ? undefined : photo.event }]
 })
 
 const fmt = (iso: string, opts: Intl.DateTimeFormatOptions) =>
@@ -84,7 +85,7 @@ export default async function HomePage() {
 
       {/* Hero */}
       <section className="relative isolate overflow-hidden">
-        <div aria-hidden className="absolute -top-[120px] left-1/2 -z-10 h-[300px] w-[1584px] -translate-x-1/2 rounded-[50%] bg-[#1c1c1c] blur-[150px]" />
+        <div aria-hidden className="glow absolute -top-[420px] left-1/2 -z-10 h-[900px] w-[2184px] -translate-x-1/2 [--glow-strength:0.7] [--glow:28_28_28]" />
         <HeroTubes />
         {/* The gold glow eases out before the hero ends, so it never stops on a hard line */}
         <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-[360px] [mask-image:linear-gradient(to_bottom,#000_50%,transparent)] sm:h-[460px]">
@@ -166,7 +167,7 @@ export default async function HomePage() {
               </div>
             </div>
             <div className="relative min-h-[340px] flex-1 sm:min-h-[500px]">
-              <div aria-hidden className="absolute inset-x-[15%] bottom-[5%] h-[70%] rounded-full bg-gold/30 blur-[110px]" />
+              <div aria-hidden className="glow absolute inset-x-[-12%] bottom-[-14%] h-[105%] [--glow-strength:0.26]" />
               {/* Flush to the card's bottom-right corner: the poster's cut edge sits on the card edge. */}
               <Image
                 src={kpgGuests}

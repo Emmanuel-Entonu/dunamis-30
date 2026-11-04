@@ -5,6 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Link from '@/components/SiteLink'
 import { useEffect, useRef } from 'react'
 
+import { rebuildOnLite } from '@/lib/lite'
 import { AnniversaryCard } from '../AnniversaryCard'
 
 const CARDS = 20
@@ -22,18 +23,36 @@ export function YearStack({ body }: { body?: string | null }) {
     const el = root.current
     if (!el) return
     gsap.registerPlugin(ScrollTrigger)
-    const ctx = gsap.context(() => {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        gsap.set('[data-gold]', { yPercent: -30, rotationY: 0 })
-        return
-      }
-      gsap.set('[data-gold]', { rotationY: 50 })
-      gsap
-        .timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: el, start: 'top top', end: 'bottom bottom', scrub: 1 } })
-        .from('[data-card]', { yPercent: 110, stagger: 0.2, duration: 1 })
-        .to('[data-gold]', { yPercent: -30, rotationY: 0, duration: 1.4, ease: 'power2.out' }, '>-0.4')
-    }, el)
-    return () => ctx.revert()
+    return rebuildOnLite((lite) => {
+      const ctx = gsap.context(() => {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          gsap.set('[data-gold]', { yPercent: -30, rotationY: 0 })
+          return
+        }
+        gsap.set('[data-gold]', { rotationY: lite ? 0 : 50 })
+        // Hidden cards don't need moving: on a slow phone that's half the work on every frame.
+        const cards = gsap.utils
+          .toArray<HTMLElement>('[data-card]')
+          .filter((card) => card.offsetParent !== null)
+        gsap
+          .timeline({
+            defaults: { ease: 'none' },
+            scrollTrigger: {
+              trigger: el,
+              start: 'top top',
+              end: 'bottom bottom',
+              scrub: lite ? true : 1,
+            },
+          })
+          .from(cards, { yPercent: 110, stagger: 0.2, duration: 1 })
+          .to(
+            '[data-gold]',
+            { yPercent: -30, rotationY: 0, duration: 1.4, ease: 'power2.out' },
+            '>-0.4',
+          )
+      }, el)
+      return () => ctx.revert()
+    })
   }, [])
 
   return (
@@ -42,7 +61,10 @@ export function YearStack({ body }: { body?: string | null }) {
         <div className="container-site">
           <div className="max-w-[520px]">
             <h2 className="h-section">Every year has a testimony</h2>
-            <p className="mt-4">{body || 'Healings, babies after years of waiting, jobs, exam results. If God has done something for you through this ministry, we’d love to hear about it.'}</p>
+            <p className="mt-4">
+              {body ||
+                'Healings, babies after years of waiting, jobs, exam results. If God has done something for you through this ministry, we’d love to hear about it.'}
+            </p>
             <div className="relative z-10 mt-6 flex flex-wrap gap-3">
               <Link href="/testimonies#share" className="btn btn-primary">
                 Share your testimony
@@ -54,7 +76,11 @@ export function YearStack({ body }: { body?: string | null }) {
           </div>
         </div>
 
-        <div aria-hidden className="relative mx-auto mt-auto mb-[8vh] h-[42svh] w-full max-w-[1600px] overflow-hidden [perspective:2000px] md:mb-0 md:h-[56vh] md:min-h-[440px]">
+        <div
+          aria-hidden
+          data-year-stage
+          className="relative mx-auto mt-auto mb-[8vh] h-[42svh] w-full max-w-[1600px] overflow-hidden [perspective:2000px] md:mb-0 md:h-[56vh] md:min-h-[440px]"
+        >
           {Array.from({ length: CARDS }, (_, i) => {
             const gold = i === GOLD
             const t = i / (CARDS - 1)
@@ -62,8 +88,13 @@ export function YearStack({ body }: { body?: string | null }) {
               <div
                 key={i}
                 data-card
+                data-year-card
                 className="absolute bottom-0 w-[38%] sm:w-[26%] md:w-[19%]"
-                style={{ left: `calc((100% - 19%) * ${t * 0.96} + 1%)`, top: `${(1 - t) * 52 + 8}%`, zIndex: CARDS - i }}
+                style={{
+                  left: `calc((100% - 19%) * ${t * 0.96} + 1%)`,
+                  top: `${(1 - t) * 52 + 8}%`,
+                  zIndex: CARDS - i,
+                }}
               >
                 {gold ? (
                   <div data-gold className="h-[78%] w-[120%] [transform-origin:left_center]">

@@ -59,6 +59,12 @@ npm run lint
 npx tsc --noEmit
 ```
 
+## Slow phones
+
+Slow phones get a lighter version of the site: the same pages and words, without the costliest effects (`src/lib/lite.ts`). A small script in the page head chooses it before anything paints, for phones low on memory or cores and for anyone saving data or on a slow network. It also turns on during a visit if scrolling is visibly struggling.
+
+Add `?lite=1` to any address to see it, and `?lite=0` to go back. The browser remembers either choice. New effects that cost a lot to draw, such as blur filters and animated masks, should be switched off for it in `styles.css`.
+
 ## Glass images
 
 The glass objects in `src/assets/glass` and `src/assets/renders` are rendered from `src/components/three` by `scripts/capture-glass.mjs` and `scripts/capture-renders.mjs`, with the development server running.

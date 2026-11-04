@@ -2,8 +2,12 @@
 'use client';
 
 // CircularCarousel from React Bits (JavaScript + CSS variant). Local changes: no sample photos,
-// no position counter in the captions, and a `minFit` prop so phones keep large cards.
+// no position counter in the captions, a `minFit` prop so phones keep large cards, far less work on
+// each frame, and a lighter version for slow phones: flat cards, no far side, one step at a time.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+
+import { keepWatching } from '@/lib/lite';
+import { useLite } from '@/lib/useLite';
 
 import './CircularCarousel.css';
 
@@ -66,11 +70,13 @@ const CAPTION_SPACE = 76;
 const SWAP_LENGTH = 700;
 const SWAP_SPREAD = 420;
 const TO_RAD = Math.PI / 180;
+const DEPTH_STEP = 0.012;
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const wrap = degrees => ((((degrees + 180) % 360) + 360) % 360) - 180;
 const easeOut = t => 1 - Math.pow(1 - t, 4);
 const easeOutQuint = t => 1 - Math.pow(1 - t, 5);
+const photoFor = (item, near) => (near === 'small' && item.liteSrc) || item.src;
 
 const rotateX = (p, degrees) => {
   const r = degrees * TO_RAD;
@@ -135,14 +141,17 @@ const CircularCarousel = ({
   const [list, setList] = useState(incoming);
   const [leaving, setLeaving] = useState(null);
   const [sliceCount, setSliceCount] = useState(TILES);
-  // Nothing downloads until the ring is close to the screen. Each photo then appears once it's ready to draw.
+  // Nothing downloads until the ring is close to the screen: 'full' or 'small' from then on, by how
+  // fast the phone is at that moment. Each photo then appears once it's ready to draw.
+  const [near, setNear] = useState(null);
   const [readyPhotos, setReadyPhotos] = useState({});
+  const lite = useLite();
   const count = list.length;
   const shape = PRESETS[preset] ? preset : 'cylinder';
   const layout = PRESETS[shape];
   const axis = layout.axis;
   const tiltValue = tilt ?? layout.tilt;
-  const curveValue = layout.billboard ? 0 : clamp(curve ?? layout.curve, 0, 1);
+  const curveValue = layout.billboard || lite ? 0 : clamp(curve ?? layout.curve, 0, 1);
   const reduced = usePrefersReducedMotion();
 
   const cardW = Math.max(40, cardWidth);
@@ -232,20 +241,21 @@ const CircularCarousel = ({
     perspective: layout.inward ? radius : (perspective ?? layout.perspective),
     cardW,
     cardH,
-    intro: reduced ? 'none' : intro in INTRO_LENGTH ? intro : 'rise',
-    autoplay: reduced ? 'off' : autoplay,
+    intro: reduced || lite ? 'none' : intro in INTRO_LENGTH ? intro : 'rise',
+    autoplay: reduced ? 'off' : lite ? 'step' : autoplay,
     speed,
-    interval: Math.max(0.5, interval),
+    interval: lite ? Math.max(3.5, interval) : Math.max(0.5, interval),
     draggable,
     momentum: clamp(momentum, 0, 1),
     snap,
     pauseOnHover,
-    parallax: reduced ? 0 : clamp(parallax, 0, 1),
-    stretch: reduced ? 0 : clamp(stretch, 0, 1),
+    parallax: reduced || lite ? 0 : clamp(parallax, 0, 1),
+    stretch: reduced || lite ? 0 : clamp(stretch, 0, 1),
     depthFade: clamp(depthFade, 0, 1),
     captions,
     minFit: clamp(minFit, 0, 1),
-    reduced
+    reduced,
+    lite
   };
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
@@ -268,6 +278,7 @@ const CircularCarousel = ({
   const sourcesKey = incoming.map(item => item.src).join('|');
 
   useEffect(() => {
+    if (!near) return undefined;
     let cancelled = false;
     const next = incomingRef.current;
     const smooth = readyRef.current && next.length === listRef.current.length;
@@ -276,13 +287,17 @@ const CircularCarousel = ({
       setLeaving(null);
       setList(next);
     }
-    const sources = next.slice(0, 16).map(item => item.src);
+    const sources = next.slice(0, 16).map(item => photoFor(item, near));
     const load = src =>
       new Promise(resolve => {
         const image = new Image();
         image.decoding = 'async';
-        image.onload = () => (image.decode ? image.decode().then(resolve, resolve) : resolve());
-        image.onerror = resolve;
+        const done = () => {
+          if (!cancelled) setReadyPhotos(photos => ({ ...photos, [src]: true }));
+          resolve();
+        };
+        image.onload = () => (image.decode ? image.decode().then(done, done) : done());
+        image.onerror = done;
         image.src = src;
       });
     const timeout = new Promise(resolve => setTimeout(resolve, 2400));
@@ -311,7 +326,7 @@ const CircularCarousel = ({
     return () => {
       cancelled = true;
     };
-  }, [sourcesKey]);
+  }, [sourcesKey, near]);
 
   useEffect(() => {
     if (!leaving) return undefined;
@@ -458,8 +473,12 @@ const CircularCarousel = ({
         if (now >= state.stepAt) {
           state.target = (state.target ?? nearest(state.angle)) + s.step * state.dir;
           state.stepAt = now + s.interval * 1000;
+          busy = true;
+        } else if (!busy) {
+          // At rest between steps, a timer brings it back, so nothing at all runs in the meantime.
+          clearTimeout(state.stepTimer);
+          state.stepTimer = setTimeout(wake, state.stepAt - now);
         }
-        busy = true;
       } else {
         state.stepAt = 0;
       }
@@ -490,16 +509,23 @@ const CircularCarousel = ({
       const angle = state.angle + spinOffset;
       const R = s.radius * swell;
 
+      let cameraMove;
+      let ringMove;
       if (s.axis === 'x') {
-        camera.style.transform = `translate3d(0, 0, ${-R}px) rotateY(${s.tilt + state.yaw}deg) rotateX(${state.pitch}deg)`;
-        ring.style.transform = `rotateX(${-angle}deg)`;
+        cameraMove = `translate3d(0, 0, ${-R}px) rotateY(${s.tilt + state.yaw}deg) rotateX(${state.pitch}deg)`;
+        ringMove = `rotateX(${-angle}deg)`;
       } else if (s.layout.inward) {
-        camera.style.transform = `translate3d(0, 0, ${s.perspective - 1}px) rotateX(${s.tilt + state.pitch}deg) rotateY(${state.yaw}deg)`;
-        ring.style.transform = `rotateY(${angle}deg)`;
+        cameraMove = `translate3d(0, 0, ${s.perspective - 1}px) rotateX(${s.tilt + state.pitch}deg) rotateY(${state.yaw}deg)`;
+        ringMove = `rotateY(${angle}deg)`;
       } else {
-        camera.style.transform = `translate3d(0, 0, ${-R}px) rotateX(${s.tilt + state.pitch}deg) rotateY(${state.yaw}deg)`;
-        ring.style.transform = `rotateY(${angle}deg)`;
+        cameraMove = `translate3d(0, 0, ${-R}px) rotateX(${s.tilt + state.pitch}deg) rotateY(${state.yaw}deg)`;
+        ringMove = `rotateY(${angle}deg)`;
       }
+      if (camera.ccTransform !== cameraMove) {
+        camera.style.transform = cameraMove;
+        camera.ccTransform = cameraMove;
+      }
+      ring.style.transform = ringMove;
 
       for (let index = 0; index < s.count; index++) {
         const card = cardRefs.current[index];
@@ -517,13 +543,25 @@ const CircularCarousel = ({
           if (s.layout.billboard) transform += ` rotateY(${-(base + angle)}deg)`;
         }
         if (mod.lift) transform += s.axis === 'x' ? ` translateX(${mod.lift}px)` : ` translateY(${mod.lift}px)`;
-        card.style.transform = transform;
+        // While the ring turns, only the ring moves. Rewriting every card would restyle everything inside it.
+        if (card.ccTransform !== transform) {
+          card.style.transform = transform;
+          card.ccTransform = transform;
+        }
 
         const world = wrap(base + angle);
         const facing = Math.cos(world * TO_RAD);
-        if (s.layout.inward) card.style.visibility = Math.abs(world) > 86 ? 'hidden' : '';
+        const hidden = s.layout.inward ? Math.abs(world) > 86 : s.lite && facing < -0.05;
+        if (card.ccHidden !== hidden) {
+          card.style.visibility = hidden ? 'hidden' : '';
+          card.ccHidden = hidden;
+        }
+        // This value is inherited, so writing it restyles the whole card. A change this small can't be seen.
         const fade = s.depthFade * Math.pow((1 - facing) / 2, 1.25);
-        card.style.setProperty('--cc-depth', fade.toFixed(3));
+        if (card.ccDepth === undefined || Math.abs(fade - card.ccDepth) >= DEPTH_STEP || (fade === 0 && card.ccDepth !== 0)) {
+          card.style.setProperty('--cc-depth', fade.toFixed(3));
+          card.ccDepth = fade;
+        }
       }
 
       const index = ((Math.round(-state.angle / s.step) % s.count) + s.count) % s.count || 0;
@@ -539,6 +577,7 @@ const CircularCarousel = ({
       const s = settingsRef.current;
       const dt = state.last ? Math.min((now - state.last) / 1000, 0.05) : 1 / 60;
       state.last = now;
+      keepWatching();
       const busy = advance(s, dt, now);
       render(s, now);
       if (busy && visible && !document.hidden) raf = requestAnimationFrame(frame);
@@ -605,6 +644,7 @@ const CircularCarousel = ({
       resize.disconnect();
       io.disconnect();
       clearTimeout(state.wheelTimer);
+      clearTimeout(state.stepTimer);
       root.removeEventListener('wheel', onWheel);
       document.removeEventListener('visibilitychange', onVisibility);
     };
@@ -622,31 +662,16 @@ const CircularCarousel = ({
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return undefined;
-    let cancelled = false;
-    const near = new IntersectionObserver(
+    const watcher = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) return;
-        near.disconnect();
-        for (const { src } of incoming) {
-          const photo = new Image();
-          photo.src = src;
-          photo
-            .decode()
-            .catch(() => undefined)
-            .finally(() => {
-              if (!cancelled) setReadyPhotos(ready => ({ ...ready, [src]: true }));
-            });
-        }
+        watcher.disconnect();
+        setNear(document.documentElement.dataset.lite === '1' ? 'small' : 'full');
       },
       { rootMargin: '1200px 0px' }
     );
-    near.observe(root);
-    return () => {
-      cancelled = true;
-      near.disconnect();
-    };
-    // Photos are chosen once for the page.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    watcher.observe(root);
+    return () => watcher.disconnect();
   }, []);
 
   useEffect(() => {
@@ -820,6 +845,7 @@ const CircularCarousel = ({
         : { left: -offset, top: 0, width: cardW, height: cardH };
     const flip = axis === 'x' ? ' rotateX(180deg)' : ' rotateY(180deg)';
     const gone = leaving?.items[index];
+    const photo = photoFor(item, near);
     return (
       <div
         key={`${back ? 'b' : 'f'}${tile.index}`}
@@ -831,9 +857,9 @@ const CircularCarousel = ({
           className="circular-carousel__frame"
           style={{ height: axis === 'x' ? size : cardH, borderRadius: frameRadius }}
         >
-          {readyPhotos[item.src] && (
+          {readyPhotos[photo] && (
             // eslint-disable-next-line @next/next/no-img-element -- slices of one photo, positioned by hand
-            <img className="circular-carousel__photo" src={item.src} alt="" draggable={false} style={photoStyle} />
+            <img className="circular-carousel__photo" src={photo} alt="" draggable={false} style={photoStyle} />
           )}
           {gone && (
             // eslint-disable-next-line @next/next/no-img-element -- as above
@@ -899,7 +925,7 @@ const CircularCarousel = ({
                   aria-label={`${item.title || item.alt || `Image ${index + 1}`}, ${index + 1} of ${count}`}
                 >
                   {tiles.map(tile => renderTile(item, tile, false, index))}
-                  {layout.backfaces && backTiles.map(tile => renderTile(item, tile, true, index))}
+                  {layout.backfaces && !lite && backTiles.map(tile => renderTile(item, tile, true, index))}
                 </div>
               ))}
             </div>

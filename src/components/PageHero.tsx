@@ -11,7 +11,7 @@ export function PageHero({ eyebrow, title, intro, children }: { eyebrow?: string
     <section className="relative isolate overflow-hidden pt-[130px] pb-16 text-center sm:pt-[170px] sm:pb-24">
       <div aria-hidden className="bg-ticks absolute inset-0 -z-20" />
       <FallingLines className="-z-20" />
-      <div aria-hidden className="absolute -top-[120px] left-1/2 -z-10 h-[300px] w-[1584px] -translate-x-1/2 rounded-[50%] bg-[#1c1c1c] blur-[150px]" />
+      <div aria-hidden className="glow absolute -top-[420px] left-1/2 -z-10 h-[900px] w-[2184px] -translate-x-1/2 [--glow-strength:0.7] [--glow:28_28_28]" />
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 rotate-[-13deg]">
         <GlassImage lazy src={renders.glassTube} className="absolute top-[55%] -left-[14%] hidden w-[30vw] max-w-[420px] rotate-90 sm:block" />
         <GlassImage src={renders.glassTube} className="absolute top-[-4%] -right-[26%] w-[42vw] max-w-[420px] -rotate-90 sm:top-[5%] sm:-right-[14%] sm:w-[30vw]" />

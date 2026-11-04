@@ -44,7 +44,7 @@ export function TestimonyCard({ testimony }: { testimony: CardTestimony }) {
           </>
         ) : (
           <>
-            <div aria-hidden className="absolute right-[-5%] bottom-[-4%] size-[40%] rounded-full bg-gold/30 blur-[90px]" />
+            <div aria-hidden className="glow absolute right-[-35%] bottom-[-40%] size-[110%] [--glow-strength:0.24]" />
             <svg aria-hidden width="21" height="17" viewBox="0 0 21 17" className="relative fill-white">
               <path d="M0 17V10.2C0 4.4 3 1 8.1 0l.9 2.4C6.3 3.3 5 5.2 4.8 7.8H9V17H0Zm12 0V10.2C12 4.4 15 1 20.1 0l.9 2.4c-2.7.9-4 2.8-4.2 5.4H21V17h-9Z" />
             </svg>

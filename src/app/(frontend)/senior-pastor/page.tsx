@@ -253,7 +253,7 @@ export default async function SeniorPastorPage() {
             {books.map((b, i) => (
               <Reveal key={b.title} delay={i * 80} as="article" className="group relative">
                 <div className="card bg-ticks relative grid aspect-[387/430] place-items-center overflow-hidden">
-                  <div aria-hidden className="absolute inset-x-[20%] bottom-[8%] h-1/2 rounded-full bg-gold/20 blur-[80px]" />
+                  <div aria-hidden className="glow absolute inset-x-[-6%] bottom-[-14%] h-[92%] [--glow-strength:0.17]" />
                   <Image src={b.cover} alt={`${b.title} by Paul Enenche MD`} placeholder="blur" sizes="(min-width: 640px) 220px, 56vw" className="relative w-[56%] rounded-md shadow-[0_30px_50px_-15px_rgba(0,0,0,0.85)] transition-transform duration-300 group-hover:-translate-y-2" />
                 </div>
                 <h4 className="h-card mt-5 transition-colors group-hover:text-gold">{b.title}</h4>

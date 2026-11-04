@@ -1,6 +1,6 @@
 import type { CSSProperties, FC } from 'react'
 
-export type CircularCarouselItem = { src: string; alt?: string; title?: string; subtitle?: string }
+export type CircularCarouselItem = { src: string; liteSrc?: string; alt?: string; title?: string; subtitle?: string }
 
 export type CircularCarouselProps = {
   items: CircularCarouselItem[]

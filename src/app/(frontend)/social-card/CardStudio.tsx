@@ -241,7 +241,7 @@ function Presentation({
 
       <div className="relative flex min-h-full flex-col items-center justify-center gap-6 px-5 py-12">
         <div data-slot className="relative" style={{ height: 'min(62svh, 760px)', aspectRatio: '9 / 16' }}>
-          <div data-glow aria-hidden className="absolute -inset-[16%] rounded-full bg-gold/25 blur-[90px]" />
+          <div data-glow aria-hidden className="glow absolute -inset-[45%] [--glow-strength:0.22]" />
           <div data-rig className="absolute inset-0 [transform-origin:50%_0%]">
             <div data-shake className="absolute inset-0 will-change-transform [transform-origin:50%_80%]">
               <div data-card className="absolute inset-0 overflow-hidden rounded-[16px] shadow-[0_50px_90px_-30px_rgba(0,0,0,0.95)]">

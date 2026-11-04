@@ -28,7 +28,7 @@ export function HeroHand() {
       {/* The official 30th-anniversary crest, floating in the palm (shown at its native size so it stays sharp) */}
       <div className="animate-crest-in absolute z-10 w-[27%] max-w-[270px] -translate-x-1/2" style={PALM}>
         <div className="animate-float">
-          <div aria-hidden className="absolute inset-[10%] rounded-full bg-gold/45 blur-[60px]" />
+          <div aria-hidden className="glow absolute -inset-[35%] [--glow-strength:0.42]" />
           <Image
             src={crest}
             alt="Dunamis International Gospel Centre 30th Anniversary, 1996 – 2026"

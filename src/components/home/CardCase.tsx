@@ -16,7 +16,7 @@ export function CardCase({ variant, notch: size = 17, className = '' }: { varian
   const notch = `radial-gradient(circle at ${at}, transparent ${size}%, #000 ${size + 0.4}%)`
 
   return (
-    <div className={`@container relative ${className}`} style={{ filter: 'drop-shadow(0 30px 34px rgba(0,0,0,0.7)) drop-shadow(0 6px 10px rgba(0,0,0,0.45))' }}>
+    <div className={`@container relative ${className}`} style={{ borderRadius: 22, boxShadow: '0 30px 34px rgba(0,0,0,0.7), 0 6px 10px rgba(0,0,0,0.45)' }}>
       <div
         className="absolute inset-0 overflow-hidden rounded-[22px]"
         style={{ background: 'linear-gradient(180deg, #282828 0%, #171717 46%, #0c0c0c 100%)', maskImage: notch, WebkitMaskImage: notch }}

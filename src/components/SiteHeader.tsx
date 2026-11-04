@@ -55,6 +55,7 @@ export function SiteHeader() {
   return (
     <header className="fixed inset-x-0 top-3 z-50 px-3 sm:top-5 sm:px-5">
       <div
+        data-nav
         className={`relative mx-auto flex h-[60px] max-w-[1200px] items-center justify-between gap-4 rounded-2xl border pr-2 pl-4 backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-300 lg:h-[66px] lg:pl-5 ${
           scrolled || menuOpen
             ? 'border-white/[0.12] bg-[#0f0f0f]/80 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.9)]'

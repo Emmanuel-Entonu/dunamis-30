@@ -278,6 +278,21 @@
     animation: line-fall 3.8s linear infinite;
   }
 
+  /* A soft pool of light. Looks like a heavy blur, which costs a slow phone dearly to draw, for the price of a gradient. */
+  .glow {
+    --glow: 240 169 43;
+    --glow-strength: 0.3;
+    background: radial-gradient(
+      closest-side,
+      rgb(var(--glow) / var(--glow-strength)),
+      rgb(var(--glow) / calc(var(--glow-strength) * 0.78)) 28%,
+      rgb(var(--glow) / calc(var(--glow-strength) * 0.38)) 56%,
+      rgb(var(--glow) / calc(var(--glow-strength) * 0.1)) 80%,
+      transparent
+    );
+    pointer-events: none;
+  }
+
   /* Gold halftone flare rising from the bottom edge. */
   .flare {
     background:
@@ -316,7 +331,8 @@
     font-weight: 500;
     font-variant-numeric: tabular-nums;
     line-height: 1;
-    filter: drop-shadow(0 18px 24px rgb(0 0 0 / 0.55));
+    border-radius: 14px;
+    box-shadow: 0 18px 24px rgb(0 0 0 / 0.55);
   }
   .flip::after {
     content: '';
@@ -443,6 +459,48 @@ body:has([data-sleeve-scene]) .footer-top {
   body:has([data-sleeve-scene]) .footer-top {
     padding-top: 320px;
   }
+}
+
+/*
+ * The lighter version for slow phones, chosen in src/lib/lite.ts. The same pages and words, without
+ * what costs the most to draw. Unlayered on purpose so it beats the utilities.
+ */
+:root[data-lite='1'] .falling-line,
+:root[data-lite='1'] .dots,
+:root[data-lite='1'] [data-passing],
+:root[data-lite='1'] [data-year-card]:nth-child(even) {
+  display: none;
+}
+:root[data-lite='1'] .animate-float,
+:root[data-lite='1'] .animate-spin-slow,
+:root[data-lite='1'] .animate-card-shine {
+  animation: none;
+}
+:root[data-lite='1'] *,
+:root[data-lite='1'] *::before,
+:root[data-lite='1'] *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+:root[data-lite='1'] [data-nav] {
+  background-color: rgb(15 15 15 / 0.96);
+}
+:root[data-lite='1'] .bg-ticks {
+  background-image: none;
+}
+:root[data-lite='1'] .flare {
+  background: radial-gradient(100% 100% at 50% 100%, rgb(227 154 23 / 0.5), rgb(184 115 11 / 0.16) 45%, transparent 75%);
+  mask-image: none;
+}
+:root[data-lite='1'] .stripes {
+  background: linear-gradient(to top, rgb(255 170 60 / 0.14), transparent 88%);
+  mask-image: none;
+}
+:root[data-lite='1'] [data-year-stage] {
+  perspective: none;
+}
+:root[data-lite='1'] [data-year-card] > div:not([data-gold]) {
+  transform: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
