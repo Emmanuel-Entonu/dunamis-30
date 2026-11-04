@@ -9,9 +9,9 @@ export type TemplateId = 'glory' | 'pearl' | 'nations' | 'emerald' | 'royal' | '
 export type PhotoSource = HTMLImageElement | HTMLCanvasElement
 
 export const CARD = { w: 1080, h: 1920 }
-export const EVENT = { title: 'Dunamis 30th Anniversary', date: 'Tuesday, 10 November 2026', venue: 'The Glory Dome, Abuja' }
+export const EVENT = { title: 'Kingdom Power & Glory World Conference', date: '24 to 29 November 2026', venue: 'The Glory Dome, Abuja' }
 
-export type CardAssets = { crest: HTMLImageElement; emblem: HTMLImageElement; dome: HTMLImageElement; nations: HTMLImageElement }
+export type CardAssets = { crest: HTMLImageElement; emblem: HTMLImageElement; dome: HTMLImageElement; nations: HTMLImageElement | null }
 
 export type CardInput = {
   name: string
@@ -139,7 +139,7 @@ export const TEMPLATES: Record<TemplateId, Theme> = {
   nations: {
     label: 'Nations',
     paint: (ctx, a, w, h) => {
-      cover(ctx, a.nations, 0, 0, w, h, 1, 0.65)
+      if (a.nations) cover(ctx, a.nations, 0, 0, w, h, 1, 0.65)
       ctx.fillStyle = 'rgba(5,7,12,0.72)'
       ctx.fillRect(0, 0, w, h)
       ctx.fillStyle = radial(ctx, w / 2, 0, h * 0.55, [
@@ -409,7 +409,7 @@ export function drawCard(ctx: CanvasRenderingContext2D, input: CardInput, assets
     ctx.restore()
   }
 
-  // "I, Name, from City, will be attending the Dunamis 30th Anniversary."
+  // "I, Name, from City, will be attending the Kingdom Power & Glory World Conference."
   const st = easeOut(seg(t, 0.5, 0.78))
   const name = input.name.trim() || 'Your Name'
   const city = input.city.trim()

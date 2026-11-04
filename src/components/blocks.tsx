@@ -2,6 +2,8 @@ import Image, { type StaticImageData } from 'next/image'
 import type { ReactNode } from 'react'
 
 import { glass } from '@/assets/glass'
+import { blurFor } from '@/lib/image'
+import { GlassImage } from './GlassImage'
 import { Flame, Sparkle } from './icons'
 import { WorldRise } from './motion'
 import { Reveal } from './Reveal'
@@ -58,7 +60,7 @@ export function GlassArt({ art, className = '', dots = 'inset-[-30%]', fit = fal
   return (
     <div className={`relative ${className}`}>
       <div aria-hidden className={`dots absolute ${dots}`} />
-      <Image src={art} alt="" sizes="(min-width: 1024px) 480px, 60vw" className={`relative w-full transition-transform duration-500 group-hover:scale-105 ${fit ? 'h-full object-contain' : 'h-auto'}`} />
+      <GlassImage src={art} className={`relative w-full transition-transform duration-500 group-hover:scale-105 ${fit ? 'h-full object-contain' : 'h-auto'}`} />
     </div>
   )
 }
@@ -174,9 +176,9 @@ export function PhotoWithGlass({ photo, alt, art, className = 'aspect-[5/4] lg:a
   return (
     <div className="relative">
       <div className={`card relative overflow-hidden ${className}`}>
-        <Image src={photo} alt={alt} fill sizes={sizes} className="object-cover" />
+        <Image src={photo} alt={alt} fill sizes={sizes} placeholder={blurFor(photo)} className="object-cover" />
       </div>
-      <Image src={art} alt="" sizes="180px" className="pointer-events-none absolute -top-8 -right-1 h-auto w-[104px] drop-shadow-[0_20px_30px_rgba(0,0,0,0.75)] sm:-top-10 sm:-right-5 sm:w-[160px]" />
+      <GlassImage src={art} className="pointer-events-none absolute -top-8 -right-1 h-auto w-[104px] drop-shadow-[0_20px_30px_rgba(0,0,0,0.75)] sm:-top-10 sm:-right-5 sm:w-[160px]" />
     </div>
   )
 }
@@ -200,7 +202,7 @@ export function GlobalPresence({ title, text, stats }: { title: string; text: st
         </Reveal>
         <WorldRise className="relative mt-10 aspect-[2/1] overflow-hidden lg:mt-[60px]">
           <div data-world className="absolute inset-x-0 top-0 origin-bottom will-change-transform">
-            <Image src={glass.world} alt="" sizes="(min-width: 1240px) 1200px, 96vw" className="h-auto w-full" />
+            <GlassImage src={glass.world} className="h-auto w-full" />
             {pins.map((p) => (
               <svg key={p.left} data-pin aria-hidden viewBox="0 0 24 32" className="absolute w-[5%] max-w-[40px] min-w-[20px] -translate-x-1/2 drop-shadow-[0_6px_10px_rgba(0,0,0,0.5)]" style={p}>
                 <path fill="#fff" d="M12 0C5.4 0 0 5.2 0 11.7 0 20.4 12 32 12 32s12-11.6 12-20.3C24 5.2 18.6 0 12 0Z" />

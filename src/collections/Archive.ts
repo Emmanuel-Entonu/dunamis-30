@@ -75,18 +75,6 @@ export const GalleryItems: CollectionConfig = {
   ],
 }
 
-export const Announcements: CollectionConfig = {
-  slug: 'announcements',
-  admin: { useAsTitle: 'title', defaultColumns: ['title', 'active', 'updatedAt'], group: 'Site content' },
-  access: { read: anyone, create: isEditor, update: isEditor, delete: isEditor },
-  fields: [
-    { name: 'title', type: 'text', required: true },
-    { name: 'body', type: 'textarea' },
-    { name: 'link', type: 'text' },
-    { name: 'active', type: 'checkbox', defaultValue: true, admin: { description: 'Show in the site-wide banner.' } },
-  ],
-}
-
 /** One row per downloaded/shared social card — powers the “monitor card generation” stats. */
 export const CardEvents: CollectionConfig = {
   slug: 'card-events',

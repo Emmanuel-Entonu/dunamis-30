@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/immutability -- three.js scenes are changed in place on every frame. Only used to render the glass images. */
 'use client'
 
 import { Text3D } from '@react-three/drei'

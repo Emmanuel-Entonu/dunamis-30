@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
+import Link from '@/components/SiteLink'
 
+import { GlassImage } from '@/components/GlassImage'
 import anointingBook from '@/assets/books/anointing-of-the-holy-spirit.webp'
 import formerLatterRain from '@/assets/books/former-and-latter-rain.webp'
 import triggersBook from '@/assets/books/triggers-of-the-move-of-god.webp'
@@ -11,6 +12,7 @@ import { ArrowRight, Play } from '@/components/icons'
 import { ScrubText } from '@/components/motion'
 import { PageHero } from '@/components/PageHero'
 import { Reveal } from '@/components/Reveal'
+import { blurFor } from '@/lib/image'
 import { getPastorPage, mediaUrl } from '@/lib/content'
 import { photos } from '@/lib/photos'
 import { embedUrl } from '@/lib/video'
@@ -60,9 +62,9 @@ export default async function SeniorPastorPage() {
               <div className="relative w-[78%] max-w-[380px]">
                 <div aria-hidden className="dots absolute inset-[-22%]" />
                 <div className="relative aspect-[5/7] overflow-hidden rounded-2xl border border-line">
-                  <Image src={portrait || photos.pastorPaulPreaching} alt={name} fill priority sizes="(min-width: 1024px) 380px, 78vw" className="object-cover" />
+                  <Image src={portrait || photos.pastorPaulPreaching} alt={name} fill sizes="(min-width: 1024px) 380px, 78vw" placeholder={blurFor(portrait || photos.pastorPaulPreaching)} className="object-cover" />
                 </div>
-                <Image src={glass.crown} alt="" sizes="170px" className="absolute -top-9 -right-7 h-auto w-[104px] rotate-[10deg] drop-shadow-[0_18px_26px_rgba(0,0,0,0.8)] sm:-top-12 sm:-right-14 sm:w-[160px]" />
+                <GlassImage src={glass.crown} className="absolute -top-9 -right-7 h-auto w-[104px] rotate-[10deg] drop-shadow-[0_18px_26px_rgba(0,0,0,0.8)] sm:-top-12 sm:-right-14 sm:w-[160px]" />
               </div>
             }
             title={name}

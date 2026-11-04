@@ -12,9 +12,11 @@ export async function ReviewQueue({ payload }: { payload: Payload }) {
       return 0
     }
   }
-  const [testimonies, sons, guests, guestsNeedHelp, cards] = await Promise.all([
+  const [testimonies, testimonyVideos, sons, sonsVideos, guests, guestsNeedHelp, cards] = await Promise.all([
     count('testimonies', { status: { equals: 'pending' } }),
+    count('testimonies', { and: [{ status: { equals: 'pending' } }, { hasVideo: { equals: true } }] }),
     count('sons-stories', { status: { equals: 'pending' } }),
+    count('sons-stories', { and: [{ status: { equals: 'pending' } }, { hasVideo: { equals: true } }] }),
     count('international-registrations', { logisticsStatus: { equals: 'new' } }),
     count('international-registrations', {
       and: [{ logisticsStatus: { equals: 'new' } }, { or: [{ needsPickup: { equals: true } }, { needsAccommodation: { equals: true } }] }],
@@ -27,13 +29,13 @@ export async function ReviewQueue({ payload }: { payload: Payload }) {
       label: 'Testimonies to review',
       value: testimonies,
       href: '/admin/collections/testimonies?where[status][equals]=pending',
-      note: 'Approve to publish on the Testimonies page.',
+      note: `${testimonyVideos ? `${testimonyVideos} with a video to watch. ` : ''}Approve to publish on the Testimonies page.`,
     },
     {
       label: 'Sons of the Prophet stories',
       value: sons,
       href: '/admin/collections/sons-stories?where[status][equals]=pending',
-      note: 'Approve to publish on Sons of the Prophet.',
+      note: `${sonsVideos ? `${sonsVideos} with a video to watch. ` : ''}Approve to publish on Sons of the Prophet.`,
     },
     {
       label: 'New international guests',

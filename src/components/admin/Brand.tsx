@@ -1,6 +1,6 @@
 import Image from 'next/image'
 
-import emblem from '@/assets/brand/emblem-official.png'
+import emblem from '@/assets/brand/emblem-official.webp'
 
 /** Sign-in screen. */
 export function Logo() {

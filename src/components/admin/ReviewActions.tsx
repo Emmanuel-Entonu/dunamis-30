@@ -1,7 +1,7 @@
 'use client'
 
 import { Button, useDocumentInfo, useForm, useFormFields } from '@payloadcms/ui'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 /**
  * Sidebar shortcut on a submission: one click sets the status and saves, keeping any edits
@@ -14,11 +14,15 @@ export function ReviewActions({ basePath }: { basePath: string }) {
   const slug = useFormFields(([fields]) => fields.slug?.value as string | undefined)
   const [target, setTarget] = useState<string | null>(null)
 
-  // Submit only once the form state holds the new status.
+  // Submit only once the form state holds the new status, and only once. The buttons stay disabled until it's saved.
+  const saving = useRef(false)
   useEffect(() => {
-    if (!target || status !== target) return
-    setTarget(null)
-    void submit()
+    if (!target || status !== target || saving.current) return
+    saving.current = true
+    void Promise.resolve(submit()).finally(() => {
+      saving.current = false
+      setTarget(null)
+    })
   }, [status, target, submit])
 
   if (!id) return null

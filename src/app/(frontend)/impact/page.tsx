@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import Image, { type StaticImageData } from 'next/image'
-import Link from 'next/link'
+import Link from '@/components/SiteLink'
 
+import { GlassImage } from '@/components/GlassImage'
 import { glass } from '@/assets/glass'
 import kpgPoster from '@/assets/posters/kpg-2026.webp'
 import { ClosingBand, GlassArt, Label, StorySplit } from '@/components/blocks'
@@ -10,6 +11,7 @@ import { CountUp, ScrubText, SidewaysScroll } from '@/components/motion'
 import { PageHero } from '@/components/PageHero'
 import { Reveal } from '@/components/Reveal'
 import { getImpactPage, mediaUrl } from '@/lib/content'
+import { blurFor } from '@/lib/image'
 import { defaultStats } from '@/lib/ministry'
 import { photos } from '@/lib/photos'
 import type { Media } from '@/payload-types'
@@ -37,12 +39,12 @@ function AreaPanel({ area }: { area: Area }) {
   return (
     <article className="card group relative flex h-full w-[84vw] shrink-0 flex-col overflow-hidden sm:w-[560px] lg:w-[820px] lg:flex-row">
       <div className="relative min-h-0 flex-1">
-        <Image src={area.image} alt={area.title} fill sizes="(min-width: 1024px) 420px, 84vw" className="object-cover" />
+        <Image src={area.image} alt={area.title} fill sizes="(min-width: 1024px) 420px, 84vw" placeholder={blurFor(area.image)} className="object-cover" />
       </div>
       <div className="flex shrink-0 flex-col justify-between gap-4 p-5 sm:p-8 lg:w-1/2">
         <div className="flex items-start justify-between gap-3">
           <Label>{area.label}</Label>
-          <Image src={area.art} alt="" sizes="170px" className="h-auto w-[62px] transition-transform duration-500 group-hover:scale-110 sm:w-[96px] lg:w-[150px]" />
+          <GlassImage src={area.art} className="h-auto w-[62px] transition-transform duration-500 group-hover:scale-110 sm:w-[96px] lg:w-[150px]" />
         </div>
         <div>
           <h3 className="h-card">{area.title}</h3>

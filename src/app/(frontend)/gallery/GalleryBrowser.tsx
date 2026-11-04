@@ -3,7 +3,9 @@
 import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { glass } from '@/assets/glass'
+import { GlassImage } from '@/components/GlassImage'
+import { blurFor } from '@/lib/image'
+import cameraGlass from '@/assets/glass/camera.webp'
 import { inputClass } from '@/components/forms/Field'
 import { ChevronLeft, ChevronRight, Close, Play } from '@/components/icons'
 
@@ -185,7 +187,7 @@ export function GalleryBrowser({ items, categories }: { items: GalleryCard[]; ca
         </ul>
       ) : (
         <div className="card mt-8 flex flex-col items-center p-8 text-center sm:p-14">
-          <Image src={glass.camera} alt="" sizes="150px" className="mb-8 h-auto w-[120px] sm:w-[150px]" />
+          <GlassImage src={cameraGlass} className="mb-8 h-auto w-[120px] sm:w-[150px]" />
           <p className="h-card">Nothing matches that search</p>
           <p className="mx-auto mt-3 max-w-[460px]">Try another word, or clear your filters to see everything.</p>
           <button type="button" onClick={clear} className="btn btn-primary mt-7">
@@ -231,7 +233,7 @@ export function GalleryBrowser({ items, categories }: { items: GalleryCard[]; ca
               </div>
             ) : current.src ? (
               <div className="relative h-full w-full">
-                <Image src={current.src} alt={current.title} fill sizes="100vw" className="object-contain" />
+                <Image src={current.src} alt={current.title} fill sizes="100vw" placeholder={blurFor(current.src)} className="object-contain" />
               </div>
             ) : null}
             {shown.length > 1 && (

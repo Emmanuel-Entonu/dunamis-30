@@ -1,14 +1,16 @@
 import type { CollectionConfig } from 'payload'
 
-import { approvedOrEditor, isEditor } from '@/access/roles'
-import { moderationFields, slugField, stampPublishedAt, submitterFields } from '@/fields/shared'
+import { approvedOrEditor, isEditor, nameIfShown } from '@/access/roles'
+import { afterSubmissionChange, afterSubmissionDelete, moderationFields, prepareSubmission, slugField, submitterFields, uploadedVideoFields, videoTicketEndpoint } from '@/fields/shared'
+
+const mediaFields = ['beforePhoto', 'afterPhoto', 'videoPoster']
 
 export const SonsStories: CollectionConfig = {
   slug: 'sons-stories',
   labels: { singular: 'Sons of the Prophet story', plural: 'Sons of the Prophet' },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'headline', 'location', 'status', 'updatedAt'],
+    defaultColumns: ['name', 'headline', 'location', 'hasVideo', 'status', 'updatedAt'],
     group: 'Stories',
     description: 'Stories shared on the website arrive as “Pending review”. Approve to publish on Sons of the Prophet.',
   },
@@ -19,14 +21,20 @@ export const SonsStories: CollectionConfig = {
     update: isEditor,
     delete: isEditor,
   },
-  hooks: { beforeChange: [stampPublishedAt] },
+  hooks: {
+    beforeChange: [prepareSubmission],
+    afterChange: [afterSubmissionChange({ mediaFields, basePath: '/sons-of-the-prophet', tag: 'sons-stories' })],
+    afterDelete: [afterSubmissionDelete(mediaFields)],
+  },
+  endpoints: [videoTicketEndpoint],
   fields: [
     {
       name: 'reviewActions',
       type: 'ui',
       admin: { position: 'sidebar', components: { Field: { path: '/components/admin/ReviewActions#ReviewActions', clientProps: { basePath: '/sons-of-the-prophet' } } } },
     },
-    { name: 'name', type: 'text', required: true },
+    ...uploadedVideoFields('story'),
+    { name: 'name', type: 'text', required: true, access: { read: nameIfShown } },
     { name: 'headline', type: 'text', admin: { description: 'e.g. "From the back row to the pulpit".' } },
     { name: 'location', type: 'text' },
     { name: 'currentRole', type: 'text', label: 'Where I am today (one line)' },
@@ -37,8 +45,7 @@ export const SonsStories: CollectionConfig = {
         { name: 'afterPhoto', type: 'upload', relationTo: 'media' },
       ],
     },
-    { name: 'videoUrl', type: 'text' },
-    { name: 'video', type: 'upload', relationTo: 'media' },
+    { name: 'videoUrl', type: 'text', label: 'Video link', admin: { description: 'Only for a video that lives on YouTube or Vimeo.' } },
     {
       name: 'story',
       type: 'group',

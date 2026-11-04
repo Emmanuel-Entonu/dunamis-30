@@ -1,22 +1,22 @@
 'use client'
 
-import { useActionState, useEffect, useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 
 import { BotFields, Field, inputClass, shrinkPhoto } from '@/components/forms/Field'
+import { needsFixing, useSubmission } from '@/components/forms/useSubmission'
+import { addVideoToForm, useVideoAttachment, VideoField, VideoProgress } from '@/components/forms/VideoAttachment'
 import { categoryLabels } from '@/lib/categories'
-import { submitTestimony, type TestimonyState } from './actions'
+import { prepareTestimonyVideo, submitTestimony } from './actions'
 
 export function TestimonyForm() {
-  const [state, dispatch, pending] = useActionState<TestimonyState, FormData>(submitTestimony, {})
-  const [, startTransition] = useTransition()
-  const [startedAt, setStartedAt] = useState(0)
+  const [summaryLength, setSummaryLength] = useState(0)
+  const { formRef, state, show, busy, setBusy, startedAt, onFormChange, attempt } = useSubmission('testimony', (values) => setSummaryLength(values.summary?.length ?? 0))
+  const video = useVideoAttachment()
   const [photo, setPhoto] = useState<{ blob: Blob; url: string } | null>(null)
   const [photoNote, setPhotoNote] = useState('')
-  const [summaryLength, setSummaryLength] = useState(0)
   const fileInput = useRef<HTMLInputElement>(null)
   const e = state.fieldErrors ?? {}
 
-  useEffect(() => setStartedAt(Date.now()), [])
   useEffect(() => () => void (photo && URL.revokeObjectURL(photo.url)), [photo])
 
   const pickPhoto = async (file?: File) => {
@@ -30,13 +30,38 @@ export function TestimonyForm() {
     }
   }
 
-  // Dispatch from onSubmit (not the form `action`): React resets forms after an `action`
-  // completes, which would wipe a long testimony whenever validation fails.
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  /** Check the words first, then send the video, then save, so nobody uploads for nothing. */
+  const send = async (withVideo: boolean) => {
+    const form = formRef.current
+    if (!form || busy) return
+    setBusy(true)
+    show({})
+    try {
+      const data = new FormData(form)
+      if (photo) data.set('photo', new File([photo.blob], 'photo.jpg', { type: 'image/jpeg' }))
+
+      if (withVideo && video.file) {
+        const check = new FormData(form)
+        check.delete('photo')
+        if (!video.hasTicket()) check.set('needsTicket', '1')
+        const prepared = await attempt(() => prepareTestimonyVideo(check))
+        if (!prepared) return
+        if (prepared.error || prepared.fieldErrors || prepared.ok) return show(prepared)
+        const sent = await video.send(prepared.ticket)
+        if (!sent) return
+        addVideoToForm(data, video, sent)
+      }
+
+      const result = await attempt(() => submitTestimony(data))
+      if (result) show(result)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const data = new FormData(event.currentTarget)
-    if (photo) data.set('photo', new File([photo.blob], 'photo.jpg', { type: 'image/jpeg' }))
-    startTransition(() => dispatch(data))
+    void send(Boolean(video.file))
   }
 
   if (state.ok) {
@@ -44,15 +69,13 @@ export function TestimonyForm() {
       <div role="status" className="rounded-2xl border border-hair bg-[#171717] p-6 text-center sm:p-12">
         <p className="text-sm tracking-[0.18em] text-gold uppercase">Testimony received</p>
         <p className="mt-4 text-2xl font-medium text-fg sm:text-3xl">Thank you{state.firstName ? `, ${state.firstName}` : ''}. God be praised!</p>
-        <p className="mx-auto mt-4 max-w-[480px]">
-          Our communications team will read it and may get in touch before it goes up on the website.
-        </p>
+        <p className="mx-auto mt-4 max-w-[480px]">Our communications team will read it and may get in touch before it goes up on the website.</p>
       </div>
     )
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="relative rounded-2xl border border-hair bg-[#171717] p-5 sm:p-10">
+    <form ref={formRef} onSubmit={onSubmit} onChange={onFormChange} noValidate className="relative rounded-2xl border border-hair bg-[#171717] p-5 sm:p-10">
       <BotFields startedAt={startedAt} />
 
       <h3 className="h-card">About you</h3>
@@ -96,10 +119,8 @@ export function TestimonyForm() {
             aria-invalid={!!e.summary}
           />
         </Field>
-        <Field name="body" label="Full testimony" required error={e.body}>
-          <textarea id="body" name="body" rows={8} className={`${inputClass} py-4`} aria-invalid={!!e.body} />
-        </Field>
         <div className="grid gap-5 sm:grid-cols-2 sm:gap-[25px]">
+          <VideoField video={video} label="Video testimony (optional)" hint="Up to 5 minutes. We shrink it on your phone first, so it uses less data." error={e.video} />
           <Field name="photo" label="Photo (optional)" error={e.photo ?? photoNote}>
             <div className="flex items-center gap-4">
               <div className="grid size-[64px] shrink-0 place-items-center overflow-hidden rounded-lg border border-line bg-hair">
@@ -112,10 +133,10 @@ export function TestimonyForm() {
               <input id="photo" ref={fileInput} type="file" accept="image/*" className="hidden" onChange={(ev) => pickPhoto(ev.target.files?.[0])} />
             </div>
           </Field>
-          <Field name="videoUrl" label="Video link (optional)" error={e.videoUrl} hint="YouTube, Facebook, Instagram or Google Drive.">
-            <input id="videoUrl" name="videoUrl" type="url" inputMode="url" placeholder="https://" className={inputClass} aria-invalid={!!e.videoUrl} />
-          </Field>
         </div>
+        <Field name="body" label={video.file ? 'Full testimony (optional with a video)' : 'Full testimony'} required={!video.file} error={e.body}>
+          <textarea id="body" name="body" rows={8} className={`${inputClass} py-4`} aria-invalid={!!e.body} />
+        </Field>
       </div>
 
       <div className="mt-8 grid gap-4 text-[15px]">
@@ -124,7 +145,7 @@ export function TestimonyForm() {
           <span>Show my name with my testimony.</span>
         </label>
         <label className="flex items-start gap-3">
-          <input type="checkbox" name="consent" className="mt-1 size-4 accent-[#f0a92b]" />
+          <input type="checkbox" name="consent" aria-invalid={!!e.consent} className="mt-1 size-4 scroll-mt-28 accent-[#f0a92b]" />
           <span>
             I consent to Dunamis International Gospel Centre publishing this testimony (and my photo or video, if provided) on its website and
             channels.<span className="text-gold"> *</span>
@@ -133,14 +154,29 @@ export function TestimonyForm() {
         </label>
       </div>
 
+      <VideoProgress
+        video={video}
+        onRetry={() => void send(true)}
+        onSendWithout={() => {
+          video.clear()
+          void send(false)
+        }}
+        withoutLabel="Send without the video"
+      />
+
       {state.error && (
         <p role="alert" className="mt-6 rounded-lg border border-[#ff8a7a]/40 bg-[#ff8a7a]/10 p-4 text-[15px] text-[#ffb3a8]">
           {state.error}
         </p>
       )}
+      {needsFixing(state) && (
+        <p role="alert" className="mt-6 text-[15px] text-[#ff8a7a]">
+          Please check the fields marked above.
+        </p>
+      )}
 
-      <button type="submit" disabled={pending} className="btn btn-primary mt-8 w-full disabled:opacity-60 sm:w-[260px]">
-        {pending ? 'Sending…' : 'Share My Testimony'}
+      <button type="submit" disabled={busy} className="btn btn-primary mt-8 w-full disabled:opacity-60 sm:w-[260px]">
+        {busy ? (video.working ? 'Sending your video…' : 'Sending…') : 'Share My Testimony'}
       </button>
       <p className="mt-4 text-sm">Our communications team reads every testimony before it goes up.</p>
     </form>

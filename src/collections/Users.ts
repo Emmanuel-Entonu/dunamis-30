@@ -14,8 +14,9 @@ export const Users: CollectionConfig = {
     lockTime: 15 * 60 * 1000,
   },
   access: {
-    // The very first user (created on first visit to /admin) becomes an admin.
-    create: ({ req: { user } }) => !user || hasRole(user, 'admin'),
+    // Only an admin adds users. The first-user screen on /admin works without this rule, and
+    // closes for good as soon as one account exists.
+    create: isAdmin,
     read: ({ req: { user } }) => {
       if (hasRole(user, 'admin')) return true
       return user ? { id: { equals: user.id } } : false
@@ -35,7 +36,7 @@ export const Users: CollectionConfig = {
       saveToJWT: true,
       required: true,
       defaultValue: ['editor'],
-      access: { update: adminFieldOnly },
+      access: { create: adminFieldOnly, update: adminFieldOnly },
       options: [
         { label: 'Administrator', value: 'admin' },
         { label: 'Content editor', value: 'editor' },

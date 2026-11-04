@@ -1,13 +1,15 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import Link from '@/components/SiteLink'
 
 import { glass } from '@/assets/glass'
 import { FormStage, GlassArt } from '@/components/blocks'
 import { inputClass } from '@/components/forms/Field'
+import { Play } from '@/components/icons'
 import { PageHero } from '@/components/PageHero'
 import { TestimonyCard } from '@/components/TestimonyCard'
 import { categoryLabels } from '@/lib/categories'
 import { getTestimonies } from '@/lib/content'
+import { readMixSeed } from '@/lib/testimonyMix'
 import { TestimonyForm } from './TestimonyForm'
 
 export const metadata: Metadata = {
@@ -16,7 +18,7 @@ export const metadata: Metadata = {
     'Real stories from people God has touched through Dunamis International Gospel Centre. Read them, or share yours.',
 }
 
-type Search = { q?: string; category?: string; year?: string; sort?: string; page?: string }
+type Search = { q?: string; category?: string; year?: string; sort?: string; page?: string; type?: string; mix?: string }
 
 export default async function TestimoniesPage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams
@@ -26,17 +28,25 @@ export default async function TestimoniesPage({ searchParams }: { searchParams: 
   const thisYear = new Date().getFullYear()
   const years = Array.from({ length: thisYear - 1995 }, (_, i) => thisYear - i)
   const year = years.includes(Number(sp.year)) ? Number(sp.year) : undefined
-  const oldest = sp.sort === 'oldest'
-  const result = await getTestimonies({ q, category, year, oldest, page })
+  const sort = sp.sort === 'oldest' ? 'oldest' : sp.sort === 'newest' ? 'newest' : 'mix'
+  const videos = sp.type === 'video'
+  // Pages of one visit share a shuffle, so nothing repeats or goes missing between them.
+  const seed = readMixSeed(sp.mix)
+  const result = await getTestimonies({ q, category, year, videos, sort, seed, page })
 
-  const href = (next: { category?: string; page?: number }) => {
+  const href = (next: { category?: string; page?: number; videos?: boolean }) => {
     const p = new URLSearchParams()
     const nc = next.category ?? category
+    const nv = next.videos ?? videos
     if (q) p.set('q', q)
     if (nc) p.set('category', nc)
+    if (nv) p.set('type', 'video')
     if (year) p.set('year', String(year))
-    if (oldest) p.set('sort', 'oldest')
-    if (next.page && next.page > 1) p.set('page', String(next.page))
+    if (sort !== 'mix') p.set('sort', sort)
+    if (next.page && next.page > 1) {
+      p.set('page', String(next.page))
+      if (sort === 'mix') p.set('mix', String(seed))
+    }
     const s = p.toString()
     return `/testimonies${s ? `?${s}` : ''}#library`
   }
@@ -59,6 +69,7 @@ export default async function TestimoniesPage({ searchParams }: { searchParams: 
         <div className="container-site">
           <form action="/testimonies#library" className="grid grid-cols-2 gap-2.5 lg:grid-cols-[1fr_170px_170px_auto]">
             {category && <input type="hidden" name="category" value={category} />}
+            {videos && <input type="hidden" name="type" value="video" />}
             <label htmlFor="q" className="sr-only">
               Search testimonies
             </label>
@@ -75,10 +86,11 @@ export default async function TestimoniesPage({ searchParams }: { searchParams: 
               ))}
             </select>
             <label htmlFor="sort" className="sr-only">
-              Sort by date
+              Order
             </label>
-            <select id="sort" name="sort" defaultValue={oldest ? 'oldest' : ''} className={`${inputClass} appearance-none`}>
-              <option value="">Newest first</option>
+            <select id="sort" name="sort" defaultValue={sort === 'mix' ? '' : sort} className={`${inputClass} appearance-none`}>
+              <option value="">Mixed</option>
+              <option value="newest">Newest first</option>
               <option value="oldest">Oldest first</option>
             </select>
             <button type="submit" className="btn btn-primary col-span-2 lg:col-span-1">
@@ -87,6 +99,13 @@ export default async function TestimoniesPage({ searchParams }: { searchParams: 
           </form>
 
           <nav aria-label="Testimony categories" className="-mx-5 mt-5 flex gap-2 overflow-x-auto px-5 pb-2 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0">
+            <Link
+              href={href({ videos: !videos, page: 1 })}
+              aria-pressed={videos}
+              className={`flex shrink-0 items-center gap-2 rounded-lg px-5 py-2.5 text-[15px] transition-colors ${videos ? 'bg-gold text-gold-ink' : 'bg-hair text-soft hover:bg-line hover:text-gold'}`}
+            >
+              <Play width={14} height={14} /> Videos
+            </Link>
             {[['', 'All'], ...Object.entries(categoryLabels)].map(([value, label]) => (
               <Link
                 key={value || 'all'}
@@ -101,9 +120,10 @@ export default async function TestimoniesPage({ searchParams }: { searchParams: 
             ))}
           </nav>
 
-          {(q || category || year) && (
+          {(q || category || year || videos) && (
             <p className="mt-6 text-base">
-              {result.total} {result.total === 1 ? 'testimony' : 'testimonies'}
+              {result.total} {videos ? 'video ' : ''}
+              {result.total === 1 ? 'testimony' : 'testimonies'}
               {category && <> in {categoryLabels[category]}</>}
               {year && <> from {year}</>}
               {q && <> matching “{q}”</>} ·{' '}
@@ -122,9 +142,9 @@ export default async function TestimoniesPage({ searchParams }: { searchParams: 
           ) : (
             <div className="card group mt-8 flex flex-col items-center p-8 text-center sm:p-14">
               <GlassArt art={glass.quote} className="mb-8 w-[120px] sm:w-[150px]" dots="inset-[-60%]" />
-              <p className="h-card">{q || category || year ? 'No testimonies found' : 'Testimonies are coming'}</p>
+              <p className="h-card">{q || category || year || videos ? 'No testimonies found' : 'Testimonies are coming'}</p>
               <p className="mx-auto mt-3 max-w-[460px]">
-                {q || category || year
+                {q || category || year || videos
                   ? 'Try another word or category, or share your own.'
                   : 'We’re gathering them now. Be one of the first to share yours.'}
               </p>

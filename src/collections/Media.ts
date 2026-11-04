@@ -1,12 +1,12 @@
 import type { CollectionConfig } from 'payload'
 
-import { anyone, isEditor } from '@/access/roles'
+import { hasRole, isEditor } from '@/access/roles'
 
 export const Media: CollectionConfig = {
   slug: 'media',
   admin: { group: 'Media & Archive' },
   access: {
-    read: anyone,
+    read: ({ req: { user } }) => (hasRole(user, 'admin', 'editor') ? true : { pendingReview: { not_equals: true } }),
     create: isEditor,
     update: isEditor,
     delete: isEditor,
@@ -19,9 +19,12 @@ export const Media: CollectionConfig = {
       admin: { description: 'Describe the image for screen readers and search engines.' },
     },
     { name: 'caption', type: 'text' },
+    // Set on photos that arrive with a public form. Approving the submission clears pendingReview.
+    { name: 'pendingReview', type: 'checkbox', defaultValue: false, index: true, admin: { hidden: true } },
+    { name: 'fromSubmission', type: 'checkbox', defaultValue: false, admin: { hidden: true } },
   ],
   upload: {
-    mimeTypes: ['image/*', 'video/mp4', 'video/webm'],
+    mimeTypes: ['image/*'],
     focalPoint: true,
     imageSizes: [
       { name: 'thumb', width: 480, height: 480, position: 'centre', formatOptions: { format: 'webp' } },

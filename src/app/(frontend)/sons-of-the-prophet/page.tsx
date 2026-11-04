@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
+import Link from '@/components/SiteLink'
 
 import { glass } from '@/assets/glass'
 import { ClosingBand, FeatureTile, FormStage, GlassArt, ShowcaseCard } from '@/components/blocks'
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 function StoryCard({ story }: { story: CardSonsStory }) {
   const before = mediaUrl(story.beforePhoto, 'card')
-  const after = mediaUrl(story.afterPhoto, 'card')
+  const after = mediaUrl(story.afterPhoto ?? story.videoPoster, 'card')
   const href = `/sons-of-the-prophet/${story.slug}`
   const title = story.headline || story.name
 
@@ -28,8 +28,8 @@ function StoryCard({ story }: { story: CardSonsStory }) {
       <div className="relative aspect-[4/3] overflow-hidden bg-hair">
         {before && after ? (
           <div className="grid h-full grid-cols-2 gap-0.5">
-            <Image src={before} alt={`${story.name} before`} width={400} height={400} className="h-full w-full object-cover" />
-            <Image src={after} alt={`${story.name} today`} width={400} height={400} className="h-full w-full object-cover" />
+            <Image src={before} alt={`${story.name} before`} width={400} height={400} sizes="(min-width: 1024px) 200px, 48vw" className="h-full w-full object-cover" />
+            <Image src={after} alt={`${story.name} today`} width={400} height={400} sizes="(min-width: 1024px) 200px, 48vw" className="h-full w-full object-cover" />
           </div>
         ) : after || before ? (
           <Image src={(after || before)!} alt={story.name} fill sizes="(min-width: 1024px) 400px, 96vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
@@ -48,7 +48,7 @@ function StoryCard({ story }: { story: CardSonsStory }) {
             {(story.currentRole || story.location) && <span className="block truncate">{story.currentRole || story.location}</span>}
           </span>
           <span className="link-arrow shrink-0 text-base">
-            Read <ArrowRight width={20} height={20} />
+            {story.hasVideo ? 'Watch' : 'Read'} <ArrowRight width={20} height={20} />
           </span>
         </div>
       </div>

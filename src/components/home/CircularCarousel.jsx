@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs, react-hooks/set-state-in-effect -- adapted from React Bits, which keeps its animation settings in refs on purpose. */
 'use client';
 
 // CircularCarousel from React Bits (JavaScript + CSS variant). Local changes: no sample photos,
@@ -54,7 +55,9 @@ const PRESETS = {
 };
 
 const INTRO_LENGTH = { assemble: 1500, rise: 1400, spin: 1800, none: 0 };
-const TILES = 8;
+// Each card is built from slices to look curved. Every slice is another image in the page, so phones use fewer.
+const TILES = 7;
+const TILES_PHONE = 5;
 const OVERLAP = 2.5;
 const DRAG_THRESHOLD = 5;
 const SPRING = 118;
@@ -131,6 +134,9 @@ const CircularCarousel = ({
   const incoming = items;
   const [list, setList] = useState(incoming);
   const [leaving, setLeaving] = useState(null);
+  const [sliceCount, setSliceCount] = useState(TILES);
+  // Nothing downloads until the ring is close to the screen. Each photo then appears once it's ready to draw.
+  const [readyPhotos, setReadyPhotos] = useState({});
   const count = list.length;
   const shape = PRESETS[preset] ? preset : 'cylinder';
   const layout = PRESETS[shape];
@@ -153,7 +159,7 @@ const CircularCarousel = ({
   }, [count, along, gap, curveValue, layout.spread]);
 
   const tiles = useMemo(() => {
-    const total = curveValue > 0.001 ? TILES : 1;
+    const total = curveValue > 0.001 ? sliceCount : 1;
     const length = along / total;
     const bend = curveValue > 0.001 ? radius / curveValue : 0;
     return Array.from({ length: total }, (_, index) => {
@@ -171,7 +177,13 @@ const CircularCarousel = ({
           : `translate3d(${shift}px, 0px, ${depth}px) rotateY(${turn}deg)`;
       return { index, total, start, end, size: end - start, move };
     });
-  }, [along, axis, curveValue, layout.inward, radius]);
+  }, [along, axis, curveValue, layout.inward, radius, sliceCount]);
+
+  // The far side of the ring is dim and small, so one flat piece looks the same as many curved ones.
+  const backTiles = useMemo(
+    () => [{ index: 0, total: 1, start: 0, end: along, size: along, move: 'translate3d(0px, 0px, 0px)' }],
+    [along]
+  );
 
   const rootRef = useRef(null);
   const stageRef = useRef(null);
@@ -604,6 +616,40 @@ const CircularCarousel = ({
   }, [radius, cardW, cardH, tiltValue, perspective, preset, captions, count, minFit]);
 
   useEffect(() => {
+    if (window.matchMedia('(max-width: 639px)').matches) setSliceCount(TILES_PHONE);
+  }, []);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return undefined;
+    let cancelled = false;
+    const near = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        near.disconnect();
+        for (const { src } of incoming) {
+          const photo = new Image();
+          photo.src = src;
+          photo
+            .decode()
+            .catch(() => undefined)
+            .finally(() => {
+              if (!cancelled) setReadyPhotos(ready => ({ ...ready, [src]: true }));
+            });
+        }
+      },
+      { rootMargin: '1200px 0px' }
+    );
+    near.observe(root);
+    return () => {
+      cancelled = true;
+      near.disconnect();
+    };
+    // Photos are chosen once for the page.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     wakeRef.current();
   });
 
@@ -785,15 +831,10 @@ const CircularCarousel = ({
           className="circular-carousel__frame"
           style={{ height: axis === 'x' ? size : cardH, borderRadius: frameRadius }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element -- slices of one photo, positioned by hand */}
-          <img
-            className="circular-carousel__photo"
-            src={item.src}
-            alt=""
-            draggable={false}
-            decoding="async"
-            style={photoStyle}
-          />
+          {readyPhotos[item.src] && (
+            // eslint-disable-next-line @next/next/no-img-element -- slices of one photo, positioned by hand
+            <img className="circular-carousel__photo" src={item.src} alt="" draggable={false} style={photoStyle} />
+          )}
           {gone && (
             // eslint-disable-next-line @next/next/no-img-element -- as above
             <img
@@ -858,7 +899,7 @@ const CircularCarousel = ({
                   aria-label={`${item.title || item.alt || `Image ${index + 1}`}, ${index + 1} of ${count}`}
                 >
                   {tiles.map(tile => renderTile(item, tile, false, index))}
-                  {layout.backfaces && tiles.map(tile => renderTile(item, tile, true, index))}
+                  {layout.backfaces && backTiles.map(tile => renderTile(item, tile, true, index))}
                 </div>
               ))}
             </div>

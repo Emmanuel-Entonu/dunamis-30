@@ -1,11 +1,11 @@
-import Image from 'next/image'
-import Link from 'next/link'
+import Link from '@/components/SiteLink'
 
 import { renders } from '@/assets/renders'
 import { getSite } from '@/lib/content'
 import { defaultContacts, venueAddress, whatsappLink } from '@/lib/ministry'
 import { navItems, tagline } from '@/lib/site'
 import { socialIcons } from './icons'
+import { GlassImage } from './GlassImage'
 import { Logo } from './Logo'
 import { Marquee } from './Reveal'
 
@@ -33,16 +33,14 @@ export async function SiteFooter() {
       </div>
 
       <div aria-hidden className="flare absolute inset-x-0 bottom-0 -z-10 h-[420px] opacity-60" />
-      <Image
+      <GlassImage
+        lazy
         src={renders.glassTube}
-        alt=""
-        sizes="300px"
         className="pointer-events-none absolute -bottom-16 -left-28 -z-10 hidden w-[300px] rotate-[66deg] opacity-90 md:block"
       />
-      <Image
+      <GlassImage
+        lazy
         src={renders.glassTube}
-        alt=""
-        sizes="300px"
         className="pointer-events-none absolute top-16 -right-28 -z-10 hidden w-[300px] rotate-[-113deg] opacity-90 md:block"
       />
 

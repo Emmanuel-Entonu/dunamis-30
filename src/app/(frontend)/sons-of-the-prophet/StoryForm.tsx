@@ -1,9 +1,11 @@
 'use client'
 
-import { useActionState, useEffect, useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 
 import { BotFields, Field, inputClass, shrinkPhoto } from '@/components/forms/Field'
-import { submitSonsStory, type SonsState } from './actions'
+import { needsFixing, useSubmission } from '@/components/forms/useSubmission'
+import { addVideoToForm, useVideoAttachment, VideoField, VideoProgress } from '@/components/forms/VideoAttachment'
+import { prepareStoryVideo, submitSonsStory } from './actions'
 
 type Picked = { blob: Blob; url: string }
 
@@ -34,15 +36,13 @@ const chapters = [
 ]
 
 export function StoryForm() {
-  const [state, dispatch, pending] = useActionState<SonsState, FormData>(submitSonsStory, {})
-  const [, startTransition] = useTransition()
-  const [startedAt, setStartedAt] = useState(0)
+  const { formRef, state, show, busy, setBusy, startedAt, onFormChange, attempt } = useSubmission('story')
+  const video = useVideoAttachment()
   const [before, setBefore] = useState<Picked | null>(null)
   const [after, setAfter] = useState<Picked | null>(null)
   const [photoNote, setPhotoNote] = useState('')
   const e = state.fieldErrors ?? {}
 
-  useEffect(() => setStartedAt(Date.now()), [])
   useEffect(() => () => void (before && URL.revokeObjectURL(before.url)), [before])
   useEffect(() => () => void (after && URL.revokeObjectURL(after.url)), [after])
 
@@ -57,14 +57,40 @@ export function StoryForm() {
     }
   }
 
-  // Dispatch from onSubmit (not the form `action`): React resets forms after an `action`
-  // completes, which would wipe a long story whenever validation fails.
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  /** Check the words first, then send the video, then save, so nobody uploads for nothing. */
+  const send = async (withVideo: boolean) => {
+    const form = formRef.current
+    if (!form || busy) return
+    setBusy(true)
+    show({})
+    try {
+      const data = new FormData(form)
+      if (before) data.set('beforePhoto', new File([before.blob], 'before.jpg', { type: 'image/jpeg' }))
+      if (after) data.set('afterPhoto', new File([after.blob], 'today.jpg', { type: 'image/jpeg' }))
+
+      if (withVideo && video.file) {
+        const check = new FormData(form)
+        check.delete('beforePhoto')
+        check.delete('afterPhoto')
+        if (!video.hasTicket()) check.set('needsTicket', '1')
+        const prepared = await attempt(() => prepareStoryVideo(check))
+        if (!prepared) return
+        if (prepared.error || prepared.fieldErrors || prepared.ok) return show(prepared)
+        const sent = await video.send(prepared.ticket)
+        if (!sent) return
+        addVideoToForm(data, video, sent)
+      }
+
+      const result = await attempt(() => submitSonsStory(data))
+      if (result) show(result)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const data = new FormData(event.currentTarget)
-    if (before) data.set('beforePhoto', new File([before.blob], 'before.jpg', { type: 'image/jpeg' }))
-    if (after) data.set('afterPhoto', new File([after.blob], 'today.jpg', { type: 'image/jpeg' }))
-    startTransition(() => dispatch(data))
+    void send(Boolean(video.file))
   }
 
   if (state.ok) {
@@ -78,7 +104,7 @@ export function StoryForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="relative rounded-2xl border border-hair bg-[#171717] p-5 sm:p-10">
+    <form ref={formRef} onSubmit={onSubmit} onChange={onFormChange} noValidate className="relative rounded-2xl border border-hair bg-[#171717] p-5 sm:p-10">
       <BotFields startedAt={startedAt} />
 
       <h3 className="h-card">About you</h3>
@@ -109,9 +135,7 @@ export function StoryForm() {
         <PhotoPicker id="afterPhoto" label="Photo from today (optional)" value={after} onPick={pick(setAfter)} error={e.afterPhoto} />
       </div>
       <div className="mt-5">
-        <Field name="videoUrl" label="Video interview link (optional)" error={e.videoUrl} hint="YouTube, Facebook, Instagram or Google Drive. A video can stand in for the written story.">
-          <input id="videoUrl" name="videoUrl" type="url" inputMode="url" placeholder="https://" className={inputClass} aria-invalid={!!e.videoUrl} />
-        </Field>
+        <VideoField video={video} label="Video of your story (optional)" hint="Up to 5 minutes, and it can stand in for the writing below. We shrink it on your phone first, so it uses less data." error={e.video} />
       </div>
 
       <h3 className="h-card mt-10">Your story</h3>
@@ -135,7 +159,7 @@ export function StoryForm() {
           <span>Show my name with my story.</span>
         </label>
         <label className="flex items-start gap-3">
-          <input type="checkbox" name="consent" className="mt-1 size-4 accent-[#f0a92b]" />
+          <input type="checkbox" name="consent" aria-invalid={!!e.consent} className="mt-1 size-4 scroll-mt-28 accent-[#f0a92b]" />
           <span>
             I consent to Dunamis International Gospel Centre publishing this story (and my photos or video, if provided) on its website and channels.<span className="text-gold"> *</span>
             {e.consent && <span className="mt-1 block text-[#ff8a7a]">{e.consent}</span>}
@@ -143,14 +167,29 @@ export function StoryForm() {
         </label>
       </div>
 
+      <VideoProgress
+        video={video}
+        onRetry={() => void send(true)}
+        onSendWithout={() => {
+          video.clear()
+          void send(false)
+        }}
+        withoutLabel="Send without the video"
+      />
+
       {state.error && (
         <p role="alert" className="mt-6 rounded-lg border border-[#ff8a7a]/40 bg-[#ff8a7a]/10 p-4 text-[15px] text-[#ffb3a8]">
           {state.error}
         </p>
       )}
+      {needsFixing(state) && (
+        <p role="alert" className="mt-6 text-[15px] text-[#ff8a7a]">
+          Please check the fields marked above.
+        </p>
+      )}
 
-      <button type="submit" disabled={pending} className="btn btn-primary mt-8 w-full disabled:opacity-60 sm:w-[260px]">
-        {pending ? 'Sending…' : 'Share My Story'}
+      <button type="submit" disabled={busy} className="btn btn-primary mt-8 w-full disabled:opacity-60 sm:w-[260px]">
+        {busy ? (video.working ? 'Sending your video…' : 'Sending…') : 'Share My Story'}
       </button>
       <p className="mt-4 text-sm">Our communications team reads every story before it goes up.</p>
     </form>

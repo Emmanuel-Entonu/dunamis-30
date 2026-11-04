@@ -2,7 +2,7 @@
 
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import Link from 'next/link'
+import Link from '@/components/SiteLink'
 import { useEffect, useRef } from 'react'
 
 import { AnniversaryCard } from '../AnniversaryCard'

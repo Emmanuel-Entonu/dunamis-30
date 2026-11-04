@@ -1,43 +1,10 @@
 'use client'
 
-import { useActionState, useTransition } from 'react'
+import type { FormEvent } from 'react'
 
-import { applyInternational, type ApplyState } from './actions'
-
-const input =
-  'min-h-[50px] w-full rounded-lg border border-line bg-hair px-4 text-base text-fg placeholder:text-[#999] focus:border-white focus:outline-none sm:pl-6'
-
-function Field({
-  name,
-  label,
-  required,
-  error,
-  hint,
-  children,
-}: {
-  name: string
-  label: string
-  required?: boolean
-  error?: string
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      <label htmlFor={name} className="mb-2.5 block text-base text-fg">
-        {label}
-        {required && <span className="text-gold"> *</span>}
-      </label>
-      {children}
-      {hint && !error && <p className="mt-2 text-sm">{hint}</p>}
-      {error && (
-        <p id={`${name}-error`} className="mt-2 text-sm text-[#ff8a7a]">
-          {error}
-        </p>
-      )}
-    </div>
-  )
-}
+import { BotFields, Field, inputClass as input } from '@/components/forms/Field'
+import { needsFixing, useSubmission } from '@/components/forms/useSubmission'
+import { applyInternational } from './actions'
 
 function YesNo({ name, legend, error }: { name: string; legend: string; error?: string }) {
   return (
@@ -55,7 +22,7 @@ function YesNo({ name, legend, error }: { name: string; legend: string; error?: 
             key={o.v}
             className="flex min-h-[50px] cursor-pointer items-center gap-3 rounded-lg border border-line bg-hair px-4 text-base text-fg transition-colors has-checked:border-gold has-checked:bg-gold/10"
           >
-            <input type="radio" name={name} value={o.v} required className="size-4 accent-[#f0a92b]" />
+            <input type="radio" name={name} value={o.v} data-invalid={error ? 'true' : undefined} className="size-4 scroll-mt-28 accent-[#f0a92b]" />
             {o.l}
           </label>
         ))}
@@ -66,16 +33,18 @@ function YesNo({ name, legend, error }: { name: string; legend: string; error?: 
 }
 
 export function InternationalForm() {
-  const [state, dispatch, pending] = useActionState<ApplyState, FormData>(applyInternational, {})
-  const [, startTransition] = useTransition()
+  const { formRef, state, show, busy, setBusy, startedAt, onFormChange, attempt } = useSubmission('international')
   const e = state.fieldErrors ?? {}
 
-  // Dispatch from onSubmit (not the form `action` prop): React resets forms after an `action`
-  // completes, which would wipe everything a guest typed whenever validation fails.
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (busy) return
+    setBusy(true)
+    show({})
     const data = new FormData(event.currentTarget)
-    startTransition(() => dispatch(data))
+    const result = await attempt(() => applyInternational(data))
+    if (result) show(result)
+    setBusy(false)
   }
 
   if (state.ok) {
@@ -92,40 +61,35 @@ export function InternationalForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="relative rounded-2xl border border-hair bg-[#171717] p-5 sm:p-10">
-      {/* Honeypot */}
-      <div aria-hidden className="absolute -left-[9999px] h-0 overflow-hidden">
-        <label>
-          Company <input name="company" tabIndex={-1} autoComplete="off" />
-        </label>
-      </div>
+    <form ref={formRef} onSubmit={onSubmit} onChange={onFormChange} noValidate className="relative rounded-2xl border border-hair bg-[#171717] p-5 sm:p-10">
+      <BotFields startedAt={startedAt} />
 
       <h2 className="h-card">About You</h2>
       <div className="mt-6 grid gap-5 sm:grid-cols-2 sm:gap-[25px]">
         <Field name="fullName" label="Full name" required error={e.fullName}>
-          <input id="fullName" name="fullName" autoComplete="name" required className={input} aria-invalid={!!e.fullName} />
+          <input id="fullName" name="fullName" autoComplete="name" className={input} aria-invalid={!!e.fullName} />
         </Field>
         <Field name="email" label="Email address" required error={e.email}>
-          <input id="email" name="email" type="email" autoComplete="email" required className={input} aria-invalid={!!e.email} />
+          <input id="email" name="email" type="email" autoComplete="email" className={input} aria-invalid={!!e.email} />
         </Field>
         <Field name="whatsapp" label="WhatsApp number" required error={e.whatsapp} hint="Include your country code, e.g. +44 7…">
-          <input id="whatsapp" name="whatsapp" type="tel" autoComplete="tel" required className={input} aria-invalid={!!e.whatsapp} />
+          <input id="whatsapp" name="whatsapp" type="tel" autoComplete="tel" className={input} aria-invalid={!!e.whatsapp} />
         </Field>
         <Field name="country" label="Country of residence" required error={e.country}>
-          <input id="country" name="country" autoComplete="country-name" required className={input} aria-invalid={!!e.country} />
+          <input id="country" name="country" autoComplete="country-name" className={input} aria-invalid={!!e.country} />
         </Field>
         <Field name="nationality" label="Nationality">
           <input id="nationality" name="nationality" className={input} />
         </Field>
         <Field name="travellingWith" label="People travelling with you" error={e.travellingWith}>
-          <input id="travellingWith" name="travellingWith" type="number" min={0} max={50} defaultValue={0} inputMode="numeric" className={input} />
+          <input id="travellingWith" name="travellingWith" type="number" min={0} max={50} defaultValue={0} inputMode="numeric" className={input} aria-invalid={!!e.travellingWith} />
         </Field>
       </div>
 
       <h2 className="h-card mt-10">Your Trip</h2>
       <div className="mt-6 grid gap-5 sm:grid-cols-2 sm:gap-[25px]">
         <Field name="arrivalDate" label="Arrival date" required error={e.arrivalDate}>
-          <input id="arrivalDate" name="arrivalDate" type="date" required className={`${input} [color-scheme:dark]`} aria-invalid={!!e.arrivalDate} />
+          <input id="arrivalDate" name="arrivalDate" type="date" className={`${input} [color-scheme:dark]`} aria-invalid={!!e.arrivalDate} />
         </Field>
         <Field name="arrivalTime" label="Expected arrival time">
           <input id="arrivalTime" name="arrivalTime" type="time" className={`${input} [color-scheme:dark]`} />
@@ -140,7 +104,7 @@ export function InternationalForm() {
           <input id="airport" name="airport" defaultValue="Nnamdi Azikiwe International Airport, Abuja (ABV)" className={input} />
         </Field>
         <Field name="departureDate" label="Departure date" error={e.departureDate}>
-          <input id="departureDate" name="departureDate" type="date" className={`${input} [color-scheme:dark]`} />
+          <input id="departureDate" name="departureDate" type="date" className={`${input} [color-scheme:dark]`} aria-invalid={!!e.departureDate} />
         </Field>
       </div>
 
@@ -159,7 +123,7 @@ export function InternationalForm() {
       </div>
 
       <label className="mt-6 flex items-start gap-3 text-[15px]">
-        <input type="checkbox" name="consent" required className="mt-1 size-4 accent-[#f0a92b]" />
+        <input type="checkbox" name="consent" aria-invalid={!!e.consent} className="mt-1 size-4 scroll-mt-28 accent-[#f0a92b]" />
         <span>
           I agree that Dunamis may store these details and contact me about my visit.
           {e.consent && <span className="mt-1 block text-[#ff8a7a]">{e.consent}</span>}
@@ -172,8 +136,14 @@ export function InternationalForm() {
         </p>
       )}
 
-      <button type="submit" disabled={pending} className="btn btn-primary mt-8 w-full disabled:opacity-60 sm:w-[260px]">
-        {pending ? 'Submitting…' : 'Submit Application'}
+      {needsFixing(state) && (
+        <p role="alert" className="mt-6 text-[15px] text-[#ff8a7a]">
+          Please check the fields marked above.
+        </p>
+      )}
+
+      <button type="submit" disabled={busy} className="btn btn-primary mt-8 w-full disabled:opacity-60 sm:w-[260px]">
+        {busy ? 'Submitting…' : 'Submit Application'}
       </button>
     </form>
   )

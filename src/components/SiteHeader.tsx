@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import Link from '@/components/SiteLink'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
@@ -23,10 +23,13 @@ export function SiteHeader() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  useEffect(() => {
+  // Moving to another page closes any open menu.
+  const [lastPath, setLastPath] = useState(pathname)
+  if (pathname !== lastPath) {
+    setLastPath(pathname)
     setMenuOpen(false)
     setMoreOpen(false)
-  }, [pathname])
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

@@ -29,6 +29,7 @@ function useCountdown(startsAt: string) {
   // undefined until mounted, so server and client markup match.
   const [parts, setParts] = useState<Parts | null | undefined>(undefined)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the clock can only be read after hydration, see above.
     setParts(diff(target))
     const id = window.setInterval(() => setParts(diff(target)), 1000)
     return () => window.clearInterval(id)

@@ -5,13 +5,15 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Image, { type StaticImageData } from 'next/image'
 import { useEffect, useRef } from 'react'
 
-import { glass } from '@/assets/glass'
+import crownGlass from '@/assets/glass/crown.webp'
 import nations from '@/assets/gallery/nations-crowd.webp'
 import destinies from '@/assets/photos/destinies-raised.webp'
 import medical from '@/assets/photos/medical-outreach.webp'
 import welfare from '@/assets/photos/welfare.webp'
-import { renders } from '@/assets/renders'
+import glassTubeRender from '@/assets/renders/glass-tube.webp'
+import glassFlameRender from '@/assets/renders/glass-flame.webp'
 import { AnniversaryCard } from '../AnniversaryCard'
+import { GlassImage } from '../GlassImage'
 import { CardCase } from './CardCase'
 
 type Story = { image: StaticImageData; alt: string; title: string; text: string; place: string }
@@ -78,10 +80,10 @@ const desktop = {
 
 /** Glass drifting past on both sides while the card travels: percentages of the section height. */
 const passing = [
-  { art: renders.glassTube, place: 'top-[3%] -left-[16%] w-[38vw] max-w-[420px] lg:-left-[4%] lg:w-[26vw]', from: -14, to: 22 },
-  { art: renders.glassFlame, place: 'top-[14%] -right-[7%] w-[26vw] max-w-[230px] lg:right-[9%] lg:w-[14vw]', from: 16, to: -18 },
-  { art: glass.crown, place: 'top-[30%] -left-[9%] w-[30vw] max-w-[260px] lg:left-[8%] lg:w-[17vw]', from: -12, to: 14 },
-  { art: renders.glassTube, place: 'top-[34%] -right-[16%] w-[38vw] max-w-[420px] lg:-right-[4%] lg:w-[26vw]', from: 90, to: 130 },
+  { art: glassTubeRender, place: 'top-[3%] -left-[16%] w-[38vw] max-w-[420px] lg:-left-[4%] lg:w-[26vw]', from: -14, to: 22 },
+  { art: glassFlameRender, place: 'top-[14%] -right-[7%] w-[26vw] max-w-[230px] lg:right-[9%] lg:w-[14vw]', from: 16, to: -18 },
+  { art: crownGlass, place: 'top-[30%] -left-[9%] w-[30vw] max-w-[260px] lg:left-[8%] lg:w-[17vw]', from: -12, to: 14 },
+  { art: glassTubeRender, place: 'top-[34%] -right-[16%] w-[38vw] max-w-[420px] lg:-right-[4%] lg:w-[26vw]', from: 90, to: 130 },
 ]
 
 function Connectors({ shape, viewBox }: { shape: typeof phone; viewBox: string }) {
@@ -178,7 +180,7 @@ export function CardScene() {
     <section ref={root} data-runway aria-label="Thirty years of impact" className="card-run relative isolate overflow-x-clip">
       {passing.map((g, i) => (
         <div key={i} aria-hidden data-passing data-from={g.from} data-to={g.to} className={`pointer-events-none absolute -z-10 ${g.place}`}>
-          <Image src={g.art} alt="" sizes="(min-width: 1024px) 26vw, 38vw" className="h-auto w-full" />
+          <GlassImage src={g.art} className="h-auto w-full" />
         </div>
       ))}
 

@@ -1,6 +1,6 @@
 import Image from 'next/image'
 
-import emblem from '@/assets/brand/emblem-official.png'
+import emblem from '@/assets/brand/emblem-official.webp'
 
 /**
  * The dark case ("slip") the anniversary card lives in — kept simple: the Dunamis logo beside

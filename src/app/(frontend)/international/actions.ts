@@ -2,6 +2,7 @@
 
 import { registrationReference } from '@/fields/shared'
 import { getPayloadClient } from '@/lib/content'
+import { checkSubmission, esc, isEmail } from '@/lib/spam'
 
 export type ApplyState = {
   ok?: boolean
@@ -11,15 +12,13 @@ export type ApplyState = {
 }
 
 const isDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(new Date(v).getTime())
-const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)
-const esc = (v: string) => v.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 
 /** Application form for guests travelling from outside Nigeria (airport pickup / accommodation). */
-export async function applyInternational(_prev: ApplyState, formData: FormData): Promise<ApplyState> {
-  const get = (key: string) => String(formData.get(key) ?? '').trim()
+export async function applyInternational(formData: FormData): Promise<ApplyState> {
+  const spam = await checkSubmission(formData, 'international')
+  if (!spam.ok) return spam.silent ? { ok: true, reference: 'DIGC-INT-RECEIVED' } : { error: spam.message }
 
-  // Honeypot: real visitors never see or fill this field.
-  if (get('company')) return { ok: true, reference: 'DIGC-INT-RECEIVED' }
+  const get = (key: string) => String(formData.get(key) ?? '').trim()
 
   const data = {
     fullName: get('fullName'),

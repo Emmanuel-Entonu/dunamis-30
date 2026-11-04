@@ -1,7 +1,8 @@
+import Script from 'next/script'
 import type { ReactNode } from 'react'
 
 export const inputClass =
-  'min-h-[50px] w-full rounded-lg border border-line bg-hair px-4 text-base text-fg placeholder:text-[#999] focus:border-white focus:outline-none sm:pl-6'
+  'min-h-[50px] w-full scroll-mt-28 rounded-lg border border-line bg-hair px-4 text-base text-fg transition-colors placeholder:text-[#999] focus:border-white focus:outline-none aria-invalid:border-[#ff8a7a] sm:pl-6'
 
 export function Field({
   name,
@@ -35,7 +36,9 @@ export function Field({
   )
 }
 
-/** Hidden anti-bot fields shared by every public form. */
+const turnstileKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+
+/** Hidden anti-bot fields shared by every public form, plus the Turnstile check once it's configured. */
 export function BotFields({ startedAt }: { startedAt: number }) {
   return (
     <>
@@ -45,6 +48,12 @@ export function BotFields({ startedAt }: { startedAt: number }) {
         </label>
       </div>
       <input type="hidden" name="startedAt" value={startedAt} />
+      {turnstileKey && (
+        <>
+          <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="lazyOnload" />
+          <div className="cf-turnstile mb-6" data-sitekey={turnstileKey} data-theme="dark" />
+        </>
+      )}
     </>
   )
 }

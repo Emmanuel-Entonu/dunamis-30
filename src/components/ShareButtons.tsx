@@ -1,8 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 
 import { Facebook, Link2, Share, WhatsApp, XLogo } from './icons'
+
+const subscribeToNothing = () => () => undefined
 
 export function ShareButtons({
   url,
@@ -17,8 +19,8 @@ export function ShareButtons({
   compact?: boolean
 }) {
   const [copied, setCopied] = useState(false)
-  const [canNativeShare, setCanNativeShare] = useState(false)
-  useEffect(() => setCanNativeShare('share' in navigator), [])
+  // Only the browser knows whether it can share, so the server renders without the button.
+  const canNativeShare = useSyncExternalStore(subscribeToNothing, () => 'share' in navigator, () => false)
   const absolute = () => new URL(url, window.location.origin).toString()
 
   const open = (target: (u: string, t: string) => string) => {

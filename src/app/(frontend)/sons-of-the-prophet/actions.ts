@@ -1,19 +1,14 @@
 'use server'
 
+import type { SubmissionState } from '@/components/forms/useSubmission'
 import { getPayloadClient } from '@/lib/content'
 import { checkSubmission, esc, isEmail } from '@/lib/spam'
+import { claimsVideo, photoProblem, readSubmittedVideo, savePoster, saveSubmissionPhoto, videoAlreadySaved } from '@/lib/submissions'
+import { issueVideoTicket, videoStorageReady, type VideoTicket } from '@/lib/videoStorage'
 
-export type SonsState = { ok?: boolean; firstName?: string; error?: string; fieldErrors?: Partial<Record<string, string>> }
-
-const MAX_PHOTO = 6 * 1024 * 1024
-
-/** Public "Share your story" form. Everything lands as "Pending review" for the comms team. */
-export async function submitSonsStory(_prev: SonsState, formData: FormData): Promise<SonsState> {
-  const spam = await checkSubmission(formData, 'sons-story')
-  if (!spam.ok) return spam.silent ? { ok: true } : { error: spam.message }
-
+const read = (formData: FormData) => {
   const get = (key: string) => String(formData.get(key) ?? '').trim()
-  const data = {
+  return {
     name: get('name'),
     location: get('location'),
     email: get('email').toLowerCase(),
@@ -27,41 +22,67 @@ export async function submitSonsStory(_prev: SonsState, formData: FormData): Pro
     meaning: get('meaning'),
     milestones: get('milestones'),
     appreciation: get('appreciation'),
-    videoUrl: get('videoUrl'),
     showName: formData.get('showName') === 'on',
   }
+}
 
-  const fieldErrors: SonsState['fieldErrors'] = {}
+/** A video can stand in for the written story. */
+function validate(data: ReturnType<typeof read>, formData: FormData, hasVideo: boolean) {
+  const fieldErrors: NonNullable<SubmissionState['fieldErrors']> = {}
   if (data.name.length < 2) fieldErrors.name = 'Please enter your full name.'
   if (data.location.length < 2) fieldErrors.location = 'Please tell us where you are based.'
   if (!isEmail(data.email)) fieldErrors.email = 'Please enter a valid email address.'
   if (data.phone.replace(/\D/g, '').length < 7) fieldErrors.phone = 'Please enter a phone number we can reach you on.'
-  if (data.videoUrl && !/^https?:\/\/\S+$/i.test(data.videoUrl)) fieldErrors.videoUrl = 'Please paste a full link, starting with https://'
   const written = [data.before, data.encounter, data.transformation, data.today, data.meaning].join('').length
-  if (written < 60 && !data.videoUrl) fieldErrors.before = 'Please write your story below, or add a link to a video of it.'
+  if (written < 60 && !hasVideo) fieldErrors.before = 'Please write your story below, or add a video of it.'
   if (formData.get('consent') !== 'on') fieldErrors.consent = 'Please confirm we may publish your story.'
-
-  const photos = { beforePhoto: formData.get('beforePhoto'), afterPhoto: formData.get('afterPhoto') }
-  for (const [key, photo] of Object.entries(photos)) {
-    if (!(photo instanceof File) || photo.size === 0) continue
-    if (!photo.type.startsWith('image/')) fieldErrors[key] = 'Please upload an image file.'
-    else if (photo.size > MAX_PHOTO) fieldErrors[key] = 'Please upload a photo under 6 MB.'
+  for (const key of ['beforePhoto', 'afterPhoto']) {
+    const problem = photoProblem(formData.get(key))
+    if (problem) fieldErrors[key] = problem
   }
+  return fieldErrors
+}
+
+/** The first step when a video is attached: check everything before asking someone to spend data on an upload. */
+export async function prepareStoryVideo(formData: FormData): Promise<SubmissionState & { ticket?: VideoTicket }> {
+  const spam = await checkSubmission(formData, 'sons-story')
+  if (!spam.ok) return spam.silent ? { ok: true } : { error: spam.message }
+
+  const fieldErrors = validate(read(formData), formData, true)
+  if (Object.keys(fieldErrors).length) return { fieldErrors }
+  if (formData.get('needsTicket') !== '1') return {}
+
+  if (!videoStorageReady()) return { error: 'Video uploads aren’t available just now. You can write your story instead, or try again later.' }
+  try {
+    return { ticket: await issueVideoTicket() }
+  } catch (error) {
+    console.error('[sons] could not start a video upload', error)
+    return { error: 'We couldn’t start your video upload just now. Please try again in a few minutes.' }
+  }
+}
+
+/** Public "Share your story" form. Everything lands as "Pending review" for the comms team. */
+export async function submitSonsStory(formData: FormData): Promise<SubmissionState> {
+  if (!claimsVideo(formData)) {
+    const spam = await checkSubmission(formData, 'sons-story')
+    if (!spam.ok) return spam.silent ? { ok: true } : { error: spam.message }
+  }
+
+  const data = read(formData)
+  const { video, error: videoError } = await readSubmittedVideo(formData)
+  if (videoError) return { fieldErrors: { video: videoError } }
+  const fieldErrors = validate(data, formData, Boolean(video))
   if (Object.keys(fieldErrors).length) return { fieldErrors }
 
   try {
     const payload = await getPayloadClient()
-    const upload = async (photo: FormDataEntryValue | null, label: string) => {
-      if (!(photo instanceof File) || photo.size === 0) return undefined
-      const media = await payload.create({
-        collection: 'media',
-        overrideAccess: true,
-        data: { alt: `${data.name} — ${label}` },
-        file: { data: Buffer.from(await photo.arrayBuffer()), mimetype: photo.type, name: `story-${label}-${Date.now()}.jpg`, size: photo.size },
-      })
-      return media.id
-    }
-    const [beforePhoto, afterPhoto] = [await upload(photos.beforePhoto, 'before'), await upload(photos.afterPhoto, 'today')]
+    if (video && (await videoAlreadySaved(payload, video.path))) return { ok: true, firstName: data.name.split(/\s+/)[0] }
+    const title = data.headline || 'A Sons of the Prophet story'
+    const [beforePhoto, afterPhoto, videoPoster] = await Promise.all([
+      saveSubmissionPhoto(payload, formData.get('beforePhoto'), `${title}, before`),
+      saveSubmissionPhoto(payload, formData.get('afterPhoto'), `${title}, today`),
+      video ? savePoster(payload, formData.get('poster'), title) : undefined,
+    ])
 
     await payload.create({
       collection: 'sons-stories',
@@ -73,7 +94,8 @@ export async function submitSonsStory(_prev: SonsState, formData: FormData): Pro
         currentRole: data.currentRole || undefined,
         beforePhoto,
         afterPhoto,
-        videoUrl: data.videoUrl || undefined,
+        videoPoster,
+        videoFile: video,
         story: {
           before: data.before || undefined,
           encounter: data.encounter || undefined,
@@ -100,8 +122,8 @@ export async function submitSonsStory(_prev: SonsState, formData: FormData): Pro
       await payload
         .sendEmail({
           to: process.env.TESTIMONY_NOTIFY_EMAIL,
-          subject: `New Sons of the Prophet story to review: ${data.name}`,
-          html: `<p><strong>${esc(data.name)}</strong> — ${esc(data.location)}</p><p>${esc(data.headline || data.before.slice(0, 200))}</p><p>${esc(data.email)} · ${esc(data.phone)}</p><p>Review it in the admin under Stories → Sons of the Prophet.</p>`,
+          subject: `New Sons of the Prophet ${video ? 'video ' : ''}story to review: ${data.name}`,
+          html: `<p><strong>${esc(data.name)}</strong> — ${esc(data.location)}</p><p>${esc(data.headline || data.before.slice(0, 200))}</p><p>${esc(data.email)} · ${esc(data.phone)}</p>`,
         })
         .catch((e: unknown) => console.error('[sons] notify failed', e))
     }

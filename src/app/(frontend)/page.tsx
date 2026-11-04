@@ -1,10 +1,11 @@
-import Image from 'next/image'
-import Link from 'next/link'
+import Image, { getImageProps } from 'next/image'
+import Link from '@/components/SiteLink'
 
 import sampleCard from '@/assets/brand/sample-card.webp'
 import { glass } from '@/assets/glass'
 import kpgGuests from '@/assets/guests/kpg-guests.webp'
 import { renders } from '@/assets/renders'
+import { GlassImage } from '@/components/GlassImage'
 import { GlassArt, IconTile, Label, ShowcaseCard, SplitHeader, StarList } from '@/components/blocks'
 import { FlipCountdown } from '@/components/Countdown'
 import { FallingLines } from '@/components/FallingLines'
@@ -12,7 +13,6 @@ import { Faq } from '@/components/Faq'
 import { CardScene } from '@/components/home/CardScene'
 import CircularCarousel from '@/components/home/CircularCarousel'
 import { HeroHand, HeroTubes } from '@/components/home/HeroHand'
-import { IntroScreen } from '@/components/home/IntroScreen'
 import { SleeveCard } from '@/components/home/SleeveCard'
 import { YearStack } from '@/components/home/YearStack'
 import { ArrowRight, BookOpen, Calendar, CrossIcon, Crown, Flame, Globe, Heart, MapPin, Share, Sparkle } from '@/components/icons'
@@ -28,7 +28,10 @@ export const revalidate = 60
 const momentKeys = ['eyes', 'cameroon', 'wide', 'tears', 'prayer', 'celebration', 'singing', 'pews', 'raised', 'ministering']
 const moments = momentKeys.flatMap((key) => {
   const photo = defaultGallery.find((g) => g.key === key)
-  return photo ? [{ src: photo.src.src, alt: photo.title, title: photo.title, subtitle: photo.event === photo.title ? undefined : photo.event }] : []
+  if (!photo) return []
+  // Sized for the ring's cards, rather than the full original.
+  const { src } = getImageProps({ src: photo.src, alt: photo.title, width: 320, height: 320 }).props
+  return [{ src, alt: photo.title, title: photo.title, subtitle: photo.event === photo.title ? undefined : photo.event }]
 })
 
 const fmt = (iso: string, opts: Intl.DateTimeFormatOptions) =>
@@ -74,8 +77,6 @@ export default async function HomePage() {
 
   return (
     <>
-      <IntroScreen />
-
       {/* One background behind the hero and the card scene, as in the reference */}
       <div className="relative isolate">
         <div aria-hidden className="bg-ticks absolute inset-0 -z-10" />
@@ -196,7 +197,7 @@ export default async function HomePage() {
                 <div aria-hidden className="absolute inset-x-[-30%] bottom-0 h-full [background:radial-gradient(rgb(255_255_255/0.16)_1px,transparent_1.4px)_0_0/8px_8px] [mask-image:radial-gradient(50%_60%_at_50%_70%,#000,transparent)]" />
                 {/* A sample card, rendered by the real generator */}
                 <div className="animate-float absolute -bottom-10 left-1/2 w-[58%] max-w-[230px] -translate-x-1/2">
-                  <Image src={sampleCard} alt="A sample I Am Attending card" sizes="230px" className="-rotate-[7deg] rounded-[12px] shadow-[0_40px_70px_-25px_rgba(0,0,0,0.9)] transition-transform duration-500 group-hover:rotate-0" />
+                  <Image src={sampleCard} alt="A sample I Am Attending card" sizes="230px" placeholder="blur" className="-rotate-[7deg] rounded-[12px] shadow-[0_40px_70px_-25px_rgba(0,0,0,0.9)] transition-transform duration-500 group-hover:rotate-0" />
                 </div>
               </div>
             </Reveal>
@@ -256,10 +257,8 @@ export default async function HomePage() {
                         <IconTile key={i} Icon={I} />
                       ))}
                     </div>
-                    <Image
+                    <GlassImage
                       src={renders.glassPillar}
-                      alt=""
-                      sizes="230px"
                       className="absolute right-1/2 -bottom-3 w-[180px] translate-x-1/2 transition-transform duration-300 group-hover:scale-110 sm:w-[210px] lg:right-[70px] lg:translate-x-0"
                     />
                   </>
@@ -279,7 +278,7 @@ export default async function HomePage() {
                       ))}
                     </span>
                     <span aria-hidden className="absolute top-1/2 right-10 left-[10%] h-px bg-hair lg:left-auto lg:w-[60%]" />
-                    <Image src={renders.glassFlame} alt="" sizes="170px" className="relative w-[130px] transition-transform duration-300 group-hover:scale-110 sm:w-[150px]" />
+                    <GlassImage src={renders.glassFlame} className="relative w-[130px] transition-transform duration-300 group-hover:scale-110 sm:w-[150px]" />
                     <span className="relative flex flex-col gap-2">
                       {[CrossIcon, Share, Globe, Sparkle, Heart].map((I, i) => (
                         <IconTile key={i} Icon={I} />

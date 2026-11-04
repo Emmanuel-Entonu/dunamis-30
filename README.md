@@ -1,67 +1,64 @@
-# Payload Blank Template
+# Dunamis at 30
 
-This template comes configured with the bare minimum to get started on anything you need.
+The official website for the 30th anniversary of Dunamis International Gospel Centre, Abuja.
 
-## Quick start
+Built with Next.js and Payload CMS, on Supabase (Postgres and Storage) and Vercel.
 
-This template can be deployed directly from our Cloud hosting and it will setup MongoDB and cloud S3 object storage for media.
+## Run it locally
 
-## Quick Start - local setup
+1. Copy `.env.example` to `.env` and fill it in.
+2. `npm install`
+3. `npm run dev`, then open http://localhost:3000. The admin is at `/admin`.
 
-To spin up this template locally, follow these steps:
+Without a database connection the public pages still load, using the default content in `src/lib`. The admin needs the database.
 
-### Clone
+## Deploy to Vercel
 
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
+1. Import this repository into Vercel.
+2. Add every variable from `.env.example` under Settings > Environment Variables, using the production values. Set `NEXT_PUBLIC_SITE_URL` to the live domain.
+3. Deploy. The `vercel-build` script applies any new database migrations, then builds the site.
+4. Open `/admin` straight away and create the first account. It becomes the administrator, and that screen closes for good.
 
-### Development
+## Supabase
 
-1. First [clone the repo](#clone) if you have not done so already
-2. `cd my-project && cp .env.example .env` to copy the example environment variables. You'll need to add the `MONGODB_URL` from your Cloud project to your `.env` if you want to use S3 storage and the MongoDB database that was created for you.
+Two private storage buckets are needed:
 
-3. `pnpm install && pnpm dev` to install dependencies and start the dev server
-4. open `http://localhost:3000` to open the app in your browser
+| Bucket | Holds | Allowed types | Size limit |
+| --- | --- | --- | --- |
+| `media` | Photos, including those sent with public forms | `image/*` | 50 MB |
+| `testimony-videos` | Videos sent with testimonies and stories | `video/mp4`, `video/webm`, `video/quicktime` | 50 MB |
 
-That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+All of Payload's tables live in a private `payload` schema, which Supabase's public Data API can't see. Keep them out of `public`.
 
-#### Docker (Optional)
+The service role key has full access to the project. It must only ever be used on the server, and it must never be committed or given a `NEXT_PUBLIC_` name.
 
-If you prefer to use Docker for local development instead of a local MongoDB instance, the provided docker-compose.yml file can be used.
+## Changing the content model
 
-To do so, follow these steps:
+Payload does not change the live database by itself. After editing a collection or global:
 
-- Modify the `MONGODB_URL` in your `.env` file to `mongodb://127.0.0.1/<dbname>`
-- Modify the `docker-compose.yml` file's `MONGODB_URL` to match the above `<dbname>`
-- Run `docker-compose up` to start the database, optionally pass `-d` to run in the background.
+```
+npm run payload migrate:create short-description
+npm run migrate
+```
 
-## How it works
+Commit the new file in `src/migrations`. Vercel applies it on the next deploy.
 
-The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
+## How submissions work
 
-### Collections
+Testimonies and Sons of the Prophet stories arrive as Pending review. Their photos and videos stay private until an editor approves them from the admin.
 
-See the [Collections](https://payloadcms.com/docs/configuration/collections) docs for details on how to extend this functionality.
+Videos are compressed in the visitor's browser to 720p H.264 (`src/lib/videoPipeline.ts`), then uploaded straight to Supabase with resumable uploads, using a signed ticket from the server (`src/lib/videoStorage.ts`). Visitors watch through `/watch/[kind]/[id]`, which checks approval and redirects to a temporary link.
 
-- #### Users (Authentication)
+The testimony library is shuffled by `src/lib/testimonyMix.ts`.
 
-  Users are auth-enabled collections that have access to the admin panel.
+## Checks
 
-  For additional help, see the official [Auth Example](https://github.com/payloadcms/payload/tree/3.x/examples/auth) or the [Authentication](https://payloadcms.com/docs/authentication/overview#authentication-overview) docs.
+```
+npm test        # unit tests
+npm run lint
+npx tsc --noEmit
+```
 
-- #### Media
+## Glass images
 
-  This is the uploads enabled collection. It features pre-configured sizes, focal point and manual resizing to help you manage your pictures.
-
-### Docker
-
-Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
-
-1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
-1. Next run `docker-compose up`
-1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
-
-That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
-
-## Questions
-
-If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
+The glass objects in `src/assets/glass` and `src/assets/renders` are rendered from `src/components/three` by `scripts/capture-glass.mjs` and `scripts/capture-renders.mjs`, with the development server running.

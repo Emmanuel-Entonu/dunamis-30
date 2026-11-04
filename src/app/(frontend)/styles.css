@@ -28,7 +28,22 @@
   --animate-card-shine: card-shine 7s ease-in-out infinite;
   --animate-sweep: sweep 1.5s ease-out 1 both;
   --animate-rise: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-hand-in: hand-in 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-crest-in: crest-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
   --animate-marquee-reverse: marquee 30s linear infinite reverse;
+
+  /* The hero hand is on screen from the first paint, so only its size animates. */
+  @keyframes hand-in {
+    from {
+      transform: scale(0.9);
+    }
+  }
+  @keyframes crest-in {
+    from {
+      opacity: 0;
+      transform: rotateY(160deg) scale(0.4);
+    }
+  }
 
   @keyframes rise {
     from {

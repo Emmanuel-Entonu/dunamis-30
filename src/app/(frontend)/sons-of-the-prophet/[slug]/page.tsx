@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
-import Link from 'next/link'
+import Image, { getImageProps } from 'next/image'
+import Link from '@/components/SiteLink'
 import { notFound } from 'next/navigation'
 
 import { BeforeAfter } from '@/components/BeforeAfter'
@@ -9,6 +9,7 @@ import { ArrowRight, ChevronLeft } from '@/components/icons'
 import { ShareButtons } from '@/components/ShareButtons'
 import { getSonsStoryBySlug, mediaUrl } from '@/lib/content'
 import { embedUrl } from '@/lib/video'
+import { TestimonyVideo } from '@/components/TestimonyVideo'
 
 export const revalidate = 60
 
@@ -36,6 +37,8 @@ export default async function SonsStoryPage({ params }: Params) {
   const after = mediaUrl(s.afterPhoto ?? null, 'hero')
   const single = after || before
   const video = embedUrl(s.videoUrl)
+  const posterUrl = mediaUrl(s.videoPoster ?? s.afterPhoto ?? s.beforePhoto ?? null, 'hero')
+  const poster = posterUrl ? getImageProps({ src: posterUrl, alt: '', width: 860, height: 484 }).props.src : null
   const story = s.story ?? {}
   const chapters = [
     { title: 'Who I was', text: story.before },
@@ -62,6 +65,9 @@ export default async function SonsStoryPage({ params }: Params) {
           </div>
         ) : null}
 
+        {s.hasVideo && !s.videoUrl && (
+          <TestimonyVideo src={`/watch/story/${s.id}`} poster={poster} title={`Video: ${s.name}`} width={s.videoFile?.width} height={s.videoFile?.height} className="mt-6" />
+        )}
         {video && (
           <div className="card mt-6 aspect-video overflow-hidden">
             <iframe src={video} title={`Video interview: ${s.name}`} loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="h-full w-full" />

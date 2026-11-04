@@ -1,7 +1,9 @@
 import type { CollectionConfig } from 'payload'
 
-import { approvedOrEditor, isEditor } from '@/access/roles'
-import { moderationFields, slugField, stampPublishedAt, submitterFields } from '@/fields/shared'
+import { approvedOrEditor, isEditor, nameIfShown } from '@/access/roles'
+import { afterSubmissionChange, afterSubmissionDelete, moderationFields, prepareSubmission, slugField, submitterFields, uploadedVideoFields, videoTicketEndpoint } from '@/fields/shared'
+
+const mediaFields = ['photo', 'videoPoster']
 
 export const testimonyCategories = [
   { label: 'Healing and Miracles', value: 'healing' },
@@ -21,28 +23,34 @@ export const Testimonies: CollectionConfig = {
   slug: 'testimonies',
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'name', 'category', 'status', 'updatedAt'],
+    defaultColumns: ['title', 'name', 'category', 'hasVideo', 'status', 'updatedAt'],
     group: 'Stories',
     listSearchableFields: ['title', 'name', 'summary'],
-    description: 'Testimonies shared on the website arrive as “Pending review”. Open one, read it, then set Status to Approved (it goes live) or Rejected.',
+    description: 'Testimonies shared on the website arrive as “Pending review”. Open one, read it or watch the video, then Approve (it goes live) or Reject.',
   },
   defaultSort: '-createdAt',
   access: {
     read: approvedOrEditor,
-    // Public submissions go through /api/submit (captcha + validation) and always land as "pending".
+    // Public submissions go through the form's server action and always land as "pending".
     create: isEditor,
     update: isEditor,
     delete: isEditor,
   },
-  hooks: { beforeChange: [stampPublishedAt] },
+  hooks: {
+    beforeChange: [prepareSubmission],
+    afterChange: [afterSubmissionChange({ mediaFields, basePath: '/testimonies', tag: 'testimonies' })],
+    afterDelete: [afterSubmissionDelete(mediaFields)],
+  },
+  endpoints: [videoTicketEndpoint],
   fields: [
     {
       name: 'reviewActions',
       type: 'ui',
       admin: { position: 'sidebar', components: { Field: { path: '/components/admin/ReviewActions#ReviewActions', clientProps: { basePath: '/testimonies' } } } },
     },
+    ...uploadedVideoFields('testimony'),
     { name: 'title', type: 'text', required: true },
-    { name: 'name', type: 'text', required: true, label: 'Full name' },
+    { name: 'name', type: 'text', required: true, label: 'Full name', access: { read: nameIfShown } },
     { name: 'location', type: 'text' },
     {
       name: 'category',
@@ -63,9 +71,9 @@ export const Testimonies: CollectionConfig = {
     {
       name: 'videoUrl',
       type: 'text',
-      admin: { description: 'YouTube, Facebook or Vimeo link.' },
+      label: 'Video link',
+      admin: { description: 'Only for a video that lives on YouTube or Vimeo. Uploaded videos appear at the top of this page.' },
     },
-    { name: 'video', type: 'upload', relationTo: 'media', admin: { description: 'Or upload the video file.' } },
     { name: 'views', type: 'number', defaultValue: 0, admin: { readOnly: true, position: 'sidebar' } },
     slugField('title'),
     ...moderationFields,

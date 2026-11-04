@@ -10,7 +10,8 @@ import { headers } from 'next/headers'
 
 const hits = new Map<string, number[]>()
 const WINDOW_MS = 10 * 60 * 1000
-const MAX_PER_WINDOW = 5
+// Generous on purpose: many people on Nigerian mobile networks, or on the church Wi-Fi, share one address.
+const MAX_PER_WINDOW = 20
 
 export async function clientIp() {
   const h = await headers()
@@ -32,6 +33,9 @@ export async function checkSubmission(formData: FormData, bucket: string): Promi
   if (recent.length >= MAX_PER_WINDOW)
     return { ok: false, silent: false, message: 'You’ve sent several submissions in a short time. Please try again in a few minutes.' }
   hits.set(key, [...recent, now])
+  if (hits.size > 5000) {
+    for (const [k, times] of hits) if (!times.some((t) => now - t < WINDOW_MS)) hits.delete(k)
+  }
 
   const secret = process.env.TURNSTILE_SECRET_KEY
   if (secret) {

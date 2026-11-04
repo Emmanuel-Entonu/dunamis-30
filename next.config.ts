@@ -16,6 +16,26 @@ const nextConfig: NextConfig = {
         pathname: '/api/media/file/**',
       },
     ],
+    formats: ['image/webp'],
+    // Fewer sizes means each one is shared by more visitors, so more of them are already cached.
+    deviceSizes: [640, 828, 1080, 1440, 1920],
+    imageSizes: [96, 128, 256, 384, 512],
+    // Built-in images have the file's fingerprint in their address, and uploads get new names.
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+  },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          // The card generator can use the camera. Nothing on the site needs the rest.
+          { key: 'Permissions-Policy', value: 'camera=(self), microphone=(), geolocation=()' },
+        ],
+      },
+    ]
   },
   webpack: (webpackConfig) => {
     webpackConfig.resolve.extensionAlias = {

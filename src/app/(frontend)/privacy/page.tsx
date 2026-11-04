@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import Link from '@/components/SiteLink'
 
 import { LegalPage, type LegalSection } from '@/components/LegalPage'
 import { whatsappLink } from '@/lib/ministry'
@@ -33,10 +33,10 @@ const sections: LegalSection[] = [
             <strong className="text-fg">International Guests form:</strong> your name, country of residence, nationality, email, WhatsApp number, travel details, whether you need airport pickup or accommodation, and any special requests.
           </li>
           <li>
-            <strong className="text-fg">Share Your Testimony:</strong> your name, email, phone number, your testimony, and any photo or video link you add.
+            <strong className="text-fg">Share Your Testimony:</strong> your name, email, phone number, your testimony, and any photo or video you add. Photos and videos stay private until our team approves them.
           </li>
           <li>
-            <strong className="text-fg">Share Your Story (Sons of the Prophet):</strong> your name, location, email, phone number, your story, milestones, and any photos or video link you add.
+            <strong className="text-fg">Share Your Story (Sons of the Prophet):</strong> your name, location, email, phone number, your story, milestones, and any photos or video you add. Photos and videos stay private until our team approves them.
           </li>
         </ul>
         <p>

@@ -1,7 +1,7 @@
-import Image from 'next/image'
 import type { ReactNode } from 'react'
 
 import { renders } from '@/assets/renders'
+import { GlassImage } from './GlassImage'
 import { Label } from './blocks'
 import { FallingLines } from './FallingLines'
 
@@ -13,8 +13,8 @@ export function PageHero({ eyebrow, title, intro, children }: { eyebrow?: string
       <FallingLines className="-z-20" />
       <div aria-hidden className="absolute -top-[120px] left-1/2 -z-10 h-[300px] w-[1584px] -translate-x-1/2 rounded-[50%] bg-[#1c1c1c] blur-[150px]" />
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 rotate-[-13deg]">
-        <Image src={renders.glassTube} alt="" sizes="30vw" className="absolute top-[55%] -left-[14%] hidden w-[30vw] max-w-[420px] rotate-90 sm:block" />
-        <Image src={renders.glassTube} alt="" sizes="30vw" className="absolute top-[-4%] -right-[26%] w-[42vw] max-w-[420px] -rotate-90 sm:top-[5%] sm:-right-[14%] sm:w-[30vw]" />
+        <GlassImage lazy src={renders.glassTube} className="absolute top-[55%] -left-[14%] hidden w-[30vw] max-w-[420px] rotate-90 sm:block" />
+        <GlassImage src={renders.glassTube} className="absolute top-[-4%] -right-[26%] w-[42vw] max-w-[420px] -rotate-90 sm:top-[5%] sm:-right-[14%] sm:w-[30vw]" />
       </div>
       <div className="container-site">
         {eyebrow && <Label className="mb-6">{eyebrow}</Label>}

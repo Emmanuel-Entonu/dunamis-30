@@ -1,10 +1,11 @@
 'use client'
 
 import { gsap } from 'gsap'
+import { getImageProps, type StaticImageData } from 'next/image'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import crestImg from '@/assets/brand/crest-official.png'
-import emblemImg from '@/assets/brand/emblem-official.png'
+import crestImg from '@/assets/brand/crest-official.webp'
+import emblemImg from '@/assets/brand/emblem-official.webp'
 import domeImg from '@/assets/photos/glory-dome-interior.webp'
 import nationsImg from '@/assets/photos/nations.webp'
 import { CardCase } from '@/components/home/CardCase'
@@ -31,11 +32,18 @@ const loadImage = (src: string) =>
     img.src = src
   })
 
+// The backdrops are heavily darkened behind the card, so the optimised versions look identical at far fewer bytes.
+const optimised = (src: StaticImageData, width: number) => getImageProps({ src, alt: '', width, height: Math.round((width * src.height) / src.width) }).props.src
+const domeBackdrop = optimised(domeImg, 640)
+const nationsBackdrop = optimised(nationsImg, 640)
+const domeThumb = optimised(domeImg, 128)
+const nationsThumb = optimised(nationsImg, 128)
+
 /** Picker thumbnails for each backdrop. */
 const swatch: Record<TemplateId, React.CSSProperties> = {
-  glory: { background: `linear-gradient(rgba(8,6,3,.5), rgba(8,6,3,.72)), url(${domeImg.src}) center/cover` },
+  glory: { background: `linear-gradient(rgba(8,6,3,.5), rgba(8,6,3,.72)), url(${domeThumb}) center/cover` },
   pearl: { background: 'linear-gradient(160deg,#fffefb,#f5e9cf)', boxShadow: 'inset 0 0 0 1px rgba(154,106,12,.25)' },
-  nations: { background: `linear-gradient(rgba(5,7,12,.55), rgba(5,7,12,.72)), url(${nationsImg.src}) center 65%/cover` },
+  nations: { background: `linear-gradient(rgba(5,7,12,.55), rgba(5,7,12,.72)), url(${nationsThumb}) center 65%/cover` },
   emerald: { background: 'linear-gradient(160deg,#0f3b2c,#03110c)' },
   royal: { background: 'radial-gradient(90% 80% at 50% 15%,#6d17b8,#3a0a66 50%,#140325)' },
   onyx: { background: 'linear-gradient(150deg,#1b1915,#060606)' },
@@ -298,11 +306,11 @@ export function CardStudio() {
   useEffect(() => {
     let alive = true
     ;(async () => {
-      const [crest, emblem, dome, nations] = await Promise.all([loadImage(crestImg.src), loadImage(emblemImg.src), loadImage(domeImg.src), loadImage(nationsImg.src)])
+      const [crest, emblem, dome] = await Promise.all([loadImage(crestImg.src), loadImage(emblemImg.src), loadImage(domeBackdrop)])
       font.current = getComputedStyle(document.body).fontFamily
       await Promise.all([700, 600, 500].map((w) => document.fonts.load(`${w} 40px ${font.current}`).catch(() => undefined)))
       if (!alive) return
-      assets.current = { crest, emblem, dome, nations }
+      assets.current = { crest, emblem, dome, nations: null }
       setReady(true)
     })()
     return () => {
@@ -310,12 +318,29 @@ export function CardStudio() {
     }
   }, [])
 
+  // The Nations backdrop is only fetched if someone chooses it.
+  const ensureBackdrop = useCallback(async () => {
+    if (template !== 'nations' || !assets.current || assets.current.nations) return
+    assets.current.nations = await loadImage(nationsBackdrop)
+  }, [template])
+
   // Live preview.
   useEffect(() => {
     const ctx = canvas.current?.getContext('2d')
     if (!ready || !ctx || !assets.current) return
+    let alive = true
     drawCard(ctx, cardInput(), assets.current, 1)
-  }, [ready, cardInput])
+    if (template === 'nations' && !assets.current.nations) {
+      ensureBackdrop()
+        .then(() => {
+          if (alive && assets.current) drawCard(ctx, cardInput(), assets.current, 1)
+        })
+        .catch(() => undefined)
+    }
+    return () => {
+      alive = false
+    }
+  }, [ready, cardInput, template, ensureBackdrop])
 
   useEffect(() => () => void (presented && URL.revokeObjectURL(presented)), [presented])
 
@@ -394,7 +419,7 @@ export function CardStudio() {
     setBusy('share')
     try {
       const file = new File([imageRef.current], fileName('jpg'), { type: 'image/jpeg' })
-      const text = 'I will be attending the Dunamis 30th Anniversary celebration! #DunamisAt30'
+      const text = 'I will be attending the Kingdom Power & Glory World Conference, 24 to 29 November! #DunamisAt30'
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], text })
       } else {

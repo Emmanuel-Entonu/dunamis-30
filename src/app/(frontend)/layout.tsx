@@ -44,6 +44,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={onest.variable}>
       <body>
+        <noscript>
+          <style>{'.reveal-wait{opacity:1}'}</style>
+        </noscript>
         <a
           href="#main"
           className="sr-only z-[60] rounded-lg bg-gold px-4 py-2 font-medium text-black focus:not-sr-only focus:fixed focus:top-3 focus:left-3"

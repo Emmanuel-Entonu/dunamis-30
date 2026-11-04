@@ -7,10 +7,9 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
-import { Announcements, CardEvents, GalleryItems, Milestones } from './collections/Archive'
+import { CardEvents, GalleryItems, Milestones } from './collections/Archive'
 import { InternationalRegistrations } from './collections/InternationalRegistrations'
 import { Media } from './collections/Media'
-import { Registrations } from './collections/Registrations'
 import { SonsStories } from './collections/SonsStories'
 import { Testimonies } from './collections/Testimonies'
 import { Users } from './collections/Users'
@@ -21,6 +20,34 @@ const dirname = path.dirname(filename)
 
 // Supabase Storage speaks S3. Without these env vars, uploads fall back to local disk (dev only).
 const useSupabaseStorage = Boolean(process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID)
+
+const databaseUrl = process.env.DATABASE_URL || ''
+const isLocalDatabase = /@(localhost|127\.0\.0\.1)[:/]/.test(databaseUrl)
+
+const database = postgresAdapter({
+  // Not "public": Supabase publishes that schema through its Data API, where the public anon key
+  // could reach it. Nothing outside this site can see the "payload" schema.
+  schemaName: 'payload',
+  // Schema changes go through src/migrations (npm run migrate), never an automatic push.
+  push: false,
+  pool: {
+    connectionString: databaseUrl,
+    ssl: isLocalDatabase ? undefined : { rejectUnauthorized: false },
+    // Each serverless instance keeps a few connections; the Supabase pooler shares them out.
+    max: 5,
+    idleTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 8_000,
+  },
+})
+
+// When it can't connect, the adapter rejects an internal promise that nothing is listening to, as
+// well as throwing the real error. Without this listener Node reports "unhandledRejection: undefined".
+const startDatabase = database.init
+database.init = (args) => {
+  const adapter = startDatabase(args)
+  ;(adapter as unknown as { initializing?: Promise<void> }).initializing?.catch(() => undefined)
+  return adapter
+}
 
 export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_SITE_URL,
@@ -39,13 +66,11 @@ export default buildConfig({
   collections: [
     Testimonies,
     SonsStories,
-    Registrations,
     InternationalRegistrations,
     CardEvents,
     Milestones,
     GalleryItems,
     Media,
-    Announcements,
     Users,
   ],
   globals,
@@ -54,11 +79,9 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: postgresAdapter({
-    pool: {
-      connectionString: process.env.DATABASE_URL || '',
-    },
-  }),
+  db: database,
+  // The site only uses Payload's REST API and Local API, so there's no reason to expose GraphQL.
+  graphQL: { disable: true },
   email: process.env.RESEND_API_KEY
     ? resendAdapter({
         apiKey: process.env.RESEND_API_KEY,
@@ -71,6 +94,8 @@ export default buildConfig({
     s3Storage({
       enabled: useSupabaseStorage,
       collections: { media: true },
+      // The admin uploads straight to storage, past the size limit on Vercel's functions.
+      clientUploads: true,
       bucket: process.env.S3_BUCKET || '',
       config: {
         endpoint: process.env.S3_ENDPOINT,
@@ -79,6 +104,8 @@ export default buildConfig({
         credentials: {
           accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
           secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+          // Set when signing in to Supabase Storage with a project key instead of an S3 access key.
+          ...(process.env.S3_SESSION_TOKEN ? { sessionToken: process.env.S3_SESSION_TOKEN } : {}),
         },
       },
     }),

@@ -1,13 +1,15 @@
 import type { Metadata } from 'next'
 import Image, { type StaticImageData } from 'next/image'
-import Link from 'next/link'
+import Link from '@/components/SiteLink'
 
+import { GlassImage } from '@/components/GlassImage'
 import { glass } from '@/assets/glass'
 import { ClosingBand, GlassArt, GlobalPresence, Label, PhotoWithGlass, ShowcaseCard, StorySplit } from '@/components/blocks'
 import { Carousel } from '@/components/home/Carousel'
 import { CountUp, ScrubText, StackedCards } from '@/components/motion'
 import { PageHero } from '@/components/PageHero'
 import { Reveal } from '@/components/Reveal'
+import { blurFor } from '@/lib/image'
 import { getMilestones, getStoryPage, mediaUrl } from '@/lib/content'
 import { defaultMilestones, defaultStats, vision, type GlassKey } from '@/lib/ministry'
 import { photoByFile, photos } from '@/lib/photos'
@@ -31,7 +33,7 @@ function MilestoneCard({ item }: { item: TimelineItem }) {
       <div className="relative order-2 flex flex-col justify-between gap-5 p-5 sm:p-10 lg:order-1 lg:p-[60px]">
         <div className="flex items-start justify-between gap-4">
           <p className="text-[clamp(1.75rem,1.4rem+2vw,3.25rem)] leading-[1.1] font-medium tracking-[-0.02em] text-fg">{item.date}</p>
-          <Image src={glass[item.art]} alt="" sizes="150px" className="h-auto w-[64px] shrink-0 sm:w-[110px] lg:w-[140px]" />
+          <GlassImage src={glass[item.art]} className="h-auto w-[64px] shrink-0 sm:w-[110px] lg:w-[140px]" />
         </div>
         <div>
           <h3 className="h-card">{item.title}</h3>
@@ -40,7 +42,7 @@ function MilestoneCard({ item }: { item: TimelineItem }) {
       </div>
       <div className="relative order-1 min-h-0 lg:order-2">
         {item.image ? (
-          <Image src={item.image} alt={item.alt} fill sizes="(min-width: 1024px) 580px, 96vw" className="object-cover" />
+          <Image src={item.image} alt={item.alt} fill sizes="(min-width: 1024px) 580px, 96vw" placeholder={blurFor(item.image)} className="object-cover" />
         ) : (
           <div className="bg-ticks grid h-full place-items-center">
             <GlassArt art={glass[item.art]} className="w-[160px]" />

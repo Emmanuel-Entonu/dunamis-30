@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
-import Link from 'next/link'
+import Image, { getImageProps } from 'next/image'
+import Link from '@/components/SiteLink'
 import { notFound } from 'next/navigation'
 
 import { ArrowRight, ChevronLeft } from '@/components/icons'
 import { ShareButtons } from '@/components/ShareButtons'
+import { TestimonyVideo } from '@/components/TestimonyVideo'
 import { categoryLabels } from '@/lib/categories'
 import { getTestimonyBySlug, mediaUrl } from '@/lib/content'
 import { embedUrl } from '@/lib/video'
@@ -16,7 +17,7 @@ type Params = { params: Promise<{ slug: string }> }
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const t = await getTestimonyBySlug((await params).slug)
   if (!t) return { title: 'Testimony not found' }
-  const og = mediaUrl(t.photo ?? null, 'og')
+  const og = mediaUrl(t.photo ?? t.videoPoster ?? null, 'og')
   return {
     title: t.title,
     description: t.summary,
@@ -30,6 +31,8 @@ export default async function TestimonyPage({ params }: Params) {
   if (!t) notFound()
 
   const image = mediaUrl(t.photo ?? null, 'hero')
+  const posterUrl = mediaUrl(t.videoPoster ?? t.photo ?? null, 'hero')
+  const poster = posterUrl ? getImageProps({ src: posterUrl, alt: '', width: 860, height: 484 }).props.src : null
   const video = embedUrl(t.videoUrl)
   const date = t.publishedAt ? new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(t.publishedAt)) : null
   const paragraphs = (t.body ?? '').split(/\n{2,}|\r\n\r\n/).map((p) => p.trim()).filter(Boolean)
@@ -48,13 +51,15 @@ export default async function TestimonyPage({ params }: Params) {
           {[t.name, t.location, date].filter(Boolean).join(' · ')}
         </p>
 
-        {video ? (
+        {t.hasVideo && !t.videoUrl ? (
+          <TestimonyVideo src={`/watch/testimony/${t.id}`} poster={poster} title={t.title} width={t.videoFile?.width} height={t.videoFile?.height} className="mt-10" />
+        ) : video ? (
           <div className="card mt-10 aspect-video overflow-hidden">
             <iframe src={video} title={t.title} allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="h-full w-full" />
           </div>
         ) : image ? (
           <div className="card relative mt-10 aspect-[16/10] overflow-hidden">
-            <Image src={image} alt={t.photo?.alt || t.title} fill priority sizes="(min-width: 900px) 860px, 100vw" className="object-cover" />
+            <Image src={image} alt={t.title} fill priority sizes="(min-width: 900px) 860px, 100vw" className="object-cover" />
           </div>
         ) : null}
 

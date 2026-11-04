@@ -179,7 +179,7 @@ function SpectrumStudio({ finish }: { finish: HoloFinish }) {
 }
 
 /** White softbox studio for clear glass: silver highlights with only a hint of spectrum. */
-function GlassStudio() {
+function _GlassStudio() {
   return (
     <Environment resolution={512} frames={1}>
       <color attach="background" args={['#000000']} />

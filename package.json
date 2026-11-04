@@ -11,9 +11,11 @@
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
+    "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
+    "vercel-build": "npm run migrate && npm run build",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
-    "test": "pnpm run test:int && pnpm run test:e2e",
+    "test": "npm run test:int",
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts"
   },
@@ -31,13 +33,15 @@
     "dotenv": "16.4.7",
     "graphql": "^16.8.1",
     "gsap": "^3.15.0",
+    "mediabunny": "^1.65.1",
     "next": "16.3.3",
     "payload": "3.92.1",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "resend": "^6.37.0",
     "sharp": "0.35.4",
-    "three": "^0.187.0"
+    "three": "^0.187.0",
+    "tus-js-client": "^4.3.1"
   },
   "devDependencies": {
     "@fontsource-variable/onest": "^5.3.1",

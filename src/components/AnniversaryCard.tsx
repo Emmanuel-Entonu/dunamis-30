@@ -1,6 +1,6 @@
 import Image from 'next/image'
 
-import crest from '@/assets/brand/crest-official.png'
+import crest from '@/assets/brand/crest-official.webp'
 
 /** Mottled gold light: several soft light pools over a warm base (like light on metal foil). */
 export const goldCardBackground = [

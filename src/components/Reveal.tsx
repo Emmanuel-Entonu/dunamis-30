@@ -34,7 +34,7 @@ export function Reveal({
   }, [])
 
   return (
-    <Tag ref={ref} style={{ animationDelay: `${delay}ms` }} className={`${shown ? 'animate-rise' : 'opacity-0'} ${className}`}>
+    <Tag ref={ref} style={{ animationDelay: `${delay}ms` }} className={`${shown ? 'animate-rise' : 'reveal-wait opacity-0'} ${className}`}>
       {children}
     </Tag>
   )
