@@ -1,0 +1,442 @@
+@import 'tailwindcss';
+
+/*
+ * Dunamis at 30 — design tokens.
+ * Structure follows the FlowSwipe reference (near-black canvas, #0F0F0F surfaces with
+ * #1F1F1F hairlines, Onest, 8px buttons, 24px cards). Accent is the anniversary gold.
+ */
+@theme {
+  --color-canvas: #080808;
+  --color-surface: #0f0f0f;
+  --color-hair: #1f1f1f;
+  --color-line: #262626;
+  --color-fg: #ffffff;
+  --color-muted: #b6b6b6;
+  --color-soft: #cccccc;
+
+  --color-gold: #f0a92b;
+  --color-gold-light: #ffd27a;
+  --color-gold-deep: #b8730b;
+  --color-gold-ink: #140c02;
+
+  --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
+
+  --animate-marquee: marquee 30s linear infinite;
+  --animate-marquee-fast: marquee 15s linear infinite;
+  --animate-spin-slow: spin 4s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-card-shine: card-shine 7s ease-in-out infinite;
+  --animate-sweep: sweep 1.5s ease-out 1 both;
+  --animate-rise: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-marquee-reverse: marquee 30s linear infinite reverse;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(28px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* A gloss band crosses the card once every few seconds. */
+  @keyframes card-shine {
+    0%,
+    62% {
+      transform: translateX(0);
+    }
+    82%,
+    100% {
+      transform: translateX(200%);
+    }
+  }
+
+  @keyframes line-fall {
+    to {
+      transform: translateY(420px);
+    }
+  }
+
+  /* Flip clock: the top half of the old number folds down, then the bottom half of the new one lands. */
+  @keyframes flip-down {
+    to {
+      transform: rotateX(-90deg);
+      filter: brightness(0.55);
+    }
+  }
+  @keyframes flip-up {
+    from {
+      transform: rotateX(90deg);
+      filter: brightness(1.5);
+    }
+    to {
+      transform: rotateX(0deg);
+      filter: brightness(1);
+    }
+  }
+
+  @keyframes sweep {
+    0% {
+      transform: translateX(-120%) skewX(-14deg);
+      opacity: 0;
+    }
+    15% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(260%) skewX(-14deg);
+      opacity: 0;
+    }
+  }
+
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    background: var(--color-canvas);
+  }
+  body {
+    background: var(--color-canvas);
+    color: var(--color-muted);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+  }
+  @media (min-width: 480px) {
+    body {
+      font-size: 18px;
+    }
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: var(--color-fg);
+    font-weight: 500;
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+  ::selection {
+    background: var(--color-gold);
+    color: var(--color-gold-ink);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-gold-light);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+}
+
+@layer components {
+  .container-site {
+    width: 100%;
+    max-width: 1240px;
+    margin-inline: auto;
+    padding-inline: 20px;
+  }
+
+  /* Section rhythm: top padding only (140 desktop → 80 phone). */
+  .section {
+    padding-top: 80px;
+  }
+  @media (min-width: 992px) {
+    .section {
+      padding-top: 120px;
+    }
+  }
+  @media (min-width: 1440px) {
+    .section {
+      padding-top: 140px;
+    }
+  }
+
+  .h-hero {
+    font-size: clamp(2rem, 1.1rem + 4.2vw, 4.25rem);
+    line-height: 1.2;
+  }
+  .h-section {
+    font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.5rem);
+    line-height: 1.2;
+  }
+  .h-card {
+    font-size: clamp(1.375rem, 1.3rem + 0.3vw, 1.5rem);
+    line-height: 1.2;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 50px;
+    padding: 15px 24px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      border-color 0.2s;
+  }
+  @media (min-width: 480px) {
+    .btn {
+      font-size: 18px;
+    }
+  }
+  .btn-primary {
+    background: var(--color-gold);
+    border-color: var(--color-gold);
+    color: var(--color-gold-ink);
+  }
+  .btn-primary:hover {
+    background: #fff;
+    border-color: #fff;
+    color: var(--color-gold-deep);
+  }
+  .btn-light {
+    background: #fff;
+    border-color: #fff;
+    color: #0f0f0f;
+  }
+  .btn-light:hover {
+    background: var(--color-gold);
+    border-color: var(--color-gold);
+    color: var(--color-gold-ink);
+  }
+  .btn-outline {
+    border-color: var(--color-gold);
+    color: #fff;
+  }
+  .btn-outline:hover {
+    background: var(--color-gold);
+    color: var(--color-gold-ink);
+  }
+
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-hair);
+    border-radius: 16px;
+  }
+  @media (min-width: 768px) {
+    .card {
+      border-radius: 24px;
+    }
+  }
+
+  /* Short faint dashes on two offset grids: horizontal ones every 192×159, vertical ones every 159×192. */
+  .bg-ticks {
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='159'%3E%3Cpath d='M48 79.5h96' stroke='%23ffffff' stroke-opacity='.065'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='159' height='192'%3E%3Cpath d='M79.5 48v96' stroke='%23ffffff' stroke-opacity='.065'/%3E%3C/svg%3E");
+    background-position: center top;
+  }
+
+  /* One column of falling light: a 100px streak every 420px, moving at about 110px a second. */
+  .falling-line {
+    position: absolute;
+    top: -420px;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent 320px, rgb(255 255 255 / 0.7) 420px, transparent 420px) 0 0 / 1px 420px repeat-y;
+    animation: line-fall 3.8s linear infinite;
+  }
+
+  /* Gold halftone flare rising from the bottom edge. */
+  .flare {
+    background:
+      radial-gradient(rgb(255 190 90 / 0.5) 1px, transparent 1.4px) 0 0 / 8px 8px,
+      radial-gradient(100% 100% at 50% 100%, rgb(227 154 23 / 0.7), rgb(184 115 11 / 0.22) 45%, transparent 75%);
+    mask-image: radial-gradient(90% 100% at 50% 100%, #000 30%, transparent 80%);
+  }
+
+  /*
+   * The card's journey after the hero. The card sticks at --pin for --travel of scrolling while it
+   * sinks --drop down the screen, then meets its place on the stage, which has been rising to it.
+   */
+  .card-run {
+    --stage: min(100vw, calc((100svh - 104px) * 0.6));
+    --card-w: calc(var(--stage) * 0.436);
+    --card-h: calc(var(--card-w) * 479 / 302);
+    --pin: 92px;
+    --travel: 100svh;
+    --drop: max(0px, calc(100svh - var(--card-h) - var(--pin) - 4svh));
+  }
+  @media (min-width: 1024px) {
+    .card-run {
+      --stage: min(1240px, 94vw, calc((100svh - 104px) * 1.59));
+      --card-w: calc(var(--stage) * 0.234);
+      --pin: 96px;
+    }
+  }
+
+  /* One number on the flip clock, sized from its own width. */
+  .flip {
+    container-type: inline-size;
+    position: relative;
+    aspect-ratio: 1 / 1.14;
+    perspective: 500px;
+    color: #fff;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    filter: drop-shadow(0 18px 24px rgb(0 0 0 / 0.55));
+  }
+  .flip::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    z-index: 3;
+    height: 2px;
+    margin-top: -1px;
+    background: #050505;
+  }
+  .flip-half {
+    position: absolute;
+    inset-inline: 0;
+    display: block;
+    height: 50%;
+    overflow: hidden;
+    backface-visibility: hidden;
+  }
+  .flip-half > span {
+    position: absolute;
+    inset-inline: 0;
+    display: grid;
+    height: 200%;
+    place-items: center;
+    font-size: 58cqw;
+    letter-spacing: -0.03em;
+  }
+  .flip-top {
+    top: 0;
+    border-radius: 14px 14px 0 0;
+    background: linear-gradient(180deg, #262626, #1b1b1b);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.09);
+    transform-origin: 50% 100%;
+  }
+  .flip-top > span {
+    top: 0;
+  }
+  .flip-bottom {
+    bottom: 0;
+    border-radius: 0 0 14px 14px;
+    background: linear-gradient(180deg, #181818, #111);
+    transform-origin: 50% 0%;
+  }
+  .flip-bottom > span {
+    bottom: 0;
+  }
+  .flip-leaf-down {
+    z-index: 2;
+    animation: flip-down 0.32s cubic-bezier(0.55, 0.06, 0.68, 0.19) both;
+  }
+  .flip-leaf-up {
+    z-index: 2;
+    animation: flip-up 0.32s cubic-bezier(0.22, 0.61, 0.36, 1) 0.32s both;
+  }
+
+  /* Fine halftone dots behind a glass object, fading out from its centre. */
+  .dots {
+    background: radial-gradient(rgb(255 255 255 / 0.22) 1px, transparent 1.4px) 0 0 / 8px 8px;
+    mask-image: radial-gradient(50% 50% at 50% 50%, #000 10%, transparent 100%);
+  }
+
+  /* Warm light fading up from a tile's bottom-right corner. */
+  .warm-corner {
+    background: radial-gradient(70% 50% at 100% 100%, rgb(227 154 23 / 0.2), transparent 72%);
+  }
+
+  /* Warm vertical stripes rising behind a form. */
+  .stripes {
+    background: repeating-linear-gradient(90deg, rgb(255 170 60 / 0.2) 0 1.5px, transparent 1.5px 7px);
+    mask-image: linear-gradient(to top, #000, transparent 88%);
+  }
+
+  /* Small outlined action at the foot of a tile. */
+  .btn-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid rgb(240 169 43 / 0.55);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.2;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+  .btn-chip:hover {
+    background: var(--color-gold);
+    color: var(--color-gold-ink);
+  }
+
+  .marquee {
+    display: flex;
+    width: max-content;
+  }
+
+  .link-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--color-muted);
+    transition:
+      gap 0.2s,
+      color 0.2s;
+  }
+  .link-arrow:hover {
+    gap: 15px;
+    color: #fff;
+  }
+}
+
+/*
+ * The homepage's closing card scene overlaps the footer band; give the footer room for the slip.
+ * Unlayered on purpose so it beats the footer's padding utilities.
+ */
+body:has([data-sleeve-scene]) .footer-top {
+  padding-top: 230px;
+}
+@media (min-width: 640px) {
+  body:has([data-sleeve-scene]) .footer-top {
+    padding-top: 320px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

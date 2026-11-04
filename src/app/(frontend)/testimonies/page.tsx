@@ -1,0 +1,159 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+
+import { glass } from '@/assets/glass'
+import { FormStage, GlassArt } from '@/components/blocks'
+import { inputClass } from '@/components/forms/Field'
+import { PageHero } from '@/components/PageHero'
+import { TestimonyCard } from '@/components/TestimonyCard'
+import { categoryLabels } from '@/lib/categories'
+import { getTestimonies } from '@/lib/content'
+import { TestimonyForm } from './TestimonyForm'
+
+export const metadata: Metadata = {
+  title: 'Testimonies',
+  description:
+    'Real stories from people God has touched through Dunamis International Gospel Centre. Read them, or share yours.',
+}
+
+type Search = { q?: string; category?: string; year?: string; sort?: string; page?: string }
+
+export default async function TestimoniesPage({ searchParams }: { searchParams: Promise<Search> }) {
+  const sp = await searchParams
+  const q = (sp.q ?? '').trim().slice(0, 80)
+  const category = sp.category && categoryLabels[sp.category] ? sp.category : ''
+  const page = Math.max(1, Number(sp.page) || 1)
+  const thisYear = new Date().getFullYear()
+  const years = Array.from({ length: thisYear - 1995 }, (_, i) => thisYear - i)
+  const year = years.includes(Number(sp.year)) ? Number(sp.year) : undefined
+  const oldest = sp.sort === 'oldest'
+  const result = await getTestimonies({ q, category, year, oldest, page })
+
+  const href = (next: { category?: string; page?: number }) => {
+    const p = new URLSearchParams()
+    const nc = next.category ?? category
+    if (q) p.set('q', q)
+    if (nc) p.set('category', nc)
+    if (year) p.set('year', String(year))
+    if (oldest) p.set('sort', 'oldest')
+    if (next.page && next.page > 1) p.set('page', String(next.page))
+    const s = p.toString()
+    return `/testimonies${s ? `?${s}` : ''}#library`
+  }
+
+  return (
+    <>
+      <PageHero
+        eyebrow="Testimonies"
+        title="30 years of testimonies"
+        intro="Real stories from people God has touched through this ministry. Read them, or add yours."
+      >
+        <div className="mt-8 flex justify-center">
+          <a href="#share" className="btn btn-primary">
+            Share your testimony
+          </a>
+        </div>
+      </PageHero>
+
+      <section id="library" className="scroll-mt-28 pb-20">
+        <div className="container-site">
+          <form action="/testimonies#library" className="grid grid-cols-2 gap-2.5 lg:grid-cols-[1fr_170px_170px_auto]">
+            {category && <input type="hidden" name="category" value={category} />}
+            <label htmlFor="q" className="sr-only">
+              Search testimonies
+            </label>
+            <input id="q" name="q" defaultValue={q} placeholder="Search by keyword or name" className={`${inputClass} col-span-2 lg:col-span-1`} />
+            <label htmlFor="year" className="sr-only">
+              Year published
+            </label>
+            <select id="year" name="year" defaultValue={year ?? ''} className={`${inputClass} appearance-none`}>
+              <option value="">Any year</option>
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+            <label htmlFor="sort" className="sr-only">
+              Sort by date
+            </label>
+            <select id="sort" name="sort" defaultValue={oldest ? 'oldest' : ''} className={`${inputClass} appearance-none`}>
+              <option value="">Newest first</option>
+              <option value="oldest">Oldest first</option>
+            </select>
+            <button type="submit" className="btn btn-primary col-span-2 lg:col-span-1">
+              Search
+            </button>
+          </form>
+
+          <nav aria-label="Testimony categories" className="-mx-5 mt-5 flex gap-2 overflow-x-auto px-5 pb-2 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0">
+            {[['', 'All'], ...Object.entries(categoryLabels)].map(([value, label]) => (
+              <Link
+                key={value || 'all'}
+                href={href({ category: value, page: 1 })}
+                aria-current={category === value ? 'page' : undefined}
+                className={`shrink-0 rounded-lg px-5 py-2.5 text-[15px] transition-colors ${
+                  category === value ? 'bg-white text-canvas' : 'bg-hair text-soft hover:bg-line hover:text-gold'
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
+
+          {(q || category || year) && (
+            <p className="mt-6 text-base">
+              {result.total} {result.total === 1 ? 'testimony' : 'testimonies'}
+              {category && <> in {categoryLabels[category]}</>}
+              {year && <> from {year}</>}
+              {q && <> matching “{q}”</>} ·{' '}
+              <Link href="/testimonies#library" className="text-gold hover:underline">
+                Clear
+              </Link>
+            </p>
+          )}
+
+          {result.docs.length > 0 ? (
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {result.docs.map((t) => (
+                <TestimonyCard key={t.id} testimony={t} />
+              ))}
+            </div>
+          ) : (
+            <div className="card group mt-8 flex flex-col items-center p-8 text-center sm:p-14">
+              <GlassArt art={glass.quote} className="mb-8 w-[120px] sm:w-[150px]" dots="inset-[-60%]" />
+              <p className="h-card">{q || category || year ? 'No testimonies found' : 'Testimonies are coming'}</p>
+              <p className="mx-auto mt-3 max-w-[460px]">
+                {q || category || year
+                  ? 'Try another word or category, or share your own.'
+                  : 'We’re gathering them now. Be one of the first to share yours.'}
+              </p>
+              <a href="#share" className="btn btn-primary mt-7">
+                Share your testimony
+              </a>
+            </div>
+          )}
+
+          {result.totalPages > 1 && (
+            <nav aria-label="Pages" className="mt-10 flex items-center justify-center gap-2">
+              {Array.from({ length: result.totalPages }, (_, i) => i + 1).map((n) => (
+                <Link
+                  key={n}
+                  href={href({ page: n })}
+                  aria-current={n === result.page ? 'page' : undefined}
+                  className={`grid size-11 place-items-center rounded-lg text-[15px] ${n === result.page ? 'bg-white text-canvas' : 'bg-hair text-soft hover:bg-line'}`}
+                >
+                  {n}
+                </Link>
+              ))}
+            </nav>
+          )}
+        </div>
+      </section>
+
+      <FormStage id="share" title="Share your testimony" text="What has God done for you? Our communications team reads every testimony before it goes up, and your email and phone stay private.">
+        <TestimonyForm />
+      </FormStage>
+    </>
+  )
+}
