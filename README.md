@@ -15,7 +15,7 @@ Without a database connection the public pages still load, using the default con
 ## Deploy to Vercel
 
 1. Import this repository into Vercel.
-2. Add every variable from `.env.example` under Settings > Environment Variables, using the production values. Set `NEXT_PUBLIC_SITE_URL` to your primary domain, or leave it out to use Vercel's.
+2. Add every variable from `.env.example` under Settings > Environment Variables, using the production values. On Vercel the site address defaults to `https://www.dunamis30thanniversary.com`. Set `NEXT_PUBLIC_SITE_URL` only to use a different one.
 3. Deploy. The `vercel-build` script applies any new database migrations, then builds the site.
 4. Open `/admin` straight away and create the first account. It becomes the administrator, and that screen closes for good.
 
@@ -71,4 +71,4 @@ The glass objects in `src/assets/glass` and `src/assets/renders` are rendered fr
 
 ## Link previews
 
-The image people see when a link is shared is `public/og-dunamis-30.jpg`. Run `node scripts/render-og.mjs` to redraw it. Testimonies and stories with a photo use that photo instead. WhatsApp and Facebook cache previews, so give a new image a new file name.
+The image people see when a link is shared is `public/og-dunamis-30-card.jpg`. Run `node scripts/render-og.mjs` to redraw it. Testimonies and stories with a photo use that photo instead. WhatsApp and Facebook cache previews, so give a new image a new file name.

@@ -1,17 +1,17 @@
-// Used in link previews, the sitemap and robots.txt. Vercel supplies its production domain when the
-// site address isn't set by hand, so previews work from the very first deploy.
-const vercelDomain = process.env.VERCEL_PROJECT_PRODUCTION_URL
-export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || (vercelDomain ? `https://${vercelDomain}` : 'http://localhost:3000')).replace(/\/$/, '')
+// Used in link previews, the sitemap and robots.txt. The main address is the www one, because the bare
+// domain redirects to it and some link previews don't follow redirects to their image.
+const LIVE_SITE = 'https://www.dunamis30thanniversary.com'
+export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL ? LIVE_SITE : 'http://localhost:3000')).replace(/\/$/, '')
 
 /** The picture shown when a link to the site is shared. Rendered by scripts/render-og.mjs. */
-export const shareImage = { url: '/og-dunamis-30.jpg', width: 1200, height: 630, alt: 'Dunamis at 30. Same Mission. Greater Impact.' }
+export const shareImage = { url: '/og-dunamis-30-card.jpg', width: 1200, height: 630, alt: 'Dunamis at 30. Same Mission. Greater Impact.' }
 
 export const siteName = 'Dunamis at 30'
 
 export const tagline = 'One ministry. Thirty years. Millions of stories. One continuing legacy.'
 
 export const defaultDescription =
-  'Dunamis International Gospel Centre is 30. Join us at the Glory Dome, Abuja, on 10 November 2026, read the testimonies, and make your I Am Attending card.'
+  'Dunamis International Gospel Centre is 30. Join us at the Glory Dome, Abuja, for Kingdom Power & Glory, 24 to 29 November 2026, read the testimonies, and make your I Am Attending card.'
 
 export type NavItem = { href: string; label: string }
 
