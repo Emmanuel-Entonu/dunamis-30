@@ -151,7 +151,7 @@ export const afterSubmissionChange =
     if (ids.length && (approved || wasApproved)) {
       await req.payload.update({
         collection: 'media',
-        where: { and: [{ id: { in: ids } }, { fromSubmission: { equals: true } }, { pendingReview: { equals: !approved } }] },
+        where: { and: [{ id: { in: ids } }, { fromSubmission: { equals: true } }, { pendingReview: { equals: approved } }] },
         data: { pendingReview: !approved },
         depth: 0,
         overrideAccess: true,

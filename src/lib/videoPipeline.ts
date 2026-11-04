@@ -228,7 +228,8 @@ async function waitForSignal(signal: AbortSignal) {
 /**
  * Uploads in 6 MB pieces, picking up from the last good byte when a connection drops. The library
  * retries weak connections by itself but gives up at once when the phone reports no signal at all,
- * so this waits for the signal to return and carries on, up to about a quarter of an hour.
+ * and a piece in flight can hang for minutes when signal goes. So losing signal stops the piece at
+ * once, and this waits and carries on. It only gives up after several rounds with no progress.
  * Returns only once the file is stored. `resume` lets a later Try again continue the same upload.
  */
 export async function uploadVideo(
@@ -240,15 +241,27 @@ export async function uploadVideo(
   onWaiting?: (waiting: boolean) => void,
 ): Promise<void> {
   const { Upload } = await import('tus-js-client')
+  let furthest = 0
+  let progressed = false
 
   const attempt = () =>
     new Promise<void>((resolve, reject) => {
       const stop = () => {
+        settle()
         resume.url = upload.url
         void upload.abort()
         reject(cancelled())
       }
-      const settle = () => signal.removeEventListener('abort', stop)
+      const dropped = () => {
+        settle()
+        resume.url = upload.url
+        void upload.abort()
+        reject(new Error('No signal'))
+      }
+      const settle = () => {
+        signal.removeEventListener('abort', stop)
+        window.removeEventListener('offline', dropped)
+      }
       const upload = new Upload(video.blob, {
         endpoint: ticket.endpoint,
         uploadUrl: resume.url ?? undefined,
@@ -257,7 +270,13 @@ export async function uploadVideo(
         storeFingerprintForResuming: false,
         headers: { apikey: ticket.apikey, 'x-signature': ticket.token },
         metadata: { bucketName: ticket.bucket, objectName: ticket.path, contentType: video.contentType, cacheControl: '86400' },
-        onProgress: (sent, total) => onProgress(total ? sent / total : 0),
+        onProgress: (sent, total) => {
+          if (sent > furthest) {
+            furthest = sent
+            progressed = true
+          }
+          onProgress(total ? sent / total : 0)
+        },
         onSuccess: () => {
           settle()
           resolve()
@@ -272,10 +291,12 @@ export async function uploadVideo(
         },
       })
       signal.addEventListener('abort', stop, { once: true })
+      window.addEventListener('offline', dropped, { once: true })
       upload.start()
     })
 
-  for (let round = 0; ; round++) {
+  for (let idle = 0; ; idle = progressed ? 0 : idle + 1) {
+    progressed = false
     try {
       await attempt()
       return
@@ -284,7 +305,7 @@ export async function uploadVideo(
       const status = statusOf(error)
       // A refusal, such as an expired ticket, won't change by waiting. 409 and 423 mean try again shortly.
       const refused = status >= 400 && status < 500 && status !== 409 && status !== 423
-      if (refused || round >= 7) throw error
+      if (refused || (!progressed && idle >= 7)) throw error
       onWaiting?.(true)
       await waitForSignal(signal)
       onWaiting?.(false)
