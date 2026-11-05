@@ -552,6 +552,102 @@
       transform: translate(-5px, 2px);
     }
   }
+  @keyframes hero-fly-out {
+    to {
+      transform: translateX(calc(var(--away) * max(100vw, 100svh) * 0.8));
+    }
+  }
+  @keyframes hero-fly-down {
+    to {
+      transform: translateY(calc(var(--down) * var(--height))) rotate(var(--tumble)) scale(calc(1 + var(--grow)));
+    }
+  }
+  @keyframes hero-centre-away {
+    to {
+      opacity: 0;
+      transform: scale(0.74);
+    }
+  }
+  @keyframes hero-light-away {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes hero-words-away {
+    to {
+      opacity: 0;
+      transform: translateY(-70px);
+    }
+  }
+  /* On its own, so the fade can stay on the graphics chip. Faded isn't enough: the button would still catch taps. */
+  @keyframes hero-words-gone {
+    from {
+      visibility: visible;
+    }
+    to {
+      visibility: hidden;
+    }
+  }
+  /*
+   * The scatter as the page scrolls. On a phone, moving it from JavaScript shares a thread with everything else
+   * on the page, so the coins fall behind the thumb. Here the graphics chip follows the scroll directly.
+   * The timings match the timeline in HeroRing.tsx, which still runs on computers and older phones.
+   */
+  @media (pointer: coarse) {
+    .hero-fly {
+      will-change: transform;
+    }
+    /* The ring rests as the page moves, but anything still arriving has to finish. */
+    .hero-ring[data-resting] .hero-burst,
+    .hero-ring[data-resting] .hero-crest {
+      animation-play-state: running !important;
+    }
+  }
+  @media (pointer: coarse) and (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: scroll()) {
+      .hero-ring [data-fly-out],
+      .hero-ring [data-fly-down],
+      .hero-ring [data-ring-centre],
+      .hero-ring [data-ring-light],
+      .hero [data-hero-words] {
+        animation-duration: auto;
+        animation-fill-mode: both;
+        animation-timeline: scroll(root block);
+      }
+      .hero-ring[data-resting] [data-fly-out],
+      .hero-ring[data-resting] [data-fly-down],
+      .hero-ring[data-resting] [data-ring-centre],
+      .hero-ring[data-resting] [data-ring-light] {
+        animation-play-state: running !important;
+      }
+      .hero-ring [data-fly-out] {
+        animation-name: hero-fly-out;
+        animation-timing-function: cubic-bezier(0.11, 0, 0.5, 0);
+        animation-range: 0px calc(var(--height) * 1.05);
+      }
+      .hero-ring [data-fly-down] {
+        animation-name: hero-fly-down;
+        animation-timing-function: cubic-bezier(0.39, 0.575, 0.565, 1);
+        animation-range: 0px calc(var(--height) * 1.4);
+      }
+      .hero-ring [data-ring-centre] {
+        animation-name: hero-centre-away;
+        animation-timing-function: linear;
+        animation-range: calc(var(--height) * 0.14) calc(var(--height) * 0.728);
+        will-change: transform, opacity;
+      }
+      .hero-ring [data-ring-light] {
+        animation-name: hero-light-away;
+        animation-timing-function: linear;
+        animation-range: calc(var(--height) * 0.14) calc(var(--height) * 0.728);
+      }
+      .hero [data-hero-words] {
+        animation-name: hero-words-away, hero-words-gone;
+        animation-timing-function: linear;
+        animation-range: 0px calc(var(--height) * 0.42);
+      }
+    }
+  }
   @media (min-width: 640px) {
     .hero {
       --words: 104px;

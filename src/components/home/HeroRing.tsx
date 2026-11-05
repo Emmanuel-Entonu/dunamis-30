@@ -61,6 +61,9 @@ const outer: Orbiter[] = [
   { art: coins.heart, size: 18, near: 0.97, far: 1.03, swing: 8.7, sway: 8.5, dance: 5.6, flip: -20, away: 0.9, down: 0.3, tumble: -18, grow: 0.1 },
 ]
 
+/** How far the page moves, in pixels, before the ring rests on a touch screen. */
+const SCROLL_REST = 24
+
 function Coin({ coin, angle, order, delay }: { coin: Orbiter; angle: number; order: number; delay: number }) {
   // Each wrapper does one job, so the browser's graphics chip can run them all without the page's help.
   return (
@@ -75,6 +78,10 @@ function Coin({ coin, angle, order, delay }: { coin: Orbiter; angle: number; ord
           '--flip': `${coin.flip}deg`,
           '--sway-time': `${coin.sway}s`,
           '--sway-from': `${-order * 1.3}s`,
+          '--away': coin.away,
+          '--down': coin.down,
+          '--tumble': `${coin.tumble}deg`,
+          '--grow': coin.grow,
         } as CSSProperties
       }
     >
@@ -118,11 +125,23 @@ export function HeroRing() {
       },
       { rootMargin: '160% 0px' },
     )
-    watcher.observe(hero)
+    // On a touch screen it rests as soon as the page moves, and dances again back at the top. Measured on a slow
+    // phone, the spinning seal and the dancing are what made the scroll choppy, far more than the falling coins.
+    const touch = window.matchMedia('(pointer: coarse)').matches
+    const restWhileScrolling = () => {
+      if (window.scrollY > SCROLL_REST) el.dataset.resting = '1'
+      else delete el.dataset.resting
+    }
+    if (touch) {
+      restWhileScrolling()
+      window.addEventListener('scroll', restWhileScrolling, { passive: true })
+    } else watcher.observe(hero)
 
     // The scatter is only a few moving parts, so slow phones get it too.
     const stopScroll = rebuildOnLite(() => {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return () => undefined
+      // On touch screens the browser runs the scatter itself, straight from the scroll. See styles.css.
+      if (window.matchMedia('(pointer: coarse)').matches && CSS.supports('animation-timeline: scroll()')) return () => undefined
       const ctx = gsap.context(() => {
         const words = gsap.utils.toArray<HTMLElement>('[data-hero-words]', hero)
         // Coins on hidden rings don't need moving.
@@ -182,6 +201,7 @@ export function HeroRing() {
 
     return () => {
       watcher.disconnect()
+      window.removeEventListener('scroll', restWhileScrolling)
       stopScroll()
       stopPointer()
     }
