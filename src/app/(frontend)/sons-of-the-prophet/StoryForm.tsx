@@ -155,11 +155,11 @@ export function StoryForm() {
 
       <div className="mt-8 grid gap-4 text-[15px]">
         <label className="flex items-start gap-3">
-          <input type="checkbox" name="showName" defaultChecked className="mt-1 size-4 accent-[#f0a92b]" />
+          <input type="checkbox" name="showName" defaultChecked className="mt-0.5 size-5 shrink-0 accent-[#f0a92b]" />
           <span>Show my name with my story.</span>
         </label>
         <label className="flex items-start gap-3">
-          <input type="checkbox" name="consent" aria-invalid={!!e.consent} className="mt-1 size-4 scroll-mt-28 accent-[#f0a92b]" />
+          <input type="checkbox" name="consent" aria-invalid={!!e.consent} className="mt-0.5 size-5 shrink-0 scroll-mt-28 accent-[#f0a92b]" />
           <span>
             I consent to Dunamis International Gospel Centre publishing this story (and my photos or video, if provided) on its website and channels.<span className="text-gold"> *</span>
             {e.consent && <span className="mt-1 block text-[#ff8a7a]">{e.consent}</span>}

@@ -8,13 +8,13 @@ import { FallingLines } from './FallingLines'
 /** Inner-page hero: grey top glow, two glass tubes on a tilted layer, centred title. */
 export function PageHero({ eyebrow, title, intro, children }: { eyebrow?: string; title: string; intro?: string; children?: ReactNode }) {
   return (
-    <section className="relative isolate overflow-hidden pt-[130px] pb-16 text-center sm:pt-[170px] sm:pb-24">
+    <section className="relative isolate overflow-hidden pt-[130px] pb-[104px] text-center sm:pt-[170px] sm:pb-24">
       <div aria-hidden className="bg-ticks absolute inset-0 -z-20" />
       <FallingLines className="-z-20" />
       <div aria-hidden className="glow absolute -top-[420px] left-1/2 -z-10 h-[900px] w-[2184px] -translate-x-1/2 [--glow-strength:0.7] [--glow:28_28_28]" />
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 rotate-[-13deg]">
-        <GlassImage lazy src={renders.glassTube} className="absolute top-[55%] -left-[14%] hidden w-[30vw] max-w-[420px] rotate-90 sm:block" />
-        <GlassImage src={renders.glassTube} className="absolute top-[-4%] -right-[26%] w-[42vw] max-w-[420px] -rotate-90 sm:top-[5%] sm:-right-[14%] sm:w-[30vw]" />
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 sm:rotate-[-13deg]">
+        <GlassImage src={renders.glassTube} className="absolute bottom-[-10px] -left-[7%] w-[29vw] max-w-[420px] rotate-[77deg] sm:top-[55%] sm:bottom-auto sm:-left-[14%] sm:w-[30vw] sm:rotate-90" />
+        <GlassImage src={renders.glassTube} className="absolute top-[78px] -right-[7%] w-[29vw] max-w-[420px] -rotate-[103deg] sm:top-[5%] sm:-right-[14%] sm:w-[30vw] sm:-rotate-90" />
       </div>
       <div className="container-site">
         {eyebrow && <Label className="mb-6">{eyebrow}</Label>}

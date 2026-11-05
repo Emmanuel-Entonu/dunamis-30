@@ -22,28 +22,17 @@
   --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
 
   --animate-marquee: marquee 30s linear infinite;
+  --animate-strip: marquee 80s linear infinite;
   --animate-marquee-fast: marquee 15s linear infinite;
   --animate-spin-slow: spin 4s linear infinite;
   --animate-float: float 6s ease-in-out infinite;
   --animate-card-shine: card-shine 7s ease-in-out infinite;
   --animate-sweep: sweep 1.5s ease-out 1 both;
   --animate-rise: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  --animate-hand-in: hand-in 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-crest-in: crest-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
   --animate-marquee-reverse: marquee 30s linear infinite reverse;
+  --animate-step-in: step-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 
   /* The hero hand is on screen from the first paint, so only its size animates. */
-  @keyframes hand-in {
-    from {
-      transform: scale(0.9);
-    }
-  }
-  @keyframes crest-in {
-    from {
-      opacity: 0;
-      transform: rotateY(160deg) scale(0.4);
-    }
-  }
 
   @keyframes rise {
     from {
@@ -53,6 +42,14 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  /* One step of the card editor replacing another, from the side it's moving towards. */
+  @keyframes step-in {
+    from {
+      opacity: 0;
+      transform: translateX(var(--step-from, 0));
     }
   }
 
@@ -225,28 +222,34 @@
     border-color: var(--color-gold);
     color: var(--color-gold-ink);
   }
-  .btn-primary:hover {
-    background: #fff;
-    border-color: #fff;
-    color: var(--color-gold-deep);
+  @media (hover: hover) {
+    .btn-primary:hover {
+      background: #fff;
+      border-color: #fff;
+      color: var(--color-gold-deep);
+    }
   }
   .btn-light {
     background: #fff;
     border-color: #fff;
     color: #0f0f0f;
   }
-  .btn-light:hover {
-    background: var(--color-gold);
-    border-color: var(--color-gold);
-    color: var(--color-gold-ink);
+  @media (hover: hover) {
+    .btn-light:hover {
+      background: var(--color-gold);
+      border-color: var(--color-gold);
+      color: var(--color-gold-ink);
+    }
   }
   .btn-outline {
     border-color: var(--color-gold);
     color: #fff;
   }
-  .btn-outline:hover {
-    background: var(--color-gold);
-    color: var(--color-gold-ink);
+  @media (hover: hover) {
+    .btn-outline:hover {
+      background: var(--color-gold);
+      color: var(--color-gold-ink);
+    }
   }
 
   .card {
@@ -276,6 +279,356 @@
     width: 1px;
     background: linear-gradient(to bottom, transparent 320px, rgb(255 255 255 / 0.7) 420px, transparent 420px) 0 0 / 1px 420px repeat-y;
     animation: line-fall 3.8s linear infinite;
+  }
+
+  /*
+   * The home page hero: words above, the crest in the exact middle with coins circling it, the button below.
+   * The ring is a container, so everything in it is sized from the room it has been given. Each coin moves
+   * with a stack of wrappers, one job each, all transforms the graphics chip can run by itself.
+   */
+  .hero {
+    --height: max(100svh, 600px);
+    --top: 80px;
+    --foot: 10px;
+    --words: 96px;
+    display: grid;
+    /* The two outer rows are always the same height, which is what keeps the crest in the exact middle. */
+    grid-template-rows: minmax(var(--words), 1fr) min(100vw, calc(var(--height) - var(--top) - var(--foot) - var(--words) * 2)) minmax(var(--words), 1fr);
+    height: var(--height);
+    padding: var(--top) 0 var(--foot);
+  }
+  .hero-title,
+  .hero-action {
+    min-width: 0;
+  }
+  .hero-ring {
+    position: relative;
+    z-index: 1;
+    min-height: 0;
+    container-type: size;
+  }
+  .hero-ring[data-resting] * {
+    animation-play-state: paused !important;
+  }
+  .hero-origin {
+    --u: min(1cqw, 1cqh);
+    --r: min(40.5cqw, 38cqh);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+  }
+  .hero-spread,
+  .hero-lean,
+  .hero-centre {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+  }
+  .hero-rotor {
+    position: absolute;
+    width: 0;
+    height: 0;
+    animation: hero-orbit var(--orbit, 30s) linear infinite;
+  }
+  .hero-oval {
+    --oval: 2.3;
+    position: absolute;
+    width: 0;
+    height: 0;
+    transform: scaleX(var(--oval));
+  }
+  .hero-rotor-outer {
+    --r: min(40.5cqw, 40cqh);
+    --orbit: 52s;
+    animation-direction: reverse;
+    opacity: 0.86;
+  }
+  .hero-rotor-outer .hero-arm {
+    animation: none;
+  }
+  /* Keeps each coin in the oval round, instead of stretched like the oval itself. */
+  .hero-rotor-outer .hero-undo-oval {
+    transform: scaleX(calc(1 / var(--oval)));
+  }
+  .hero-undo-oval,
+  .hero-fly {
+    width: 0;
+    height: 0;
+  }
+  .hero-orbit-line {
+    position: absolute;
+    width: calc(var(--r) * 2);
+    height: calc(var(--r) * 2);
+    margin: calc(var(--r) * -1) 0 0 calc(var(--r) * -1);
+    border: 1px dashed rgb(240 169 43 / 0.2);
+    border-radius: 50%;
+  }
+  .hero-rotor-outer .hero-orbit-line {
+    border-color: rgb(240 169 43 / 0.1);
+  }
+  .hero-arm {
+    position: absolute;
+    width: 0;
+    height: 0;
+    transform: rotate(var(--a));
+    animation: hero-sway var(--sway-time) ease-in-out var(--sway-from) infinite alternate;
+  }
+  .hero-burst {
+    width: 0;
+    height: 0;
+    animation: hero-burst 1.25s cubic-bezier(0.2, 1.25, 0.35, 1) both;
+  }
+  .hero-out {
+    width: 0;
+    height: 0;
+    transform: translateX(calc(var(--r) * (var(--near) + var(--far)) / 2));
+    animation: hero-swing 6s ease-in-out infinite alternate;
+  }
+  .hero-upright {
+    width: 0;
+    height: 0;
+    transform: rotate(calc(var(--a) * -1));
+    animation: hero-upright var(--orbit, 30s) linear infinite;
+  }
+  .hero-rotor-outer .hero-upright {
+    animation-direction: reverse;
+  }
+  .hero-dance {
+    width: 0;
+    height: 0;
+    animation: hero-dance 5s ease-in-out infinite;
+  }
+  .hero-coin-art {
+    position: absolute;
+    top: calc(var(--s) * var(--u) / -2);
+    left: calc(var(--s) * var(--u) / -2);
+    display: block;
+    width: calc(var(--s) * var(--u));
+    max-width: none;
+    height: auto;
+  }
+  .hero-rays {
+    position: absolute;
+    top: calc(var(--u) * -62);
+    left: calc(var(--u) * -62);
+    display: block;
+    width: calc(var(--u) * 124);
+    max-width: none;
+    height: auto;
+    opacity: 0.72;
+    animation: hero-orbit 90s linear infinite reverse;
+  }
+  .hero-halo {
+    position: absolute;
+    top: calc(var(--u) * -34);
+    left: calc(var(--u) * -34);
+    width: calc(var(--u) * 68);
+    height: calc(var(--u) * 68);
+    animation: hero-halo 3.6s ease-in-out infinite alternate;
+  }
+  .hero-seal {
+    position: absolute;
+    top: calc(var(--u) * -25.5);
+    left: calc(var(--u) * -25.5);
+    display: grid;
+    width: calc(var(--u) * 51);
+    height: calc(var(--u) * 51);
+    place-items: center;
+  }
+  .hero-seal-text {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    animation: hero-orbit 26s linear infinite reverse;
+  }
+  .hero-crest {
+    position: relative;
+    width: 68%;
+    height: auto;
+    filter: drop-shadow(0 14px 22px rgb(0 0 0 / 0.65));
+    animation: hero-crest 1.1s cubic-bezier(0.2, 1.3, 0.35, 1) both;
+  }
+  .hero-button-pulse {
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    background: var(--color-gold);
+    animation: hero-button-pulse 2.2s ease-out infinite;
+  }
+  .hero-note-arrow {
+    animation: hero-note 1.5s ease-in-out infinite alternate;
+  }
+  @keyframes hero-orbit {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  /* Exactly undoes the ring's turn, so that every coin stays upright all the way round. */
+  @keyframes hero-upright {
+    from {
+      transform: rotate(calc(var(--a) * -1));
+    }
+    to {
+      transform: rotate(calc(var(--a) * -1 - 360deg));
+    }
+  }
+  /* Forward and back along the circle. */
+  @keyframes hero-sway {
+    from {
+      transform: rotate(calc(var(--a) - 9deg));
+    }
+    to {
+      transform: rotate(calc(var(--a) + 9deg));
+    }
+  }
+  /* In towards the crest and out again. */
+  @keyframes hero-swing {
+    from {
+      transform: translateX(calc(var(--r) * var(--near)));
+    }
+    to {
+      transform: translateX(calc(var(--r) * var(--far)));
+    }
+  }
+  /* Thrown out from the crest as the page opens. */
+  @keyframes hero-burst {
+    from {
+      opacity: 0;
+      transform: translateX(calc(var(--r) * -1)) scale(0.15);
+    }
+  }
+  /* The dance itself: bobbing, turning side to side, and swelling. */
+  @keyframes hero-dance {
+    0%,
+    100% {
+      transform: perspective(600px) translateY(0) rotate(0deg) rotateY(0deg) rotateX(0deg) scale(1);
+    }
+    25% {
+      transform: perspective(600px) translateY(calc(var(--u) * -2.6)) rotate(6deg) rotateY(var(--flip)) rotateX(10deg) scale(1.08);
+    }
+    50% {
+      transform: perspective(600px) translateY(calc(var(--u) * 1.4)) rotate(-3deg) rotateY(calc(var(--flip) * -0.5)) rotateX(-6deg) scale(0.97);
+    }
+    75% {
+      transform: perspective(600px) translateY(calc(var(--u) * -1.2)) rotate(-7deg) rotateY(calc(var(--flip) * -1)) rotateX(8deg) scale(1.05);
+    }
+  }
+  @keyframes hero-halo {
+    from {
+      opacity: 0.55;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1.14);
+    }
+  }
+  @keyframes hero-crest {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+  }
+  @keyframes hero-button-pulse {
+    from {
+      opacity: 0.55;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.22, 1.5);
+    }
+  }
+  @keyframes hero-note {
+    from {
+      transform: translate(0, 0);
+    }
+    to {
+      transform: translate(-5px, 2px);
+    }
+  }
+  @media (min-width: 640px) {
+    .hero {
+      --words: 104px;
+    }
+  }
+  @media (min-width: 1024px) {
+    .hero {
+      --height: max(100svh, 660px);
+      --top: 94px;
+      --foot: 12px;
+      --words: 92px;
+    }
+  }
+  /* A phone held sideways: words and button on one side, the ring on the other, all on the first screen. */
+  @media (max-height: 500px) and (min-width: 560px) {
+    .hero {
+      --height: max(100svh, 320px);
+      --top: 84px;
+      grid-template-rows: minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-areas: 'title ring' 'action ring';
+    }
+    .hero-title {
+      grid-area: title;
+    }
+    .hero-title p {
+      font-size: 12.5px !important;
+    }
+    .hero-title h1 {
+      margin-top: 4px !important;
+      font-size: clamp(1.625rem, 8.5svh, 2.5rem) !important;
+    }
+    .hero-action {
+      grid-area: action;
+      padding-top: 6px;
+    }
+    .hero-ring {
+      grid-area: ring;
+    }
+  }
+  /* Too narrow to keep the note beside the button, so it sits on one line beneath it. */
+  @media (max-height: 500px) and (min-width: 560px) and (max-width: 719px) {
+    .hero-action a {
+      flex-direction: column;
+      gap: 6px !important;
+    }
+    .hero-action a > span:last-child > span {
+      max-width: none !important;
+      white-space: nowrap;
+    }
+    .hero-note-arrow {
+      scale: 1 -1;
+    }
+  }
+  /* The note is beneath the button here too, so its arrow points up at it. */
+  @media (max-width: 300px) {
+    .hero-note-arrow {
+      scale: 1 -1;
+    }
+  }
+  /*
+   * Older phones. Before these newer units, the ring would collapse into a pile in the middle, and the
+   * page could scroll sideways. These stand in for them closely enough.
+   */
+  @supports not (height: 100svh) {
+    .hero {
+      --height: max(100vh, 600px);
+    }
+  }
+  @supports not (width: 1cqw) {
+    .hero-origin {
+      --u: min(1vw, calc((100vh - 290px) / 100));
+      --r: min(40.5vw, calc((100vh - 290px) * 0.38));
+    }
+    .hero-rotor-outer {
+      --r: min(40.5vw, calc((100vh - 290px) * 0.4));
+    }
   }
 
   /* A soft pool of light. Looks like a heavy blur, which costs a slow phone dearly to draw, for the price of a gradient. */
@@ -448,6 +801,12 @@
   }
 }
 
+@supports not (overflow: clip) {
+  html {
+    overflow-x: hidden;
+  }
+}
+
 /*
  * The homepage's closing card scene overlaps the footer band; give the footer room for the slip.
  * Unlayered on purpose so it beats the footer's padding utilities.
@@ -467,14 +826,25 @@ body:has([data-sleeve-scene]) .footer-top {
  */
 :root[data-lite='1'] .falling-line,
 :root[data-lite='1'] .dots,
-:root[data-lite='1'] [data-passing],
 :root[data-lite='1'] [data-year-card]:nth-child(even) {
   display: none;
 }
 :root[data-lite='1'] .animate-float,
 :root[data-lite='1'] .animate-spin-slow,
-:root[data-lite='1'] .animate-card-shine {
+:root[data-lite='1'] .animate-card-shine,
+:root[data-lite='1'] .hero-burst,
+:root[data-lite='1'] .hero-arm,
+:root[data-lite='1'] .hero-out,
+:root[data-lite='1'] .hero-dance,
+:root[data-lite='1'] .hero-rays,
+:root[data-lite='1'] .hero-halo,
+:root[data-lite='1'] .hero-seal-text,
+:root[data-lite='1'] .hero-button-pulse,
+:root[data-lite='1'] .hero-note-arrow {
   animation: none;
+}
+:root[data-lite='1'] .hero-button-pulse {
+  opacity: 0;
 }
 :root[data-lite='1'] *,
 :root[data-lite='1'] *::before,

@@ -1,13 +1,13 @@
 import Link from '@/components/SiteLink'
 
 import { renders } from '@/assets/renders'
-import { getSite } from '@/lib/content'
+import { getSite, testimonyFormOpen } from '@/lib/content'
 import { defaultContacts, venueAddress, whatsappLink } from '@/lib/ministry'
 import { navItems, tagline } from '@/lib/site'
 import { socialIcons } from './icons'
 import { GlassImage } from './GlassImage'
 import { Logo } from './Logo'
-import { Marquee } from './Reveal'
+import { CrusadeStrip } from './CrusadeStrip'
 
 const takePart = [
   { href: '/social-card', label: 'I Am Attending' },
@@ -20,31 +20,24 @@ const takePart = [
 const explore = navItems.filter((n) => n.href !== '/' && !takePart.some((t) => t.href === n.href))
 
 export async function SiteFooter() {
-  const site = await getSite()
+  const [site, formOpen] = await Promise.all([getSite(), testimonyFormOpen()])
   const contacts = site.contacts ?? []
 
   return (
     <footer className="relative isolate overflow-hidden">
-      <div className="bg-white/[0.03] py-5 backdrop-blur-[5px]">
-        <Marquee
-          items={['One ministry', 'Thirty years', 'Millions of stories', 'One continuing legacy']}
-          itemClassName="text-base font-bold text-soft uppercase sm:text-lg"
-        />
-      </div>
+      <CrusadeStrip />
 
       <div aria-hidden className="flare absolute inset-x-0 bottom-0 -z-10 h-[420px] opacity-60" />
       <GlassImage
-        lazy
         src={renders.glassTube}
-        className="pointer-events-none absolute -bottom-16 -left-28 -z-10 hidden w-[300px] rotate-[66deg] opacity-90 md:block"
+        className="pointer-events-none absolute -bottom-3 -left-5 -z-10 w-[118px] rotate-[66deg] opacity-90 md:-bottom-16 md:-left-28 md:w-[300px]"
       />
       <GlassImage
-        lazy
         src={renders.glassTube}
-        className="pointer-events-none absolute top-16 -right-28 -z-10 hidden w-[300px] rotate-[-113deg] opacity-90 md:block"
+        className="pointer-events-none absolute top-[84px] -right-10 -z-10 w-[150px] rotate-[-113deg] opacity-90 md:top-16 md:-right-28 md:w-[300px]"
       />
 
-      <div className="footer-top container-site pt-20 pb-10 lg:pt-[140px]">
+      <div className="footer-top container-site pt-20 pb-[108px] md:pb-10 lg:pt-[140px]">
         <div className="flex flex-col gap-14 lg:flex-row lg:justify-between lg:gap-[90px]">
           <div className="lg:max-w-[450px]">
             <Logo size="lg" />
@@ -54,7 +47,7 @@ export async function SiteFooter() {
                 {venueAddress}
                 <br />
                 WhatsApp:{' '}
-                <a className="text-fg hover:text-gold" href={whatsappLink(defaultContacts[0].whatsapp!)} target="_blank" rel="noopener noreferrer">
+                <a className="-my-1.5 inline-block py-1.5 text-fg hover:text-gold" href={whatsappLink(defaultContacts[0].whatsapp!)} target="_blank" rel="noopener noreferrer">
                   {defaultContacts[0].whatsapp}
                 </a>
               </p>
@@ -96,7 +89,7 @@ export async function SiteFooter() {
             <nav aria-label="Take part">
               <p className="text-lg font-semibold text-gold sm:text-xl">Take Part</p>
               <ul className="mt-4">
-                {takePart.map((item) => (
+                {takePart.filter((link) => formOpen || link.href !== '/testimonies#share').map((item) => (
                   <li key={item.href}>
                     <Link href={item.href} className="block py-2 text-base transition-colors hover:text-fg sm:text-lg">
                       {item.label}
@@ -111,15 +104,15 @@ export async function SiteFooter() {
         <div className="mt-16 flex flex-col-reverse gap-6 border-t border-white/20 pt-8 sm:mt-[90px] sm:flex-row sm:items-center sm:justify-between sm:pt-10">
           <p className="text-sm sm:text-base">
             © {new Date().getFullYear()} Dunamis International Gospel Centre ·{' '}
-            <a href={site.officialWebsite} target="_blank" rel="noopener noreferrer" className="hover:text-fg">
+            <a href={site.officialWebsite} target="_blank" rel="noopener noreferrer" className="inline-block py-2 hover:text-fg">
               Official Website
             </a>{' '}
             ·{' '}
-            <Link href="/privacy" className="hover:text-fg">
+            <Link href="/privacy" className="inline-block py-2 hover:text-fg">
               Privacy
             </Link>{' '}
             ·{' '}
-            <Link href="/terms" className="hover:text-fg">
+            <Link href="/terms" className="inline-block py-2 hover:text-fg">
               Terms
             </Link>
           </p>

@@ -69,6 +69,10 @@ Add `?lite=1` to any address to see it, and `?lite=0` to go back. The browser re
 
 The glass objects in `src/assets/glass` and `src/assets/renders` are rendered from `src/components/three` by `scripts/capture-glass.mjs` and `scripts/capture-renders.mjs`, with the development server running.
 
+## Hero coins
+
+The coins around the home page hero are real 3D models, rendered to `src/assets/coins` by `node scripts/render-coins.mjs`. The words on them come from the ministry's mission and founding story. Their sizes and how they move round the crest are in `src/components/home/HeroRing.tsx`. Keep every coin upright as it orbits: a cross must never turn upside down.
+
 ## Link previews
 
 The image people see when a link is shared is `public/og-dunamis-30-slip.jpg`. Run `node scripts/render-og.mjs` to redraw it. Testimonies and stories with a photo use that photo instead. WhatsApp and Facebook cache previews, so give a new image a new file name.

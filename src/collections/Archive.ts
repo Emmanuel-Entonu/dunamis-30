@@ -5,6 +5,7 @@ import { anyone, isAdmin, isEditor, isStaff } from '@/access/roles'
 export const Milestones: CollectionConfig = {
   slug: 'milestones',
   admin: {
+    hidden: true,
     useAsTitle: 'title',
     defaultColumns: ['year', 'title', 'category'],
     group: 'Media & Archive',
@@ -41,6 +42,7 @@ export const GalleryItems: CollectionConfig = {
   slug: 'gallery',
   labels: { singular: 'Gallery item', plural: 'Media gallery' },
   admin: {
+    hidden: true,
     useAsTitle: 'title',
     defaultColumns: ['title', 'year', 'category', 'event'],
     group: 'Media & Archive',
@@ -80,6 +82,7 @@ export const CardEvents: CollectionConfig = {
   slug: 'card-events',
   labels: { singular: 'Social card event', plural: 'Social card activity' },
   admin: {
+    hidden: true,
     defaultColumns: ['template', 'format', 'action', 'country', 'createdAt'],
     group: 'Registrations',
   },

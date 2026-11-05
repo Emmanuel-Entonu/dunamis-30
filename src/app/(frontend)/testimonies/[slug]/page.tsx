@@ -7,7 +7,7 @@ import { ArrowRight, ChevronLeft } from '@/components/icons'
 import { ShareButtons } from '@/components/ShareButtons'
 import { TestimonyVideo } from '@/components/TestimonyVideo'
 import { categoryLabels } from '@/lib/categories'
-import { getTestimonyBySlug, mediaUrl } from '@/lib/content'
+import { getTestimonyBySlug, mediaUrl, testimonyFormOpen } from '@/lib/content'
 import { shareImage } from '@/lib/site'
 import { embedUrl } from '@/lib/video'
 
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function TestimonyPage({ params }: Params) {
   const { slug } = await params
-  const t = await getTestimonyBySlug(slug)
+  const [t, formOpen] = await Promise.all([getTestimonyBySlug(slug), testimonyFormOpen()])
   if (!t) notFound()
 
   const image = mediaUrl(t.photo ?? null, 'hero')
@@ -80,15 +80,17 @@ export default async function TestimonyPage({ params }: Params) {
           <ShareButtons url={`/testimonies/${slug}`} text={`${t.title}: a testimony from Dunamis`} />
         </div>
 
-        <div className="card mt-12 flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-10">
-          <div>
-            <h2 className="h-card">Has God done something for you too?</h2>
-            <p className="mt-2">We’d love to hear about it.</p>
+        {formOpen && (
+          <div className="card mt-12 flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-10">
+            <div>
+              <h2 className="h-card">Has God done something for you too?</h2>
+              <p className="mt-2">We’d love to hear about it.</p>
+            </div>
+            <Link href="/testimonies#share" className="btn btn-primary self-start sm:self-auto">
+              Share your testimony <ArrowRight width={18} height={18} />
+            </Link>
           </div>
-          <Link href="/testimonies#share" className="btn btn-primary self-start sm:self-auto">
-            Share your testimony <ArrowRight width={18} height={18} />
-          </Link>
-        </div>
+        )}
       </div>
     </article>
   )

@@ -35,8 +35,8 @@ export function ScrubText({ text, as: Tag = 'p', className = '' }: { text: strin
   )
 }
 
-/** A picture that opens from an inset, rounded frame to its full width as it scrolls in. */
-export function GrowFrame({ children, className = '' }: { children: ReactNode; className?: string }) {
+/** A picture that opens from an inset, rounded frame to its full width as it scrolls in. `overlay` sits on top and stays put. */
+export function GrowFrame({ children, overlay, className = '' }: { children: ReactNode; overlay?: ReactNode; className?: string }) {
   const root = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -60,6 +60,7 @@ export function GrowFrame({ children, className = '' }: { children: ReactNode; c
         <div data-frame-image className="absolute inset-0 will-change-transform">
           {children}
         </div>
+        {overlay}
       </div>
     </div>
   )

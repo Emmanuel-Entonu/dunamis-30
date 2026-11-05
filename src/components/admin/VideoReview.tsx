@@ -10,8 +10,9 @@ const length = (seconds?: number | null) => (seconds ? `${Math.floor(seconds / 6
 const size = (bytes?: number | null) => (bytes ? `${Math.max(1, Math.round(bytes / (1024 * 1024)))} MB` : null)
 
 /**
- * At the top of a testimony or story: watch the video before approving it, replace it, or remove it.
- * Editors can also upload a video for someone, for example one sent in on WhatsApp.
+ * In a testimony or story: watch the video before approving it. Changing it is tucked away underneath.
+ * A saved video plays from a temporary link the page asks for itself. Pointing the player at the protected
+ * address would rely on the browser sending the login along with the video, which not every phone does.
  */
 export function VideoReview({ kind }: { kind: 'testimony' | 'story' }) {
   const { id, collectionSlug } = useDocumentInfo()
@@ -27,8 +28,26 @@ export function VideoReview({ kind }: { kind: 'testimony' | 'story' }) {
   const [status, setStatus] = useState('')
   const [problem, setProblem] = useState('')
   const [playable, setPlayable] = useState(true)
+  const [signedUrl, setSignedUrl] = useState('')
+  const [linkFailed, setLinkFailed] = useState(false)
 
   useEffect(() => () => void (localUrl && URL.revokeObjectURL(localUrl)), [localUrl])
+
+  useEffect(() => {
+    if (!id || !savedPath) return
+    let live = true
+    fetch(`/watch/${kind}/${id}?link=1`, { credentials: 'include', cache: 'no-store' })
+      .then((res) => (res.ok ? (res.json() as Promise<{ url: string }>) : Promise.reject(new Error(String(res.status)))))
+      .then(({ url }) => {
+        if (live) setSignedUrl(url)
+      })
+      .catch(() => {
+        if (live) setLinkFailed(true)
+      })
+    return () => {
+      live = false
+    }
+  }, [id, kind, savedPath])
 
   const upload = async (file?: File) => {
     if (!file) return
@@ -80,13 +99,14 @@ export function VideoReview({ kind }: { kind: 'testimony' | 'story' }) {
     setStatus('Removed. Press Save to delete it for good.')
   }
 
-  // A saved video plays through the protected route. A new one plays from this computer until saved.
-  const source = localUrl || (path.value && path.value === savedPath && id ? `/watch/${kind}/${id}` : '')
+  // A new video plays from this computer until it's saved.
+  const saved = Boolean(path.value && path.value === savedPath && id)
+  const source = localUrl || (saved ? signedUrl : '')
   const facts = [length(durationSec.value), size(sizeBytes.value)].filter(Boolean).join(' · ')
 
   return (
-    <div style={{ marginBottom: 'calc(var(--base) * 1.5)' }}>
-      <p style={{ margin: '0 0 8px', fontWeight: 600 }}>Video</p>
+    <section className="review-block">
+      {path.value ? <h3>Their video</h3> : null}
       {source ? (
         <>
           {/* Reviewers watch the original recording. Captions don't exist at this stage. */}
@@ -102,22 +122,33 @@ export function VideoReview({ kind }: { kind: 'testimony' | 'story' }) {
           />
           {facts && <p style={{ margin: '8px 0 0', fontSize: 13, opacity: 0.75 }}>{facts}</p>}
           {!playable && (
-            <p style={{ margin: '8px 0 0', fontSize: 13, color: '#ff8a7a' }}>This video won’t play in this browser. Try another browser, or ask the person to send it again before approving it.</p>
+            <p className="review-problem">
+              This video won’t play here.{' '}
+              <a href={source} target="_blank" rel="noopener noreferrer">
+                Try opening it on its own
+              </a>
+              . If that doesn’t work either, ask the person to send it again before approving it.
+            </p>
           )}
         </>
-      ) : (
-        <p style={{ margin: 0, fontSize: 13, opacity: 0.75 }}>No video uploaded.</p>
-      )}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
-        <Button buttonStyle="secondary" size="small" margin={false} disabled={Boolean(status) && /…/.test(status)} onClick={() => input.current?.click()}>
-          {path.value ? 'Replace video' : 'Upload a video'}
-        </Button>
-        {path.value && (
-          <Button buttonStyle="secondary" size="small" margin={false} disabled={Boolean(status) && /…/.test(status)} onClick={remove}>
-            Remove video
+      ) : saved && linkFailed ? (
+        <p className="review-problem">The video couldn’t be loaded just now. Please check your connection and reload this page.</p>
+      ) : saved ? (
+        <p className="review-muted">Loading the video…</p>
+      ) : null}
+      <details className="review-tools">
+        <summary>{path.value ? 'Change or remove this video' : 'Add a video someone sent you'}</summary>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+          <Button buttonStyle="secondary" size="small" margin={false} disabled={Boolean(status) && /…/.test(status)} onClick={() => input.current?.click()}>
+            {path.value ? 'Replace video' : 'Choose a video'}
           </Button>
-        )}
-      </div>
+          {path.value && (
+            <Button buttonStyle="secondary" size="small" margin={false} disabled={Boolean(status) && /…/.test(status)} onClick={remove}>
+              Remove video
+            </Button>
+          )}
+        </div>
+      </details>
       <input
         ref={input}
         type="file"
@@ -129,7 +160,7 @@ export function VideoReview({ kind }: { kind: 'testimony' | 'story' }) {
         }}
       />
       {status && <p style={{ margin: '8px 0 0', fontSize: 13 }}>{status}</p>}
-      {problem && <p style={{ margin: '8px 0 0', fontSize: 13, color: '#ff8a7a' }}>{problem}</p>}
-    </div>
+      {problem && <p className="review-problem">{problem}</p>}
+    </section>
   )
 }

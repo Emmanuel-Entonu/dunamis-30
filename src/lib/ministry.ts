@@ -43,16 +43,33 @@ export const defaultFaqs: FaqEntry[] = [
   },
 ]
 
-/** The church's own wording, from its website. */
+/** The FAQ, worded for whether the testimony form is switched on. */
+export const faqsFor = (testimonyFormOpen: boolean): FaqEntry[] =>
+  testimonyFormOpen
+    ? defaultFaqs
+    : defaultFaqs.map((faq) =>
+        faq.question === 'How do I share my testimony or my story?'
+          ? { ...faq, answer: 'We’re not taking new testimonies at the moment. You can still share your story on the Sons of the Prophet page, and our communications team reads each one before it goes up.' }
+          : faq,
+      )
+
+/** The ministry's official wording, as supplied for this site. */
 export const vision = {
-  vision: 'The restoration of human destinies and dignity by the administration of the benefit of redemption, through the ministry of the word and the demonstration of power.',
-  mission: 'Saturating the earth with kingdom people, principles, power and presence.',
-  goal: 'A member everywhere people work or live, as evidence of God’s saving, healing, liberating, lifting and transforming power.',
+  vision: 'The restoration of human destiny and dignity by the administration of the benefits of Redemption, through the ministry of the Word and the demonstration of power.',
+  mission: 'To blanket this world with the evidence of God’s saving, healing, delivering and lifting power everywhere people live, work or play.',
+  goal: 'To connect humanity with the Person, Presence, passion, purpose, potential, principles and power of the Almighty, releasing people to fulfil their earthly purpose and ultimately possess Heaven.',
 }
 
-export type DefaultMilestone = { key: string; art: GlassKey; date: string; title: string; text: string; photo?: string }
+export type DefaultMilestone = { key: string; art: GlassKey; date: string; title: string; text: string; photo?: string; label?: string }
 
 export const defaultMilestones: DefaultMilestone[] = [
+  {
+    key: 'first-outreach',
+    art: 'house',
+    date: 'July 1996',
+    title: 'The first outreach',
+    text: 'The first outreach meeting is held in the banquet hall of the Agura Hotel. They leave their jobs and move to Abuja, and for 13 months home is one room in Zone 7.',
+  },
   {
     key: 'founded',
     art: 'flame',
@@ -116,6 +133,15 @@ export const defaultMilestones: DefaultMilestone[] = [
     title: 'Free medical outreach',
     text: 'A team takes free medical care to communities in Kogi and Benue. Reports put the number of people reached at 5,000.',
     photo: 'medical-care',
+  },
+  {
+    key: 'crusades',
+    art: 'world',
+    date: '2026',
+    title: 'Crusades across the nations',
+    text: 'This year the crusades have gone to Venezuela, Argentina, Canada, Romania, Latvia, Angola, Lesotho and Zambia, and to Madalla, Lagos and Enugu here in Nigeria.',
+    photo: 'lesotho-prayer',
+    label: 'Lesotho',
   },
   {
     key: 'thirty',

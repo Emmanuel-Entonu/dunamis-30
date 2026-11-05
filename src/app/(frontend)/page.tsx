@@ -11,21 +11,22 @@ import { FlipCountdown } from '@/components/Countdown'
 import { FallingLines } from '@/components/FallingLines'
 import { Faq } from '@/components/Faq'
 import { CardScene } from '@/components/home/CardScene'
+import { Carousel } from '@/components/home/Carousel'
 import CircularCarousel from '@/components/home/CircularCarousel'
-import { HeroHand, HeroTubes } from '@/components/home/HeroHand'
+import { HeroRing } from '@/components/home/HeroRing'
 import { SleeveCard } from '@/components/home/SleeveCard'
 import { YearStack } from '@/components/home/YearStack'
 import { ArrowRight, BookOpen, Calendar, CrossIcon, Crown, Flame, Globe, Heart, MapPin, Share, Sparkle } from '@/components/icons'
 import { Reveal } from '@/components/Reveal'
-import { getEvent, getHomepage, getSite } from '@/lib/content'
-import { defaultFaqs, directionsUrl } from '@/lib/ministry'
-import { defaultGallery, photos } from '@/lib/photos'
+import { getEvent, getHomepage, getSite, testimonyFormOpen } from '@/lib/content'
+import { faqsFor, directionsUrl } from '@/lib/ministry'
+import { crusadeNations, defaultGallery, photos } from '@/lib/photos'
 import { defaults, kpg } from '@/lib/site'
 
 export const revalidate = 60
 
 /** The official photographs on the Moments ring, by their gallery key. */
-const momentKeys = ['eyes', 'cameroon', 'wide', 'tears', 'prayer', 'celebration', 'singing', 'pews', 'raised', 'ministering']
+const momentKeys = ['crusade-argentinaHands', 'eyes', 'crusade-romaniaSunset', 'cameroon', 'crusade-canadaWorship', 'wide', 'crusade-lesothoRaised', 'celebration', 'crusade-thailandStudents', 'singing']
 const moments = momentKeys.flatMap((key) => {
   const photo = defaultGallery.find((g) => g.key === key)
   if (!photo) return []
@@ -71,7 +72,7 @@ function VisualTile({ label, title, text, visual, delay = 0 }: { label: string; 
 }
 
 export default async function HomePage() {
-  const [event, home, site] = await Promise.all([getEvent(), getHomepage(), getSite()])
+  const [event, home, site, formOpen] = await Promise.all([getEvent(), getHomepage(), getSite(), testimonyFormOpen()])
   const time = (iso: string) => fmt(iso, { hour: 'numeric', minute: '2-digit', hour12: true }).replace(' ', '')
   const eventTime = time(event.startsAt)
   const kpgDay = fmt(kpg.startsAt, { day: 'numeric', month: 'long' })
@@ -84,29 +85,36 @@ export default async function HomePage() {
         <FallingLines className="-z-10" />
 
       {/* Hero */}
-      <section className="relative isolate overflow-hidden">
+      <section className="hero relative isolate overflow-x-clip">
         <div aria-hidden className="glow absolute -top-[420px] left-1/2 -z-10 h-[900px] w-[2184px] -translate-x-1/2 [--glow-strength:0.7] [--glow:28_28_28]" />
-        <HeroTubes />
         {/* The gold glow eases out before the hero ends, so it never stops on a hard line */}
         <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-[360px] [mask-image:linear-gradient(to_bottom,#000_50%,transparent)] sm:h-[460px]">
           <div className="flare h-full" />
         </div>
 
-        {/* Promote the open event: date, venue, one headline, one action — the hand does the rest. */}
-        <div className="container-site relative z-10 pt-[108px] text-center sm:pt-[136px] lg:pt-[136px]">
-          <p className="text-[15px] font-medium text-gold-light sm:text-lg">
+        {/* The words above and the button below take the same height, so the crest sits in the exact middle */}
+        <div data-hero-words className="hero-title relative z-10 flex flex-col items-center justify-center px-5 text-center">
+          <p className="text-[13px] font-medium text-gold-light sm:text-base">
             {fmt(event.startsAt, { day: 'numeric', month: 'long', year: 'numeric' })} · {event.venue}, Abuja
           </p>
-          <h1 className="h-hero mx-auto mt-3 max-w-[1100px] sm:mt-4">{home.hero?.headline || defaults.headline}</h1>
-          <div className="mt-7 flex justify-center sm:mt-8">
-            <Link href="/social-card" className="btn btn-primary">
-              I Am Attending
-            </Link>
-          </div>
+          <h1 className="mt-1.5 text-[clamp(1.75rem,1rem+3vw,3.5rem)] leading-[1.08] font-medium tracking-[-0.018em] text-fg [text-shadow:0_2px_24px_rgb(0_0_0/0.75)] sm:mt-2">{home.hero?.headline || defaults.headline}</h1>
         </div>
 
-        <div className="relative -mt-2 pb-20 sm:-mt-8 sm:pb-16 lg:-mt-14">
-          <HeroHand />
+        <HeroRing />
+
+        <div data-hero-words className="hero-action relative z-10 flex items-center justify-center px-5">
+          <Link href="/social-card" className="group inline-flex items-center gap-2.5 text-left max-[300px]:flex-col sm:gap-3.5">
+            <span className="relative shrink-0">
+              <span aria-hidden className="hero-button-pulse" />
+              <span className="btn btn-primary relative">I Am Attending</span>
+            </span>
+            <span className="flex items-center gap-1.5 text-[13px] leading-[1.25] text-fg [text-shadow:0_1px_12px_rgb(0_0_0/0.9)] sm:gap-2 sm:text-[15px]">
+              <svg aria-hidden width="24" height="22" viewBox="0 0 24 22" fill="none" className="hero-note-arrow shrink-0 text-gold">
+                <path d="M22 3C17 2 9 4 3.5 14.5M3 8.5l.2 6.6 6.2-2.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className="max-w-[92px] sm:max-w-[120px]">Get your social card here</span>
+            </span>
+          </Link>
         </div>
       </section>
 
@@ -126,8 +134,8 @@ export default async function HomePage() {
           </Reveal>
                     <Reveal delay={120} className="card grid w-full grid-cols-2 gap-2 p-2 sm:gap-3 sm:p-3 lg:w-[580px]">
             {[
-              { src: photos.pastorPaul, name: 'Dr. Paul Enenche', role: 'Founder and Senior Pastor' },
-              { src: photos.pastorBecky, name: 'Dr. Becky Paul-Enenche', role: 'Senior Pastor' },
+              { src: photos.pastorPaulRed, name: 'Dr. Paul Enenche', role: 'Founder and Senior Pastor' },
+              { src: photos.pastorBeckyRed, name: 'Dr. Becky Paul-Enenche', role: 'Senior Pastor' },
             ].map((p) => (
               <figure key={p.name} className="group relative aspect-[5/7] overflow-hidden rounded-xl sm:rounded-2xl">
                 <Image src={p.src} alt={p.name} fill placeholder="blur" sizes="(min-width: 1024px) 280px, 46vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
@@ -140,6 +148,29 @@ export default async function HomePage() {
           </Reveal>
         </div>
       </section>
+
+      {/* The crusades in the nations */}
+      <div className="section">
+        <Carousel
+          label="Crusades in the nations"
+          header={
+            <Reveal>
+              <h2 className="h-section max-w-[560px]">Taking the gospel to the nations</h2>
+              <p className="mt-4 max-w-[560px]">This year alone, Dr. Paul and Dr. Becky have held crusades from Argentina to Romania and from Canada to Lesotho.</p>
+            </Reveal>
+          }
+        >
+          {crusadeNations.map((nation) => (
+            <figure key={nation.name} className="card group relative aspect-[5/4] overflow-hidden">
+              <Image src={nation.photo.src} alt={nation.photo.alt} fill sizes="(min-width: 640px) 580px, 86vw" placeholder="blur" className="object-cover transition-transform duration-700 group-hover:scale-105" />
+              <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/55 to-transparent p-5 pt-20 sm:p-7 sm:pt-24">
+                <span className="block text-[clamp(1.5rem,1.2rem+1.2vw,2.125rem)] leading-tight font-medium text-fg">{nation.name}</span>
+                <span className="mt-1 block text-[15px] leading-snug text-soft sm:text-base">{[nation.event, nation.when].filter(Boolean).join(', ')}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </Carousel>
+      </div>
 
       {/* This year's conference and its guests */}
       <section className="section relative isolate pb-20 sm:pb-[120px]">
@@ -301,7 +332,7 @@ export default async function HomePage() {
       </section>
 
       {/* Card stack: every year has a testimony */}
-      <YearStack body={home.journey?.body} />
+      <YearStack body={home.journey?.body} formOpen={formOpen} />
 
       {/* Sons of the Prophet */}
       <section className="section">
@@ -347,7 +378,7 @@ export default async function HomePage() {
             Questions people ask
           </Reveal>
           <div className="mt-10 lg:mt-[60px]">
-            <Faq items={site.faqs?.length ? site.faqs : defaultFaqs} />
+            <Faq items={site.faqs?.length ? site.faqs : faqsFor(formOpen)} />
           </div>
         </div>
       </section>

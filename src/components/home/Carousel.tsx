@@ -50,6 +50,7 @@ export function Carousel({ children, label, header }: { children: ReactNode; lab
       <div
         ref={track}
         onScroll={update}
+        tabIndex={0}
         className="mt-12 flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{ paddingInline: 'max(1rem, calc((100vw - 75rem) / 2 + 1.5rem))', scrollPaddingInline: 'max(1rem, calc((100vw - 75rem) / 2 + 1.5rem))' }}
       >

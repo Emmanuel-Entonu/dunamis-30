@@ -7,14 +7,14 @@ import anointingBook from '@/assets/books/anointing-of-the-holy-spirit.webp'
 import formerLatterRain from '@/assets/books/former-and-latter-rain.webp'
 import triggersBook from '@/assets/books/triggers-of-the-move-of-god.webp'
 import { glass } from '@/assets/glass'
-import { ClosingBand, FeatureTile, GlassArt, GlassTile, PhotoWithGlass, ShowcaseCard, SplitHeader, StorySplit } from '@/components/blocks'
+import { ClosingBand, CrusadeTile, FeatureTile, GlassArt, GlassTile, PhotoWithGlass, ShowcaseCard, SplitHeader, StorySplit } from '@/components/blocks'
 import { ArrowRight, Play } from '@/components/icons'
 import { ScrubText } from '@/components/motion'
 import { PageHero } from '@/components/PageHero'
 import { Reveal } from '@/components/Reveal'
 import { blurFor } from '@/lib/image'
 import { getPastorPage, mediaUrl } from '@/lib/content'
-import { photos } from '@/lib/photos'
+import { crusadePhotos, photos } from '@/lib/photos'
 import { embedUrl } from '@/lib/video'
 import type { Media } from '@/payload-types'
 
@@ -73,7 +73,7 @@ export default async function SeniorPastorPage() {
               ) : (
                 <>
                   <p className="text-gold-light">Founder and Senior Pastor, Dunamis International Gospel Centre</p>
-                  <p>He worked as a medical doctor until 1996, when he put his certificate aside to start a church in Abuja. He leads Dunamis with his wife, Dr. Becky Paul-Enenche, who is also a doctor and a senior pastor.</p>
+                  <p>He was trained in medicine at the University of Jos. Alongside his medical education grew a passion for God, the preaching of the Gospel and the restoration of human lives and destinies. He leads Dunamis with his wife, Dr. Becky Paul-Enenche, also a trained medical doctor and Senior Pastor.</p>
                   <p>Benue State University gave him an honorary doctorate in divinity in 2023. He also writes and sings gospel music.</p>
                 </>
               )
@@ -96,7 +96,7 @@ export default async function SeniorPastorPage() {
         <div className="container-site">
           <ScrubText
             as="h2"
-            text={page.biography?.heading || 'He had a job in a hospital and plans to study in London. God asked him to put it all aside.'}
+            text={page.biography?.heading || 'In 1996 he faced a defining crossroads: further his medical career in London, or surrender to the call of full-time ministry.'}
             className="max-w-[1040px] text-[clamp(1.75rem,1.2rem+2.8vw,3.75rem)] leading-[1.18] font-medium tracking-[-0.02em] text-fg"
           />
         </div>
@@ -113,8 +113,8 @@ export default async function SeniorPastorPage() {
               paragraphs(page.calling.body)
             ) : (
               <>
-                <p>In May 1996 he went to seek God about what to do next, and spent three days fasting on a mountain outside Jos. He was told to go to Abuja and start a church that would restore human destiny and dignity.</p>
-                <p>Dr. Becky prayed about it herself and confirmed it. They left their jobs and went, and for the first 13 months they lived in one room in Zone 7.</p>
+                <p>Seeking direction, he withdrew to Gannarup Mountain in Jos for prayer and fasting, and came down with a conviction that would change the course of their lives.</p>
+                <p>Dr. Becky had also been seeking God in prayer and fasting. When they compared what they had received, the direction was exactly the same. They left the familiar for Abuja, and for the first 13 months they lived in one room in Zone 7.</p>
               </>
             )}
           </StorySplit>
@@ -135,6 +135,10 @@ export default async function SeniorPastorPage() {
             <div className="flex flex-col gap-4 sm:gap-[25px] lg:flex-row">
               <FeatureTile className="lg:flex-1" label="The leaders" title="Raising ministers" text="Ministers from 48 nations came to the Flaming Fire conference in 2023." art={glass.mic} />
               <FeatureTile className="lg:flex-[1.6]" label="The nations" title="Going far beyond Abuja" text="People from Nigeria and 53 other countries came for Kingdom Power & Glory in 2023." art={glass.flag} delay={100} />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 sm:gap-[25px]">
+              <CrusadeTile photo={crusadePhotos.argentinaPreaching} sizes="(min-width: 640px) 600px, 96vw" className="aspect-[3/2]" />
+              <CrusadeTile photo={crusadePhotos.romaniaPreaching} sizes="(min-width: 640px) 600px, 96vw" delay={100} className="aspect-[3/2]" />
             </div>
           </div>
         </div>

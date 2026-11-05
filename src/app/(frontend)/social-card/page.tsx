@@ -12,12 +12,16 @@ export const metadata: Metadata = {
 export default function SocialCardPage() {
   return (
     <>
-      <PageHero
-        eyebrow="I Am Attending"
-        title="I am attending Dunamis at 30!"
-        intro="Take a photo or upload one, add your name, and you’ll have a card to post on WhatsApp, Instagram or Facebook. You don’t need to register."
-      />
-      <section className="pb-24">
+      {/* On phones the editor is the whole first screen, so there's nothing to scroll past. */}
+      <div className="hidden lg:block">
+        <PageHero
+          eyebrow="I Am Attending"
+          title="I am attending Dunamis at 30!"
+          intro="Take a photo or upload one, add your name, and you’ll have a card to post on WhatsApp, Instagram or Facebook. You don’t need to register."
+        />
+      </div>
+      <h1 className="sr-only lg:hidden">I am attending Dunamis at 30!</h1>
+      <section className="pt-[84px] pb-10 lg:pt-0 lg:pb-24">
         <div className="container-site">
           <CardStudio />
         </div>

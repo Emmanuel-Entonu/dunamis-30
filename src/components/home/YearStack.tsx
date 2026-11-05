@@ -16,7 +16,7 @@ const GOLD = 10 // the card that pops up and turns to face the viewer
  * (left cards in front), then the gold card pops up face-on. A tall runway with a sticky
  * viewport, so it scrubs the same way on phones and desktop.
  */
-export function YearStack({ body }: { body?: string | null }) {
+export function YearStack({ body, formOpen = true }: { body?: string | null; formOpen?: boolean }) {
   const root = useRef<HTMLElement>(null)
 
   useEffect(() => {
@@ -63,13 +63,17 @@ export function YearStack({ body }: { body?: string | null }) {
             <h2 className="h-section">Every year has a testimony</h2>
             <p className="mt-4">
               {body ||
-                'Healings, babies after years of waiting, jobs, exam results. If God has done something for you through this ministry, we’d love to hear about it.'}
+                (formOpen
+                  ? 'Healings, babies after years of waiting, jobs, exam results. If God has done something for you through this ministry, we’d love to hear about it.'
+                  : 'Healings, babies after years of waiting, jobs, exam results. Read what God has done through this ministry.')}
             </p>
             <div className="relative z-10 mt-6 flex flex-wrap gap-3">
-              <Link href="/testimonies#share" className="btn btn-primary">
-                Share your testimony
-              </Link>
-              <Link href="/testimonies" className="btn btn-outline">
+              {formOpen && (
+                <Link href="/testimonies#share" className="btn btn-primary">
+                  Share your testimony
+                </Link>
+              )}
+              <Link href="/testimonies" className={formOpen ? 'btn btn-outline' : 'btn btn-primary'}>
                 Read testimonies
               </Link>
             </div>

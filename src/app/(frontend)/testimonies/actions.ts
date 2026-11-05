@@ -2,7 +2,7 @@
 
 import type { SubmissionState } from '@/components/forms/useSubmission'
 import { categoryLabels } from '@/lib/categories'
-import { getPayloadClient } from '@/lib/content'
+import { getPayloadClient, testimonyFormOpen } from '@/lib/content'
 import { checkSubmission, esc, isEmail } from '@/lib/spam'
 import { claimsVideo, photoProblem, readSubmittedVideo, savePoster, saveSubmissionPhoto, videoAlreadySaved } from '@/lib/submissions'
 import { issueVideoTicket, videoStorageReady, type VideoTicket } from '@/lib/videoStorage'
@@ -38,11 +38,15 @@ function validate(data: ReturnType<typeof read>, formData: FormData, hasVideo: b
   return fieldErrors
 }
 
+const CLOSED = 'We’re not taking new testimonies at the moment. Thank you for wanting to share.'
+
 /**
  * The first step when a video is attached: check everything before asking someone to spend data on
  * an upload. Returns a ticket for storage, unless this attempt already has one.
  */
 export async function prepareTestimonyVideo(formData: FormData): Promise<SubmissionState & { ticket?: VideoTicket }> {
+  if (!(await testimonyFormOpen())) return { error: CLOSED }
+
   const spam = await checkSubmission(formData, 'testimony')
   if (!spam.ok) return spam.silent ? { ok: true } : { error: spam.message }
 
@@ -62,6 +66,8 @@ export async function prepareTestimonyVideo(formData: FormData): Promise<Submiss
 
 /** Public "Share your testimony" form. Everything lands as "Pending review" for the comms team. */
 export async function submitTestimony(formData: FormData): Promise<SubmissionState> {
+  if (!(await testimonyFormOpen())) return { error: CLOSED }
+
   // A form with a video passed this check in the first step, and its ticket proves it.
   if (!claimsVideo(formData)) {
     const spam = await checkSubmission(formData, 'testimony')

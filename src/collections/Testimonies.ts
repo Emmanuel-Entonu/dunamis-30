@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { approvedOrEditor, isEditor, nameIfShown } from '@/access/roles'
-import { afterSubmissionChange, afterSubmissionDelete, moderationFields, prepareSubmission, slugField, submitterFields, uploadedVideoFields, videoTicketEndpoint } from '@/fields/shared'
+import { afterSubmissionChange, afterSubmissionDelete, moderationFields, prepareSubmission, showNameField, slugField, submitterFields, uploadedVideoFields, videoTicketEndpoint } from '@/fields/shared'
 
 const mediaFields = ['photo', 'videoPoster']
 
@@ -21,18 +21,23 @@ export type TestimonyCategory = (typeof testimonyCategories)[number]['value']
 
 export const Testimonies: CollectionConfig = {
   slug: 'testimonies',
+  labels: { singular: 'Testimony', plural: 'Testimonies' },
+  disableDuplicate: true,
+  disableBulkEdit: true,
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'name', 'category', 'hasVideo', 'status', 'updatedAt'],
-    group: 'Stories',
+    defaultColumns: ['title', 'name', 'category', 'hasVideo', 'status', 'createdAt'],
+    group: 'Submissions',
     listSearchableFields: ['title', 'name', 'summary'],
-    description: 'Testimonies shared on the website arrive as “Pending review”. Open one, read it or watch the video, then Approve (it goes live) or Reject.',
+    hideAPIURL: true,
+    description: 'Testimonies people send from the website. Open one to read it or watch the video, then approve or reject it.',
+    components: { beforeListTable: ['/components/admin/TestimonySwitch#TestimonyFormSwitch', '/components/admin/ListTabs#TestimonyTabs'] },
   },
   defaultSort: '-createdAt',
   access: {
     read: approvedOrEditor,
-    // Public submissions go through the form's server action and always land as "pending".
-    create: isEditor,
+    // Testimonies only ever come from the public form, whose server action always saves them as "pending".
+    create: () => false,
     update: isEditor,
     delete: isEditor,
   },
@@ -44,39 +49,44 @@ export const Testimonies: CollectionConfig = {
   endpoints: [videoTicketEndpoint],
   fields: [
     {
-      name: 'reviewActions',
+      name: 'reviewPanel',
       type: 'ui',
-      admin: { position: 'sidebar', components: { Field: { path: '/components/admin/ReviewActions#ReviewActions', clientProps: { basePath: '/testimonies' } } } },
-    },
-    ...uploadedVideoFields('testimony'),
-    { name: 'title', type: 'text', required: true },
-    { name: 'name', type: 'text', required: true, label: 'Full name', access: { read: nameIfShown } },
-    { name: 'location', type: 'text' },
-    {
-      name: 'category',
-      type: 'select',
-      required: true,
-      index: true,
-      options: testimonyCategories.map((c) => ({ ...c })),
+      admin: { components: { Field: '/components/admin/ReviewPanels#TestimonyPanel' } },
     },
     {
-      name: 'summary',
-      type: 'textarea',
-      required: true,
-      maxLength: 320,
-      admin: { description: 'Short introduction shown on cards.' },
+      type: 'collapsible',
+      label: 'Fix a spelling mistake or change the wording',
+      admin: { initCollapsed: true, description: 'Make your change, then press Save, Approve or Reject.' },
+      fields: [
+        { name: 'title', type: 'text', required: true, label: 'Title' },
+        { name: 'name', type: 'text', required: true, label: 'From', access: { read: nameIfShown } },
+        { name: 'location', type: 'text', label: 'Location' },
+        {
+          name: 'category',
+          type: 'select',
+          required: true,
+          index: true,
+          label: 'Type',
+          options: testimonyCategories.map((c) => ({ ...c })),
+        },
+        {
+          name: 'summary',
+          type: 'textarea',
+          required: true,
+          maxLength: 320,
+          label: 'In short',
+          admin: { description: 'Shown on the testimony’s card on the website.' },
+        },
+        { name: 'body', type: 'textarea', label: 'Their testimony' },
+        showNameField,
+        submitterFields,
+      ],
     },
-    { name: 'body', type: 'textarea', label: 'Full testimony' },
-    { name: 'photo', type: 'upload', relationTo: 'media' },
-    {
-      name: 'videoUrl',
-      type: 'text',
-      label: 'Video link',
-      admin: { description: 'Only for a video that lives on YouTube or Vimeo. Uploaded videos appear at the top of this page.' },
-    },
-    { name: 'views', type: 'number', defaultValue: 0, admin: { readOnly: true, position: 'sidebar' } },
+    ...uploadedVideoFields,
+    { name: 'photo', type: 'upload', relationTo: 'media', admin: { hidden: true } },
+    { name: 'videoUrl', type: 'text', admin: { hidden: true } },
+    { name: 'views', type: 'number', defaultValue: 0, admin: { readOnly: true, hidden: true } },
     slugField('title'),
     ...moderationFields,
-    submitterFields,
   ],
 }

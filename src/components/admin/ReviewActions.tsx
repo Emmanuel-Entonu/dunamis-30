@@ -1,15 +1,17 @@
 'use client'
 
-import { Button, useDocumentInfo, useForm, useFormFields } from '@payloadcms/ui'
+import { Button, useDocumentInfo, useForm, useFormFields, useFormProcessing } from '@payloadcms/ui'
 import { useEffect, useRef, useState } from 'react'
 
 /**
- * Sidebar shortcut on a submission: one click sets the status and saves, keeping any edits
- * the reviewer has just made to the text.
+ * The decision on a submission: one click sets the status and saves, keeping any corrections the
+ * reviewer has just made to the words. Shown above and below the content, so a long testimony
+ * doesn't mean scrolling back up.
  */
 export function ReviewActions({ basePath }: { basePath: string }) {
   const { id, savedDocumentData } = useDocumentInfo()
   const { dispatchFields, submit } = useForm()
+  const processing = useFormProcessing()
   const status = useFormFields(([fields]) => fields.status?.value as string | undefined)
   const slug = useFormFields(([fields]) => fields.slug?.value as string | undefined)
   const [target, setTarget] = useState<string | null>(null)
@@ -33,35 +35,42 @@ export function ReviewActions({ basePath }: { basePath: string }) {
     setTarget(value)
     dispatchFields({ type: 'UPDATE', path: 'status', value })
   }
+  const busy = Boolean(target) || processing
 
   return (
-    <div style={{ marginBottom: 'calc(var(--base) * 1.5)' }}>
-      <p style={{ margin: '0 0 8px', fontWeight: 600 }}>Review</p>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <Button buttonStyle="primary" size="small" margin={false} disabled={saved === 'approved' || Boolean(target)} onClick={() => choose('approved')}>
-          Approve
-        </Button>
-        <Button buttonStyle="secondary" size="small" margin={false} disabled={saved === 'rejected' || Boolean(target)} onClick={() => choose('rejected')}>
-          Reject
-        </Button>
-      </div>
-      <p style={{ margin: '8px 0 0', fontSize: 13, opacity: 0.75 }}>
-        {target ? (
-          'Saving…'
-        ) : saved === 'approved' ? (
-          slug ? (
-            <a href={`${basePath}/${slug}`} target="_blank" rel="noopener noreferrer">
-              Live on the website. View it
-            </a>
+    <div className={`review-decision review-decision--${saved}`}>
+      <div>
+        <p className="review-decision__state">
+          {target ? 'Saving…' : saved === 'approved' ? 'On the website' : saved === 'rejected' ? 'Rejected' : 'Waiting for your review'}
+        </p>
+        <p className="review-decision__text">
+          {saved === 'approved' ? (
+            slug ? (
+              <a href={`${basePath}/${slug}`} target="_blank" rel="noopener noreferrer">
+                See it on the website
+              </a>
+            ) : (
+              'Anyone can see this on the website.'
+            )
+          ) : saved === 'rejected' ? (
+            'This is not on the website. You can still approve it.'
           ) : (
-            'Live on the website.'
-          )
-        ) : saved === 'rejected' ? (
-          'Rejected. Not shown on the website.'
-        ) : (
-          'Pending. Approving publishes it straight away.'
+            'Approve puts it on the website straight away. Reject keeps it off.'
+          )}
+        </p>
+      </div>
+      <div className="review-decision__buttons">
+        {saved !== 'approved' && (
+          <Button buttonStyle="primary" margin={false} disabled={busy} onClick={() => choose('approved')}>
+            Approve
+          </Button>
         )}
-      </p>
+        {saved !== 'rejected' && (
+          <Button buttonStyle="secondary" margin={false} disabled={busy} onClick={() => choose('rejected')}>
+            {saved === 'approved' ? 'Take it off the website' : 'Reject'}
+          </Button>
+        )}
+      </div>
     </div>
   )
 }

@@ -8,7 +8,7 @@ import { useEffect, useRef } from 'react'
 import crownGlass from '@/assets/glass/crown.webp'
 import nations from '@/assets/gallery/nations-crowd.webp'
 import destinies from '@/assets/photos/destinies-raised.webp'
-import medical from '@/assets/photos/medical-outreach.webp'
+import beckyMicrophone from '@/assets/photos/pastor-becky-microphone.webp'
 import welfare from '@/assets/photos/welfare.webp'
 import glassTubeRender from '@/assets/renders/glass-tube.webp'
 import glassFlameRender from '@/assets/renders/glass-flame.webp'
@@ -32,10 +32,10 @@ const stories: Story[] = [
     place: 'left-[3.6%] top-[56.25%] lg:left-[5.65%] lg:top-[29.5%]',
   },
   {
-    image: nations,
-    alt: 'Worshippers holding a flag during a service',
-    title: 'The nations come',
-    text: 'People from 109 countries visited the Glory Dome in 2025.',
+    image: beckyMicrophone,
+    alt: 'Dr. Becky Paul-Enenche in red, smiling as she holds up a microphone at the Argentina Revival Crusade',
+    title: 'Ministering the Word',
+    text: 'Dr. Becky Paul-Enenche ministering at the Argentina Revival Crusade.',
     place: 'left-[51.3%] top-[56.25%] lg:left-[72.6%] lg:top-[29.5%]',
   },
   {
@@ -46,10 +46,10 @@ const stories: Story[] = [
     place: 'left-[3.6%] top-[78.4%] lg:left-[13.7%] lg:top-[66.7%]',
   },
   {
-    image: medical,
-    alt: 'A free medical outreach by Dunamis',
-    title: 'Free medical care',
-    text: 'Our medical outreaches take care to communities that need it.',
+    image: nations,
+    alt: 'Worshippers holding a flag during a service',
+    title: 'The nations come',
+    text: 'People from 109 countries visited the Glory Dome in 2025.',
     place: 'left-[51.3%] top-[78.4%] lg:left-[64.5%] lg:top-[66.7%]',
   },
 ]
@@ -181,8 +181,10 @@ export function CardScene() {
           },
         )
 
-        if (!lite) {
-          gsap.utils.toArray<HTMLElement>('[data-passing]').forEach((object) => {
+        gsap.utils.toArray<HTMLElement>('[data-passing]').forEach((object) => {
+          if (lite) {
+            gsap.set(object, { rotation: Number(object.dataset.from) })
+          } else {
             gsap.fromTo(
               object,
               { rotation: Number(object.dataset.from) },
@@ -193,8 +195,8 @@ export function CardScene() {
                 scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: 0.3 },
               },
             )
-          })
-        }
+          }
+        })
 
         // Only animate the set of lines on screen: the other one is display: none.
         gsap

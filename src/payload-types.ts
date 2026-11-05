@@ -68,8 +68,8 @@ export interface Config {
   blocks: {};
   collections: {
     testimonies: Testimony;
-    'sons-stories': SonsStory;
     'international-registrations': InternationalRegistration;
+    'sons-stories': SonsStory;
     'card-events': CardEvent;
     milestones: Milestone;
     gallery: Gallery;
@@ -83,8 +83,8 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     testimonies: TestimoniesSelect<false> | TestimoniesSelect<true>;
-    'sons-stories': SonsStoriesSelect<false> | SonsStoriesSelect<true>;
     'international-registrations': InternationalRegistrationsSelect<false> | InternationalRegistrationsSelect<true>;
+    'sons-stories': SonsStoriesSelect<false> | SonsStoriesSelect<true>;
     'card-events': CardEventsSelect<false> | CardEventsSelect<true>;
     milestones: MilestonesSelect<false> | MilestonesSelect<true>;
     gallery: GallerySelect<false> | GallerySelect<true>;
@@ -106,6 +106,7 @@ export interface Config {
     'pastor-page': PastorPage;
     'impact-page': ImpactPage;
     site: Site;
+    'testimony-settings': TestimonySetting;
   };
   globalsSelect: {
     event: EventSelect<false> | EventSelect<true>;
@@ -114,6 +115,7 @@ export interface Config {
     'pastor-page': PastorPageSelect<false> | PastorPageSelect<true>;
     'impact-page': ImpactPageSelect<false> | ImpactPageSelect<true>;
     site: SiteSelect<false> | SiteSelect<true>;
+    'testimony-settings': TestimonySettingsSelect<false> | TestimonySettingsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -126,31 +128,61 @@ export interface Config {
   };
 }
 export interface UserAuthOperations {
-  forgotPassword: {
-    email: string;
-    password: string;
-  };
-  login: {
-    email: string;
-    password: string;
-  };
+  forgotPassword:
+    | {
+        email: string;
+      }
+    | {
+        username: string;
+      };
+  login:
+    | {
+        email: string;
+        password: string;
+      }
+    | {
+        password: string;
+        username: string;
+      };
   registerFirstUser: {
-    email: string;
     password: string;
+    username?: string;
+    email?: string;
   };
-  unlock: {
-    email: string;
-    password: string;
-  };
+  unlock:
+    | {
+        email: string;
+      }
+    | {
+        username: string;
+      };
 }
 /**
- * Testimonies shared on the website arrive as “Pending review”. Open one, read it or watch the video, then Approve (it goes live) or Reject.
+ * Testimonies people send from the website. Open one to read it or watch the video, then approve or reject it.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "testimonies".
  */
 export interface Testimony {
   id: number;
+  title: string;
+  name: string;
+  location?: string | null;
+  category:
+    'healing' | 'family' | 'financial' | 'destiny' | 'deliverance' | 'career' | 'academic' | 'spiritual' | 'other';
+  /**
+   * Shown on the testimony’s card on the website.
+   */
+  summary: string;
+  body?: string | null;
+  showName?: boolean | null;
+  /**
+   * Private. Never shown on the website.
+   */
+  submitter?: {
+    email?: string | null;
+    phone?: string | null;
+  };
   hasVideo?: boolean | null;
   videoFile?: {
     path?: string | null;
@@ -160,41 +192,14 @@ export interface Testimony {
     height?: number | null;
   };
   videoPoster?: (number | null) | Media;
-  title: string;
-  name: string;
-  location?: string | null;
-  category:
-    'healing' | 'family' | 'financial' | 'destiny' | 'deliverance' | 'career' | 'academic' | 'spiritual' | 'other';
-  /**
-   * Short introduction shown on cards.
-   */
-  summary: string;
-  body?: string | null;
   photo?: (number | null) | Media;
-  /**
-   * Only for a video that lives on YouTube or Vimeo. Uploaded videos appear at the top of this page.
-   */
   videoUrl?: string | null;
   views?: number | null;
-  /**
-   * Generated automatically. Used in the shareable link.
-   */
   slug?: string | null;
   status: 'pending' | 'approved' | 'rejected';
   featured?: boolean | null;
   publishedAt?: string | null;
   consentToPublish: boolean;
-  /**
-   * Display the person’s name publicly.
-   */
-  showName?: boolean | null;
-  /**
-   * Private — never shown on the website.
-   */
-  submitter?: {
-    email?: string | null;
-    phone?: string | null;
-  };
   updatedAt: string;
   createdAt: string;
 }
@@ -259,82 +264,17 @@ export interface Media {
   };
 }
 /**
- * Stories shared on the website arrive as “Pending review”. Approve to publish on Sons of the Prophet.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "sons-stories".
- */
-export interface SonsStory {
-  id: number;
-  hasVideo?: boolean | null;
-  videoFile?: {
-    path?: string | null;
-    sizeBytes?: number | null;
-    durationSec?: number | null;
-    width?: number | null;
-    height?: number | null;
-  };
-  videoPoster?: (number | null) | Media;
-  name: string;
-  /**
-   * e.g. "From the back row to the pulpit".
-   */
-  headline?: string | null;
-  location?: string | null;
-  currentRole?: string | null;
-  beforePhoto?: (number | null) | Media;
-  afterPhoto?: (number | null) | Media;
-  /**
-   * Only for a video that lives on YouTube or Vimeo.
-   */
-  videoUrl?: string | null;
-  story?: {
-    before?: string | null;
-    encounter?: string | null;
-    transformation?: string | null;
-    today?: string | null;
-    meaning?: string | null;
-  };
-  milestones?:
-    | {
-        year?: string | null;
-        text: string;
-        id?: string | null;
-      }[]
-    | null;
-  appreciation?: string | null;
-  /**
-   * Generated automatically. Used in the shareable link.
-   */
-  slug?: string | null;
-  status: 'pending' | 'approved' | 'rejected';
-  featured?: boolean | null;
-  publishedAt?: string | null;
-  consentToPublish: boolean;
-  /**
-   * Display the person’s name publicly.
-   */
-  showName?: boolean | null;
-  /**
-   * Private — never shown on the website.
-   */
-  submitter?: {
-    email?: string | null;
-    phone?: string | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Applications from guests travelling from outside Nigeria. Contact the guest, then update the logistics status and notes.
+ * People travelling in for the anniversary, from the website’s form for guests outside Nigeria. Contact them, then update where things stand. None of this appears on the website.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "international-registrations".
  */
 export interface InternationalRegistration {
   id: number;
-  reference?: string | null;
   logisticsStatus?: ('new' | 'contacted' | 'confirmed' | 'declined') | null;
+  /**
+   * For the team only. Press Save when you’ve changed this or the box above.
+   */
   logisticsNotes?: string | null;
   fullName: string;
   country: string;
@@ -351,7 +291,63 @@ export interface InternationalRegistration {
   needsAccommodation?: boolean | null;
   travellingWith?: number | null;
   specialRequests?: string | null;
+  reference?: string | null;
   confirmationSent?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Stories people send from the website. Open one to read it, then approve or reject it.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sons-stories".
+ */
+export interface SonsStory {
+  id: number;
+  name: string;
+  headline?: string | null;
+  location?: string | null;
+  currentRole?: string | null;
+  story?: {
+    before?: string | null;
+    encounter?: string | null;
+    transformation?: string | null;
+    today?: string | null;
+    meaning?: string | null;
+  };
+  milestones?:
+    | {
+        year?: string | null;
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  appreciation?: string | null;
+  showName?: boolean | null;
+  /**
+   * Private. Never shown on the website.
+   */
+  submitter?: {
+    email?: string | null;
+    phone?: string | null;
+  };
+  hasVideo?: boolean | null;
+  videoFile?: {
+    path?: string | null;
+    sizeBytes?: number | null;
+    durationSec?: number | null;
+    width?: number | null;
+    height?: number | null;
+  };
+  videoPoster?: (number | null) | Media;
+  beforePhoto?: (number | null) | Media;
+  afterPhoto?: (number | null) | Media;
+  videoUrl?: string | null;
+  slug?: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  featured?: boolean | null;
+  publishedAt?: string | null;
+  consentToPublish: boolean;
   updatedAt: string;
   createdAt: string;
 }
@@ -428,7 +424,8 @@ export interface User {
   roles: ('admin' | 'editor' | 'logistics')[];
   updatedAt: string;
   createdAt: string;
-  email: string;
+  email?: string | null;
+  username?: string | null;
   resetPasswordToken?: string | null;
   resetPasswordExpiration?: string | null;
   salt?: string | null;
@@ -475,12 +472,12 @@ export interface PayloadLockedDocument {
         value: number | Testimony;
       } | null)
     | ({
-        relationTo: 'sons-stories';
-        value: number | SonsStory;
-      } | null)
-    | ({
         relationTo: 'international-registrations';
         value: number | InternationalRegistration;
+      } | null)
+    | ({
+        relationTo: 'sons-stories';
+        value: number | SonsStory;
       } | null)
     | ({
         relationTo: 'card-events';
@@ -549,6 +546,19 @@ export interface PayloadMigration {
  * via the `definition` "testimonies_select".
  */
 export interface TestimoniesSelect<T extends boolean = true> {
+  title?: T;
+  name?: T;
+  location?: T;
+  category?: T;
+  summary?: T;
+  body?: T;
+  showName?: T;
+  submitter?:
+    | T
+    | {
+        email?: T;
+        phone?: T;
+      };
   hasVideo?: T;
   videoFile?:
     | T
@@ -560,12 +570,6 @@ export interface TestimoniesSelect<T extends boolean = true> {
         height?: T;
       };
   videoPoster?: T;
-  title?: T;
-  name?: T;
-  location?: T;
-  category?: T;
-  summary?: T;
-  body?: T;
   photo?: T;
   videoUrl?: T;
   views?: T;
@@ -574,68 +578,6 @@ export interface TestimoniesSelect<T extends boolean = true> {
   featured?: T;
   publishedAt?: T;
   consentToPublish?: T;
-  showName?: T;
-  submitter?:
-    | T
-    | {
-        email?: T;
-        phone?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "sons-stories_select".
- */
-export interface SonsStoriesSelect<T extends boolean = true> {
-  hasVideo?: T;
-  videoFile?:
-    | T
-    | {
-        path?: T;
-        sizeBytes?: T;
-        durationSec?: T;
-        width?: T;
-        height?: T;
-      };
-  videoPoster?: T;
-  name?: T;
-  headline?: T;
-  location?: T;
-  currentRole?: T;
-  beforePhoto?: T;
-  afterPhoto?: T;
-  videoUrl?: T;
-  story?:
-    | T
-    | {
-        before?: T;
-        encounter?: T;
-        transformation?: T;
-        today?: T;
-        meaning?: T;
-      };
-  milestones?:
-    | T
-    | {
-        year?: T;
-        text?: T;
-        id?: T;
-      };
-  appreciation?: T;
-  slug?: T;
-  status?: T;
-  featured?: T;
-  publishedAt?: T;
-  consentToPublish?: T;
-  showName?: T;
-  submitter?:
-    | T
-    | {
-        email?: T;
-        phone?: T;
-      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -644,7 +586,6 @@ export interface SonsStoriesSelect<T extends boolean = true> {
  * via the `definition` "international-registrations_select".
  */
 export interface InternationalRegistrationsSelect<T extends boolean = true> {
-  reference?: T;
   logisticsStatus?: T;
   logisticsNotes?: T;
   fullName?: T;
@@ -662,7 +603,63 @@ export interface InternationalRegistrationsSelect<T extends boolean = true> {
   needsAccommodation?: T;
   travellingWith?: T;
   specialRequests?: T;
+  reference?: T;
   confirmationSent?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sons-stories_select".
+ */
+export interface SonsStoriesSelect<T extends boolean = true> {
+  name?: T;
+  headline?: T;
+  location?: T;
+  currentRole?: T;
+  story?:
+    | T
+    | {
+        before?: T;
+        encounter?: T;
+        transformation?: T;
+        today?: T;
+        meaning?: T;
+      };
+  milestones?:
+    | T
+    | {
+        year?: T;
+        text?: T;
+        id?: T;
+      };
+  appreciation?: T;
+  showName?: T;
+  submitter?:
+    | T
+    | {
+        email?: T;
+        phone?: T;
+      };
+  hasVideo?: T;
+  videoFile?:
+    | T
+    | {
+        path?: T;
+        sizeBytes?: T;
+        durationSec?: T;
+        width?: T;
+        height?: T;
+      };
+  videoPoster?: T;
+  beforePhoto?: T;
+  afterPhoto?: T;
+  videoUrl?: T;
+  slug?: T;
+  status?: T;
+  featured?: T;
+  publishedAt?: T;
+  consentToPublish?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -784,6 +781,7 @@ export interface UsersSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   email?: T;
+  username?: T;
   resetPasswordToken?: T;
   resetPasswordExpiration?: T;
   salt?: T;
@@ -1059,6 +1057,16 @@ export interface Site {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimony-settings".
+ */
+export interface TestimonySetting {
+  id: number;
+  formOpen?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "event_select".
  */
 export interface EventSelect<T extends boolean = true> {
@@ -1279,6 +1287,16 @@ export interface SiteSelect<T extends boolean = true> {
         answer?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimony-settings_select".
+ */
+export interface TestimonySettingsSelect<T extends boolean = true> {
+  formOpen?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

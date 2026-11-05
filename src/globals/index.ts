@@ -17,7 +17,7 @@ const section = (name: string, label: string, extra: Field[] = []): Field => ({
 export const EventSettings: GlobalConfig = {
   slug: 'event',
   label: 'Event',
-  admin: { group: 'Site content' },
+  admin: { hidden: true, group: 'Site content' },
   access: { read: anyone, update: isEditor },
   fields: [
     { name: 'title', type: 'text', defaultValue: '30th Anniversary Service' },
@@ -39,7 +39,7 @@ export const EventSettings: GlobalConfig = {
 export const SiteSettings: GlobalConfig = {
   slug: 'site',
   label: 'Contacts & socials',
-  admin: { group: 'Settings' },
+  admin: { hidden: true, group: 'Settings' },
   access: { read: anyone, update: isAdmin },
   fields: [
     { name: 'officialWebsite', type: 'text', defaultValue: 'https://dunamisgospel.org' },
@@ -75,7 +75,7 @@ export const SiteSettings: GlobalConfig = {
 
 export const Homepage: GlobalConfig = {
   slug: 'homepage',
-  admin: { group: 'Site content' },
+  admin: { hidden: true, group: 'Site content' },
   access: { read: anyone, update: isEditor },
   fields: [
     {
@@ -102,7 +102,7 @@ export const Homepage: GlobalConfig = {
 export const StoryPage: GlobalConfig = {
   slug: 'story-page',
   label: 'Our Story page',
-  admin: { group: 'Site content' },
+  admin: { hidden: true, group: 'Site content' },
   access: { read: anyone, update: isEditor },
   fields: [
     section('beginning', 'A. The Beginning'),
@@ -117,7 +117,7 @@ export const StoryPage: GlobalConfig = {
 export const PastorPage: GlobalConfig = {
   slug: 'pastor-page',
   label: 'Senior Pastor page',
-  admin: { group: 'Site content' },
+  admin: { hidden: true, group: 'Site content' },
   access: { read: anyone, update: isEditor },
   fields: [
     { name: 'portrait', type: 'upload', relationTo: 'media' },
@@ -148,7 +148,7 @@ export const PastorPage: GlobalConfig = {
 export const ImpactPage: GlobalConfig = {
   slug: 'impact-page',
   label: '30 Years of Impact page',
-  admin: { group: 'Site content' },
+  admin: { hidden: true, group: 'Site content' },
   access: { read: anyone, update: isEditor },
   fields: [
     { name: 'intro', type: 'textarea' },
@@ -176,4 +176,28 @@ export const ImpactPage: GlobalConfig = {
   ],
 }
 
-export const globals = [EventSettings, Homepage, StoryPage, PastorPage, ImpactPage, SiteSettings]
+/** The off switch on the dashboard. When it's off, the public form is hidden and the server refuses new testimonies. */
+export const TestimonySettings: GlobalConfig = {
+  slug: 'testimony-settings',
+  label: 'Testimony form',
+  // Shown as a switch on the dashboard, not as a page of its own.
+  admin: { hidden: true },
+  access: { read: isEditor, update: isEditor },
+  fields: [{ name: 'formOpen', type: 'checkbox', defaultValue: true, label: 'People can send testimonies' }],
+  hooks: {
+    afterChange: [
+      async ({ doc }) => {
+        try {
+          // Buttons on other pages point to the form, so every page is refreshed straight away.
+          const { revalidatePath } = await import('next/cache')
+          revalidatePath('/', 'layout')
+        } catch {
+          // Outside a request (a script, for example). Pages catch up on their own within a few minutes.
+        }
+        return doc
+      },
+    ],
+  },
+}
+
+export const globals = [EventSettings, Homepage, StoryPage, PastorPage, ImpactPage, SiteSettings, TestimonySettings]

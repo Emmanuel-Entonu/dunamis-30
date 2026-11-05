@@ -5,15 +5,15 @@ import Link from '@/components/SiteLink'
 import { GlassImage } from '@/components/GlassImage'
 import { glass } from '@/assets/glass'
 import kpgPoster from '@/assets/posters/kpg-2026.webp'
-import { ClosingBand, GlassArt, Label, StorySplit } from '@/components/blocks'
+import { ClosingBand, CrusadeLabel, GlassArt, Label, StorySplit } from '@/components/blocks'
 import { ArrowRight } from '@/components/icons'
-import { CountUp, ScrubText, SidewaysScroll } from '@/components/motion'
+import { CountUp, GrowFrame, ScrubText, SidewaysScroll } from '@/components/motion'
 import { PageHero } from '@/components/PageHero'
 import { Reveal } from '@/components/Reveal'
-import { getImpactPage, mediaUrl } from '@/lib/content'
+import { getImpactPage, mediaUrl, testimonyFormOpen } from '@/lib/content'
 import { blurFor } from '@/lib/image'
 import { defaultStats } from '@/lib/ministry'
-import { photos } from '@/lib/photos'
+import { crusadePhotos, photos } from '@/lib/photos'
 import type { Media } from '@/payload-types'
 
 export const revalidate = 300
@@ -29,6 +29,7 @@ const areas: Area[] = [
   { label: 'Testimonies', title: 'Lives changed', text: 'People healed, families restored, destinies turned around. They can tell you better than we can.', image: photos.altarCall, art: glass.heart, href: '/testimonies', cta: 'Read the testimonies' },
   { label: 'Branches', title: 'Churches planted', text: 'More than 800 branches and over 5,000 home church locations, in Nigeria and around the world.', image: photos.domeInteriorWide, art: glass.church },
   { label: 'Nations', title: 'People from everywhere', text: 'Pilgrims from 109 countries visited the Glory Dome in 2025.', image: photos.nationsCameroon, art: glass.flag },
+  { label: 'Crusades', title: 'Crusades in the nations', text: 'In 2026 the crusades have gone to Venezuela, Argentina, Canada, Romania, Latvia, Angola, Lesotho and Zambia.', image: crusadePhotos.romaniaCrowd.src, art: glass.world },
   { label: 'Ministers', title: 'Ministers raised', text: 'Sons and daughters of this house now serve God in many places. Ministers from 48 nations came to the Flaming Fire conference in 2023.', image: photos.handsRaised, art: glass.crown, href: '/sons-of-the-prophet', cta: 'Sons of the Prophet' },
   { label: 'Welfare', title: 'Caring for people in need', text: 'Boreholes, electricity, roads and orphanage homes for communities that need them, plus food, clothes and scholarships.', image: photos.welfareFood, art: glass.cap },
   { label: 'Medical', title: 'Free medical care', text: 'In February 2026, a team took free care to communities in Kogi and Benue. Reports put the number reached at 5,000.', image: photos.medicalCare, art: glass.medical },
@@ -69,6 +70,7 @@ const gatherings = [
 ]
 
 export default async function ImpactPage() {
+  const formOpen = await testimonyFormOpen()
   const page = await getImpactPage()
   const stats = page.stats?.length ? page.stats.map((s) => ({ value: s.value, suffix: s.suffix ?? undefined, label: s.label, note: undefined as string | undefined })) : defaultStats
   const panels: Area[] = page.stories?.length
@@ -102,6 +104,9 @@ export default async function ImpactPage() {
             text="We don’t share these numbers to boast. Every one of them points back to what God has done."
             className="max-w-[1040px] text-[clamp(1.75rem,1.2rem+2.8vw,3.75rem)] leading-[1.18] font-medium tracking-[-0.02em] text-fg"
           />
+          <GrowFrame className="mt-10 aspect-[4/3] sm:aspect-[16/9] lg:mt-[60px]" overlay={<CrusadeLabel photo={crusadePhotos.argentinaHands} />}>
+            <Image src={crusadePhotos.argentinaHands.src} alt={crusadePhotos.argentinaHands.alt} fill sizes="96vw" placeholder="blur" className="object-cover" />
+          </GrowFrame>
         </div>
       </section>
 
@@ -162,13 +167,13 @@ export default async function ImpactPage() {
       </section>
 
       <ClosingBand
-        title="Has God done something for you?"
-        text="Your testimony belongs in this story too."
+        title={formOpen ? 'Has God done something for you?' : 'Read what God has done'}
+        text={formOpen ? 'Your testimony belongs in this story too.' : 'Real stories from people God has touched through this ministry.'}
         shareUrl="/impact"
         shareText="30 years of impact through Dunamis International Gospel Centre"
       >
-        <Link href="/testimonies#share" className="btn btn-primary">
-          Share your testimony
+        <Link href={formOpen ? '/testimonies#share' : '/testimonies'} className="btn btn-primary">
+          {formOpen ? 'Share your testimony' : 'Read testimonies'}
         </Link>
         <Link href="/social-card" className="btn btn-outline">
           I Am Attending

@@ -17,7 +17,7 @@ export const slugField = (from: string): Field => ({
   type: 'text',
   index: true,
   unique: true,
-  admin: { position: 'sidebar', description: 'Generated automatically. Used in the shareable link.' },
+  admin: { hidden: true },
   hooks: {
     beforeValidate: [
       ({ value, data }) => {
@@ -38,11 +38,12 @@ export const moderationFields: Field[] = [
     required: true,
     index: true,
     options: [
-      { label: 'Pending review', value: 'pending' },
-      { label: 'Approved / published', value: 'approved' },
+      { label: 'Waiting for review', value: 'pending' },
+      { label: 'On the website', value: 'approved' },
       { label: 'Rejected', value: 'rejected' },
     ],
-    admin: { position: 'sidebar' },
+    // Set with the Approve and Reject buttons.
+    admin: { hidden: true },
   },
   {
     name: 'featured',
@@ -54,27 +55,29 @@ export const moderationFields: Field[] = [
     name: 'publishedAt',
     type: 'date',
     index: true,
-    admin: { position: 'sidebar' },
+    admin: { hidden: true },
   },
   {
     name: 'consentToPublish',
     type: 'checkbox',
     required: true,
-    admin: { position: 'sidebar' },
-  },
-  {
-    name: 'showName',
-    type: 'checkbox',
-    defaultValue: true,
-    admin: { position: 'sidebar', description: 'Display the person’s name publicly.' },
+    admin: { hidden: true },
   },
 ]
+
+export const showNameField: Field = {
+  name: 'showName',
+  type: 'checkbox',
+  defaultValue: true,
+  label: 'Show their name on the website',
+}
 
 export const submitterFields: Field = {
   name: 'submitter',
   type: 'group',
+  label: 'Their contact details',
   access: { read: editorFieldOnly, update: editorFieldOnly },
-  admin: { description: 'Private — never shown on the website.' },
+  admin: { description: 'Private. Never shown on the website.' },
   fields: [
     { name: 'email', type: 'email' },
     { name: 'phone', type: 'text' },
@@ -82,19 +85,14 @@ export const submitterFields: Field = {
 }
 
 /** A video sent with a submission. The file lives in a private bucket and is only ever reached through /watch. */
-export const uploadedVideoFields = (kind: 'testimony' | 'story'): Field[] => [
-  {
-    name: 'videoReview',
-    type: 'ui',
-    admin: { components: { Field: { path: '/components/admin/VideoReview#VideoReview', clientProps: { kind } } } },
-  },
+export const uploadedVideoFields: Field[] = [
   {
     name: 'hasVideo',
     type: 'checkbox',
     defaultValue: false,
     index: true,
-    label: 'Has a video',
-    admin: { readOnly: true, position: 'sidebar' },
+    label: 'Video',
+    admin: { readOnly: true, hidden: true, components: { Cell: '/components/admin/Cells#YesNo' } },
   },
   {
     name: 'videoFile',

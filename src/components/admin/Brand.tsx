@@ -1,18 +1,19 @@
 import Image from 'next/image'
 
-import emblem from '@/assets/brand/emblem-official.webp'
+import crest from '@/assets/brand/crest-official.webp'
 
 /** Sign-in screen. */
 export function Logo() {
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 12, color: 'var(--theme-text)' }}>
-      <Image src={emblem} alt="" width={44} height={44} style={{ width: 44, height: 'auto' }} />
-      <span style={{ fontSize: 24, fontWeight: 600 }}>Dunamis@30</span>
+    <span className="brand-sign-in">
+      <Image src={crest} alt="" width={84} height={83} priority />
+      <strong>Dunamis at 30</strong>
+      <span>Sign in to the dashboard</span>
     </span>
   )
 }
 
-/** Top-left of the admin. */
+/** Top-left of the page on phones. */
 export function Icon() {
-  return <Image src={emblem} alt="Dunamis@30" width={22} height={22} style={{ width: 22, height: 'auto' }} />
+  return <Image src={crest} alt="Dunamis at 30" width={24} height={24} style={{ width: 24, height: 'auto' }} />
 }

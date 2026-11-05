@@ -4,15 +4,15 @@ import Link from '@/components/SiteLink'
 
 import { GlassImage } from '@/components/GlassImage'
 import { glass } from '@/assets/glass'
-import { ClosingBand, GlassArt, GlobalPresence, Label, PhotoWithGlass, ShowcaseCard, StorySplit } from '@/components/blocks'
+import { ClosingBand, CrusadeLabel, CrusadeTile, GlassArt, GlobalPresence, Label, PhotoWithGlass, ShowcaseCard, SplitHeader, StorySplit } from '@/components/blocks'
 import { Carousel } from '@/components/home/Carousel'
-import { CountUp, ScrubText, StackedCards } from '@/components/motion'
+import { CountUp, GrowFrame, ScrubText, StackedCards } from '@/components/motion'
 import { PageHero } from '@/components/PageHero'
 import { Reveal } from '@/components/Reveal'
 import { blurFor } from '@/lib/image'
-import { getMilestones, getStoryPage, mediaUrl } from '@/lib/content'
+import { getMilestones, getStoryPage, mediaUrl, testimonyFormOpen } from '@/lib/content'
 import { defaultMilestones, defaultStats, vision, type GlassKey } from '@/lib/ministry'
-import { photoByFile, photos } from '@/lib/photos'
+import { crusadePhotos, photoByFile, photos } from '@/lib/photos'
 import type { Media } from '@/payload-types'
 
 export const revalidate = 300
@@ -22,9 +22,13 @@ export const metadata: Metadata = {
   description: 'How Dunamis International Gospel Centre began: a three-day fast near Jos in 1996, a move to Abuja, and thirty years of God’s faithfulness.',
 }
 
-type TimelineItem = { key: string | number; date: string; title: string; text: string; image: StaticImageData | string | null; alt: string; art: GlassKey }
+type TimelineItem = { key: string | number; date: string; title: string; text: string; image: StaticImageData | string | null; alt: string; art: GlassKey; crusade?: string }
 
 const asMedia = (value: unknown) => (value && typeof value === 'object' ? (value as Media) : null)
+
+/** Says plainly that a picture is from a crusade, and where. */
+const WIDE = '(min-width: 1024px) 800px, 96vw'
+const SMALL = '(min-width: 1024px) 400px, 48vw'
 
 /** One chapter of the timeline. Always fits the screen, so nothing is hidden when the next card slides over. */
 function MilestoneCard({ item }: { item: TimelineItem }) {
@@ -42,7 +46,10 @@ function MilestoneCard({ item }: { item: TimelineItem }) {
       </div>
       <div className="relative order-1 min-h-0 lg:order-2">
         {item.image ? (
-          <Image src={item.image} alt={item.alt} fill sizes="(min-width: 1024px) 580px, 96vw" placeholder={blurFor(item.image)} className="object-cover" />
+          <>
+            <Image src={item.image} alt={item.alt} fill sizes="(min-width: 1024px) 580px, 96vw" placeholder={blurFor(item.image)} className="object-cover" />
+            {item.crusade && <CrusadeLabel photo={{ place: item.crusade }} />}
+          </>
         ) : (
           <div className="bg-ticks grid h-full place-items-center">
             <GlassArt art={glass[item.art]} className="w-[160px]" />
@@ -54,15 +61,16 @@ function MilestoneCard({ item }: { item: TimelineItem }) {
 }
 
 const values: { label: string; title: string; text: string; art: StaticImageData }[] = [
-  { label: 'Our vision', title: 'Restoring people', text: vision.vision, art: glass.crown },
-  { label: 'Our mission', title: 'Filling the earth', text: vision.mission, art: glass.world },
-  { label: 'Our goal', title: 'Evidence everywhere', text: vision.goal, art: glass.person },
+  { label: 'Our vision', title: 'Restoring destiny and dignity', text: vision.vision, art: glass.crown },
+  { label: 'Our mission', title: 'Blanketing this world', text: vision.mission, art: glass.world },
+  { label: 'Our goal', title: 'Connecting people with God', text: vision.goal, art: glass.person },
   { label: 'Principles', title: 'You can hear the gospel', text: 'So we teach the word plainly, in a way people can live by.', art: glass.bible },
   { label: 'Presence', title: 'You can feel the gospel', text: 'So we make room for God’s presence, in worship and in prayer.', art: glass.dove },
   { label: 'Power', title: 'You can see the gospel', text: 'In people healed, delivered and lifted. That’s what the word dunamis means to us.', art: glass.flame },
 ]
 
 export default async function OurStoryPage() {
+  const formOpen = await testimonyFormOpen()
   const [page, cmsMilestones] = await Promise.all([getStoryPage(), getMilestones()])
 
   const timeline: TimelineItem[] = cmsMilestones.length
@@ -70,7 +78,7 @@ export default async function OurStoryPage() {
         const media = asMedia(m.image)
         return { key: m.id, date: m.dateLabel || String(m.year), title: m.title, text: m.description ?? '', image: mediaUrl(media, 'hero'), alt: media?.alt || m.title, art: 'flame' as const }
       })
-    : defaultMilestones.map((m) => ({ key: m.key, date: m.date, title: m.title, text: m.text, image: m.photo ? photoByFile[m.photo] : null, alt: m.title, art: m.art }))
+    : defaultMilestones.map((m) => ({ key: m.key, date: m.date, title: m.title, text: m.text, image: m.photo ? photoByFile[m.photo] : null, alt: m.title, art: m.art, crusade: m.label }))
 
   const cmsValues = page.vision?.coreValues ?? []
   const shownValues = cmsValues.length ? cmsValues.map((v, i) => ({ ...values[i % values.length], label: 'Core value', title: v.value, text: '' })) : values
@@ -104,14 +112,25 @@ export default async function OurStoryPage() {
         <div className="container-site">
           <ScrubText
             as="h2"
-            text="In May 1996, a young doctor went up a mountain outside Jos to fast and pray. He came down knowing he had to leave medicine and go to Abuja."
+            text="In 1996, Dr. Paul Enenche faced a defining crossroads: the opportunity to further his medical career in London or surrender to the call of full-time ministry."
             className="max-w-[1040px] text-[clamp(1.75rem,1.2rem+2.8vw,3.75rem)] leading-[1.18] font-medium tracking-[-0.02em] text-fg"
           />
 
           <div className="mt-14 lg:mt-24">
-            <StorySplit title="How it began" visual={<PhotoWithGlass photo={mediaUrl(asMedia(page.beginning?.image), 'hero') || photos.prayerBlackWhite} alt="A woman in prayer during a service" art={glass.mountain} />}>
-              <p>Dr. Paul Enenche and his wife, Dr. Becky, were both working in hospitals at the time, and thinking about further study in London. She fasted and prayed as well, and she came to the same conclusion.</p>
-              <p>The first outreach held that July, in the banquet hall of the Agura Hotel. They left their jobs and moved to Abuja, and for 13 months home was one room in Zone 7.</p>
+            <StorySplit title="Two people. Two places. One instruction." visual={<PhotoWithGlass photo={mediaUrl(asMedia(page.beginning?.image), 'hero') || photos.prayerBlackWhite} alt="A woman in prayer during a service" art={glass.mountain} />}>
+              <p>Seeking direction, he withdrew to Gannarup Mountain in Jos for prayer and fasting. He came down with a conviction that would change the course of their lives. But something remarkable had happened at home.</p>
+              <p>Dr. Becky had also been seeking God in prayer and fasting concerning their future. When they compared what they had received, they discovered that the direction was exactly the same.</p>
+              <p>They would leave the familiar and move to the unfamiliar: Abuja. They obeyed. And here we are today, 30 years later.</p>
+            </StorySplit>
+          </div>
+
+          <div className="mt-14 lg:mt-24">
+            <StorySplit flip title="Two doctors, one divine assignment" visual={<PhotoWithGlass photo={photos.seniorPastors} alt="Dr. Paul Enenche and Dr. Becky Paul-Enenche" art={glass.heart} />}>
+              <p>At the heart of the Dunamis story are two medical doctors whose professional journeys were overtaken by a deeper calling.</p>
+              <p>Dr. Pastor Paul Enenche, founder and Senior Pastor of Dunamis International Gospel Centre, was trained in medicine at the University of Jos. Yet alongside his medical education grew a passion for God, the preaching of the Gospel and the restoration of human lives and destinies. Known for his bold teaching of the Word and the demonstration of God’s power, he would eventually leave the medical profession for full-time ministry.</p>
+              <p>Beside him is Dr. Becky Paul-Enenche, also a trained medical doctor, Senior Pastor and an integral part of the ministry’s founding and continuing leadership. With a strong evangelistic passion and a burden for people, particularly women, young people and families, her ministry has extended into administration, pastoral leadership and education, including her involvement in Destiny Christian Academy.</p>
+              <p>Their story is not simply one of a husband and wife. It is the story of two people whose individual convictions converged around one divine assignment.</p>
+              <p>They have worked together, hand in hand, from the start, and as Dunamis turns 30 they know this is just the beginning.</p>
             </StorySplit>
           </div>
         </div>
@@ -123,8 +142,8 @@ export default async function OurStoryPage() {
           label="The vision and mandate of Dunamis"
           header={
             <Reveal>
-              <h2 className="h-section max-w-[560px]">{page.vision?.heading || 'What we believe we’re here to do'}</h2>
-              <p className="mt-4 max-w-[560px]">{page.vision?.body || 'Dunamis is the Greek word for power, from Acts 1:8.'}</p>
+              <h2 className="h-section max-w-[560px]">{page.vision?.heading || 'More than an auditorium'}</h2>
+              <p className="mt-4 max-w-[560px]">{page.vision?.body || 'The true measure of Dunamis cannot be found in the size of its auditorium alone.'}</p>
             </Reveal>
           }
         >
@@ -140,6 +159,34 @@ export default async function OurStoryPage() {
           ))}
         </Carousel>
       </div>
+
+      {/* Crusades: where the vision goes beyond the auditorium */}
+      <section id="crusades" className="section scroll-mt-16">
+        <div className="container-site">
+          <SplitHeader title="Beyond the auditorium">
+            <p>These are not simply institutional statements. They are the principles through which the ministry seeks to express its assignment. Through the ministry of the Word, the demonstration of God’s power, evangelism, missions and the raising of people to fulfil their destinies, the vision continues to reach beyond the auditorium.</p>
+          </SplitHeader>
+
+          <GrowFrame className="mt-10 aspect-[4/3] sm:aspect-[16/9] lg:mt-[60px]" overlay={<CrusadeLabel photo={crusadePhotos.argentinaArena} />}>
+            <Image src={crusadePhotos.argentinaArena.src} alt={crusadePhotos.argentinaArena.alt} fill sizes="96vw" placeholder="blur" className="object-cover" />
+          </GrowFrame>
+
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:mt-[25px] sm:gap-[25px] lg:auto-rows-[340px] lg:grid-cols-3">
+            <CrusadeTile photo={crusadePhotos.romaniaGoldenHour} sizes={WIDE} className="col-span-2 aspect-[16/10] lg:aspect-auto" />
+            <CrusadeTile photo={crusadePhotos.latviaWorship} sizes={SMALL} delay={80} className="aspect-square lg:aspect-auto" />
+            <CrusadeTile photo={crusadePhotos.romaniaSky} sizes={SMALL} className="aspect-square lg:aspect-auto" />
+            <CrusadeTile photo={crusadePhotos.canadaCrowd} sizes={WIDE} delay={80} className="col-span-2 aspect-[16/10] lg:aspect-auto" />
+            <CrusadeTile photo={crusadePhotos.lesothoFlag} sizes={WIDE} className="col-span-2 aspect-[16/10] lg:aspect-auto" />
+            <CrusadeTile photo={crusadePhotos.argentinaReaching} sizes={SMALL} delay={80} className="aspect-square lg:aspect-auto" />
+            <CrusadeTile photo={crusadePhotos.angolaWelcome} sizes={SMALL} className="aspect-square lg:aspect-auto" />
+            <CrusadeTile photo={crusadePhotos.venezuelaStage} sizes={WIDE} delay={80} className="col-span-2 aspect-[16/10] lg:aspect-auto" />
+            <CrusadeTile photo={crusadePhotos.thailandStage} sizes={WIDE} className="col-span-2 aspect-[16/10] lg:aspect-auto" />
+            <CrusadeTile photo={crusadePhotos.lesothoBlankets} sizes={SMALL} delay={80} className="aspect-square lg:aspect-auto" />
+            <CrusadeTile photo={crusadePhotos.madallaPreaching} sizes={SMALL} className="aspect-square lg:aspect-auto" />
+            <CrusadeTile photo={crusadePhotos.lagosOverflow} sizes={WIDE} delay={80} className="col-span-2 aspect-[16/10] lg:aspect-auto" />
+          </div>
+        </div>
+      </section>
 
       {/* C — The journey: the cards pile up as you scroll */}
       <section id="journey" className="section scroll-mt-16">
@@ -187,15 +234,15 @@ export default async function OurStoryPage() {
 
       <ClosingBand
         title="You’re part of this story"
-        text="Come on 10 November, or tell us what God has done in your life."
+        text={formOpen ? 'Come on 10 November, or tell us what God has done in your life.' : 'Come on 10 November and be part of it.'}
         shareUrl="/our-story"
         shareText="The story of Dunamis International Gospel Centre, 30 years on"
       >
         <Link href="/social-card" className="btn btn-primary">
           I Am Attending
         </Link>
-        <Link href="/testimonies#share" className="btn btn-outline">
-          Share your testimony
+        <Link href={formOpen ? '/testimonies#share' : '/testimonies'} className="btn btn-outline">
+          {formOpen ? 'Share your testimony' : 'Read testimonies'}
         </Link>
       </ClosingBand>
     </>

@@ -1,23 +1,28 @@
 import type { CollectionConfig } from 'payload'
 
 import { approvedOrEditor, isEditor, nameIfShown } from '@/access/roles'
-import { afterSubmissionChange, afterSubmissionDelete, moderationFields, prepareSubmission, slugField, submitterFields, uploadedVideoFields, videoTicketEndpoint } from '@/fields/shared'
+import { afterSubmissionChange, afterSubmissionDelete, moderationFields, prepareSubmission, showNameField, slugField, submitterFields, uploadedVideoFields, videoTicketEndpoint } from '@/fields/shared'
 
 const mediaFields = ['beforePhoto', 'afterPhoto', 'videoPoster']
 
 export const SonsStories: CollectionConfig = {
   slug: 'sons-stories',
-  labels: { singular: 'Sons of the Prophet story', plural: 'Sons of the Prophet' },
+  labels: { singular: 'Sons of the Prophet story', plural: 'Sons of the Prophet stories' },
+  disableDuplicate: true,
+  disableBulkEdit: true,
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'headline', 'location', 'hasVideo', 'status', 'updatedAt'],
-    group: 'Stories',
-    description: 'Stories shared on the website arrive as “Pending review”. Approve to publish on Sons of the Prophet.',
+    defaultColumns: ['name', 'headline', 'location', 'hasVideo', 'status', 'createdAt'],
+    group: 'Submissions',
+    hideAPIURL: true,
+    description: 'Stories people send from the website. Open one to read it, then approve or reject it.',
+    components: { beforeListTable: ['/components/admin/ListTabs#StoryTabs'] },
   },
   defaultSort: '-createdAt',
   access: {
     read: approvedOrEditor,
-    create: isEditor,
+    // Stories only ever come from the public form, whose server action always saves them as "pending".
+    create: () => false,
     update: isEditor,
     delete: isEditor,
   },
@@ -29,46 +34,50 @@ export const SonsStories: CollectionConfig = {
   endpoints: [videoTicketEndpoint],
   fields: [
     {
-      name: 'reviewActions',
+      name: 'reviewPanel',
       type: 'ui',
-      admin: { position: 'sidebar', components: { Field: { path: '/components/admin/ReviewActions#ReviewActions', clientProps: { basePath: '/sons-of-the-prophet' } } } },
-    },
-    ...uploadedVideoFields('story'),
-    { name: 'name', type: 'text', required: true, access: { read: nameIfShown } },
-    { name: 'headline', type: 'text', admin: { description: 'e.g. "From the back row to the pulpit".' } },
-    { name: 'location', type: 'text' },
-    { name: 'currentRole', type: 'text', label: 'Where I am today (one line)' },
-    {
-      type: 'row',
-      fields: [
-        { name: 'beforePhoto', type: 'upload', relationTo: 'media' },
-        { name: 'afterPhoto', type: 'upload', relationTo: 'media' },
-      ],
-    },
-    { name: 'videoUrl', type: 'text', label: 'Video link', admin: { description: 'Only for a video that lives on YouTube or Vimeo.' } },
-    {
-      name: 'story',
-      type: 'group',
-      fields: [
-        { name: 'before', type: 'textarea', label: 'Who I was before encountering Dunamis' },
-        { name: 'encounter', type: 'textarea', label: 'My journey and encounter' },
-        { name: 'transformation', type: 'textarea', label: 'The transformation I experienced' },
-        { name: 'today', type: 'textarea', label: 'Where I am today' },
-        { name: 'meaning', type: 'textarea', label: 'What Dunamis means to me' },
-      ],
+      admin: { components: { Field: '/components/admin/ReviewPanels#StoryPanel' } },
     },
     {
-      name: 'milestones',
-      type: 'array',
-      label: 'Ministry and career milestones',
+      type: 'collapsible',
+      label: 'Fix a spelling mistake or change the wording',
+      admin: { initCollapsed: true, description: 'Make your change, then press Save, Approve or Reject.' },
       fields: [
-        { name: 'year', type: 'text' },
-        { name: 'text', type: 'text', required: true },
+        { name: 'name', type: 'text', required: true, label: 'From', access: { read: nameIfShown } },
+        { name: 'headline', type: 'text', label: 'Headline' },
+        { name: 'location', type: 'text', label: 'Location' },
+        { name: 'currentRole', type: 'text', label: 'Where they are today, in one line' },
+        {
+          name: 'story',
+          type: 'group',
+          label: 'Their story',
+          fields: [
+            { name: 'before', type: 'textarea', label: 'Who they were before Dunamis' },
+            { name: 'encounter', type: 'textarea', label: 'Their journey and encounter' },
+            { name: 'transformation', type: 'textarea', label: 'How they were transformed' },
+            { name: 'today', type: 'textarea', label: 'Where they are today' },
+            { name: 'meaning', type: 'textarea', label: 'What Dunamis means to them' },
+          ],
+        },
+        {
+          name: 'milestones',
+          type: 'array',
+          label: 'Milestones',
+          fields: [
+            { name: 'year', type: 'text', label: 'Year' },
+            { name: 'text', type: 'text', required: true, label: 'What happened' },
+          ],
+        },
+        { name: 'appreciation', type: 'textarea', label: 'Their message of appreciation' },
+        showNameField,
+        submitterFields,
       ],
     },
-    { name: 'appreciation', type: 'textarea', label: 'Personal message of appreciation' },
+    ...uploadedVideoFields,
+    { name: 'beforePhoto', type: 'upload', relationTo: 'media', admin: { hidden: true } },
+    { name: 'afterPhoto', type: 'upload', relationTo: 'media', admin: { hidden: true } },
+    { name: 'videoUrl', type: 'text', admin: { hidden: true } },
     slugField('name'),
     ...moderationFields,
-    submitterFields,
   ],
 }

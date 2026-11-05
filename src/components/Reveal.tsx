@@ -39,39 +39,3 @@ export function Reveal({
     </Tag>
   )
 }
-
-/** Endless horizontal band. Content is duplicated so the loop is seamless. */
-export function Marquee({
-  items,
-  reverse = false,
-  className = '',
-  itemClassName = '',
-  separator = '✦',
-}: {
-  items: string[]
-  reverse?: boolean
-  className?: string
-  itemClassName?: string
-  separator?: string
-}) {
-  const run = (hidden: boolean) => (
-    <ul aria-hidden={hidden || undefined} className="flex shrink-0 items-center">
-      {items.map((item, i) => (
-        <li key={`${item}-${i}`} className={`flex items-center whitespace-nowrap ${itemClassName}`}>
-          <span>{item}</span>
-          <span aria-hidden className="px-5 text-gold sm:px-7">
-            {separator}
-          </span>
-        </li>
-      ))}
-    </ul>
-  )
-  return (
-    <div className={`overflow-hidden ${className}`}>
-      <div className={`marquee ${reverse ? 'animate-marquee-reverse' : 'animate-marquee'}`}>
-        {run(false)}
-        {run(true)}
-      </div>
-    </div>
-  )
-}

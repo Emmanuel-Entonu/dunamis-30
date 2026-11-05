@@ -93,13 +93,13 @@ export async function applyInternational(formData: FormData): Promise<ApplyState
       await payload.sendEmail({
         to: data.email,
         subject: `We received your application (${reference})`,
-        html: `<p>Dear ${esc(data.fullName)},</p><p>Thank you for applying to join the Dunamis 30th Anniversary celebration from ${esc(data.country)}. Your reference is <strong>${reference}</strong>.</p><p>${needs ? `You asked for help with ${needs}. ` : ''}<strong>This is not yet a confirmation of airport pickup or accommodation</strong> — our international logistics team will contact you to confirm arrangements.</p><p>Dunamis International Gospel Centre</p>`,
+        html: `<p>Dear ${esc(data.fullName)},</p><p>Thank you for applying to join the Dunamis 30th Anniversary celebration from ${esc(data.country)}. Your reference is <strong>${reference}</strong>.</p><p>${needs ? `You asked for help with ${needs}. ` : ''}<strong>This is not yet a confirmation of airport pickup or accommodation</strong>, our international logistics team will contact you to confirm arrangements.</p><p>Dunamis International Gospel Centre</p>`,
       })
       if (process.env.LOGISTICS_NOTIFY_EMAIL) {
         await payload.sendEmail({
           to: process.env.LOGISTICS_NOTIFY_EMAIL,
-          subject: `New international guest: ${data.fullName} (${data.country}) — ${reference}`,
-          html: `<p><strong>${esc(data.fullName)}</strong> · ${esc(data.email)} · WhatsApp ${esc(data.whatsapp)}</p><p>Arrives ${esc(data.arrivalDate)} ${esc(data.arrivalTime)} ${esc(data.airline)} ${esc(data.flightNumber)} at ${esc(data.airport)}; departs ${esc(data.departureDate || '—')}.</p><p>Pickup: ${data.needsPickup} · Accommodation: ${data.needsAccommodation} · Travelling with: ${data.travellingWith}</p><p>${esc(data.specialRequests)}</p>`,
+          subject: `New international guest: ${data.fullName} (${data.country}), ${reference}`,
+          html: `<p><strong>${esc(data.fullName)}</strong> · ${esc(data.email)} · WhatsApp ${esc(data.whatsapp)}</p><p>Arrives ${esc(data.arrivalDate)} ${esc(data.arrivalTime)} ${esc(data.airline)} ${esc(data.flightNumber)} at ${esc(data.airport)}; departs ${esc(data.departureDate || 'date not given')}.</p><p>Pickup: ${data.needsPickup} · Accommodation: ${data.needsAccommodation} · Travelling with: ${data.travellingWith}</p><p>${esc(data.specialRequests)}</p>`,
         })
       }
     } catch (error) {

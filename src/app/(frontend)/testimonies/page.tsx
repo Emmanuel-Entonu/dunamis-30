@@ -8,7 +8,7 @@ import { Play } from '@/components/icons'
 import { PageHero } from '@/components/PageHero'
 import { TestimonyCard } from '@/components/TestimonyCard'
 import { categoryLabels } from '@/lib/categories'
-import { getTestimonies } from '@/lib/content'
+import { getTestimonies, testimonyFormOpen } from '@/lib/content'
 import { readMixSeed } from '@/lib/testimonyMix'
 import { TestimonyForm } from './TestimonyForm'
 
@@ -32,7 +32,7 @@ export default async function TestimoniesPage({ searchParams }: { searchParams: 
   const videos = sp.type === 'video'
   // Pages of one visit share a shuffle, so nothing repeats or goes missing between them.
   const seed = readMixSeed(sp.mix)
-  const result = await getTestimonies({ q, category, year, videos, sort, seed, page })
+  const [result, formOpen] = await Promise.all([getTestimonies({ q, category, year, videos, sort, seed, page }), testimonyFormOpen()])
 
   const href = (next: { category?: string; page?: number; videos?: boolean }) => {
     const p = new URLSearchParams()
@@ -56,13 +56,15 @@ export default async function TestimoniesPage({ searchParams }: { searchParams: 
       <PageHero
         eyebrow="Testimonies"
         title="30 years of testimonies"
-        intro="Real stories from people God has touched through this ministry. Read them, or add yours."
+        intro={formOpen ? 'Real stories from people God has touched through this ministry. Read them, or add yours.' : 'Real stories from people God has touched through this ministry.'}
       >
-        <div className="mt-8 flex justify-center">
-          <a href="#share" className="btn btn-primary">
-            Share your testimony
-          </a>
-        </div>
+        {formOpen && (
+          <div className="mt-8 flex justify-center">
+            <a href="#share" className="btn btn-primary">
+              Share your testimony
+            </a>
+          </div>
+        )}
       </PageHero>
 
       <section id="library" className="scroll-mt-28 pb-20">
@@ -101,7 +103,7 @@ export default async function TestimoniesPage({ searchParams }: { searchParams: 
           <nav aria-label="Testimony categories" className="-mx-5 mt-5 flex gap-2 overflow-x-auto px-5 pb-2 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0">
             <Link
               href={href({ videos: !videos, page: 1 })}
-              aria-pressed={videos}
+              aria-current={videos ? 'true' : undefined}
               className={`flex shrink-0 items-center gap-2 rounded-lg px-5 py-2.5 text-[15px] transition-colors ${videos ? 'bg-gold text-gold-ink' : 'bg-hair text-soft hover:bg-line hover:text-gold'}`}
             >
               <Play width={14} height={14} /> Videos
@@ -145,12 +147,18 @@ export default async function TestimoniesPage({ searchParams }: { searchParams: 
               <p className="h-card">{q || category || year || videos ? 'No testimonies found' : 'Testimonies are coming'}</p>
               <p className="mx-auto mt-3 max-w-[460px]">
                 {q || category || year || videos
-                  ? 'Try another word or category, or share your own.'
-                  : 'We’re gathering them now. Be one of the first to share yours.'}
+                  ? formOpen
+                    ? 'Try another word or category, or share your own.'
+                    : 'Try another word or category.'
+                  : formOpen
+                    ? 'We’re gathering them now. Be one of the first to share yours.'
+                    : 'We’re gathering them now. Please check back soon.'}
               </p>
-              <a href="#share" className="btn btn-primary mt-7">
-                Share your testimony
-              </a>
+              {formOpen && (
+                <a href="#share" className="btn btn-primary mt-7">
+                  Share your testimony
+                </a>
+              )}
             </div>
           )}
 
@@ -171,9 +179,20 @@ export default async function TestimoniesPage({ searchParams }: { searchParams: 
         </div>
       </section>
 
-      <FormStage id="share" title="Share your testimony" text="What has God done for you? Our communications team reads every testimony before it goes up, and your email and phone stay private.">
-        <TestimonyForm />
-      </FormStage>
+      {formOpen ? (
+        <FormStage id="share" title="Share your testimony" text="What has God done for you? Our communications team reads every testimony before it goes up, and your email and phone stay private.">
+          <TestimonyForm />
+        </FormStage>
+      ) : (
+        <section id="share" className="scroll-mt-28 pb-20">
+          <div className="container-site">
+            <div className="card p-8 text-center sm:p-14">
+              <p className="h-card">We’re not taking new testimonies at the moment</p>
+              <p className="mx-auto mt-3 max-w-[460px]">Thank you to everyone who has shared what God has done in their lives.</p>
+            </div>
+          </div>
+        </section>
+      )}
     </>
   )
 }

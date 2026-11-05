@@ -41,13 +41,13 @@ export function ShareButtons({
     window.setTimeout(() => setCopied(false), 2000)
   }
 
-  const btn = `grid place-items-center rounded-lg border border-line bg-surface text-fg transition-colors hover:border-gold hover:text-gold-light ${
+  const btn = `grid shrink-0 place-items-center rounded-lg border border-line bg-surface text-fg transition-colors hover:border-gold hover:text-gold-light ${
     compact ? 'size-9' : 'size-11'
   }`
   const icon = compact ? 16 : 18
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`flex flex-wrap items-center gap-2 ${className}`}>
       {!compact && <span className="mr-1 text-sm font-medium text-muted">Share</span>}
       <button type="button" className={btn} onClick={() => open((u, t) => `https://wa.me/?text=${t}%20${u}`)}>
         <WhatsApp width={icon} height={icon} />

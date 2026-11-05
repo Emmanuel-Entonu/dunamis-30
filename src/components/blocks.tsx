@@ -9,6 +9,24 @@ import { WorldRise } from './motion'
 import { Reveal } from './Reveal'
 import { ShareButtons } from './ShareButtons'
 
+/** Says where a crusade photograph was taken. */
+export function CrusadeLabel({ photo }: { photo: { place: string; label?: string } }) {
+  return (
+    <span className="absolute bottom-2.5 left-2.5 z-10 rounded-lg bg-black/75 px-2.5 py-2 text-[13px] leading-none font-medium text-white sm:bottom-4 sm:left-4 sm:px-3 sm:text-sm">
+      <span className="text-gold-light">{photo.label ?? 'Crusade'}</span> · {photo.place}
+    </span>
+  )
+}
+
+export function CrusadeTile({ photo, className, sizes, delay = 0 }: { photo: { src: StaticImageData; alt: string; place: string; label?: string }; className: string; sizes: string; delay?: number }) {
+  return (
+    <Reveal delay={delay} className={`card group relative overflow-hidden ${className}`}>
+      <Image src={photo.src} alt={photo.alt} fill sizes={sizes} placeholder="blur" className="object-cover transition-transform duration-700 group-hover:scale-105" />
+      <CrusadeLabel photo={photo} />
+    </Reveal>
+  )
+}
+
 /** Section header: title left, paragraph or action right. */
 export function SplitHeader({ title, children }: { title: string; children: ReactNode }) {
   return (

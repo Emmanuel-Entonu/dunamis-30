@@ -1,17 +1,18 @@
 /*
- * Canvas renderer for the "I Am Attending" card, one tall size (1080×1920) for
- * WhatsApp Status and Stories. drawCard(ctx, input, assets, t) paints one frame; t runs 0 → 1
+ * Canvas renderer for the "I Am Attending" card, one tall size (1080×1920) for WhatsApp Status and
+ * Stories. White and gold, with the Glory Dome crowd rising under the photo, comes first; the rest are other backdrops.
+ * drawCard(ctx, input, assets, t) paints one frame; t runs 0 → 1
  * for the reveal used in the video export (t = 1 is the finished card). Everything runs in the
  * browser: photos never leave the visitor's device.
  */
 
-export type TemplateId = 'glory' | 'pearl' | 'nations' | 'emerald' | 'royal' | 'onyx'
+export type TemplateId = 'pearl' | 'glory' | 'nations' | 'emerald' | 'royal' | 'onyx'
 export type PhotoSource = HTMLImageElement | HTMLCanvasElement
 
 export const CARD = { w: 1080, h: 1920 }
 export const EVENT = { title: 'Kingdom Power & Glory World Conference', date: '24 to 29 November 2026', venue: 'The Glory Dome, Abuja' }
 
-export type CardAssets = { crest: HTMLImageElement; emblem: HTMLImageElement; dome: HTMLImageElement; nations: HTMLImageElement | null }
+export type CardAssets = { crest: HTMLImageElement; emblem: HTMLImageElement; crowd: HTMLImageElement; dome: HTMLImageElement; nations: HTMLImageElement | null }
 
 export type CardInput = {
   name: string
@@ -22,8 +23,8 @@ export type CardInput = {
   font: string
 }
 
-/** Glory Dome is the default; the rest are alternative backdrops for the same card. */
-export const TEMPLATE_ORDER: TemplateId[] = ['glory', 'pearl', 'nations', 'emerald', 'royal', 'onyx']
+/** White and gold is the default; the rest are alternative backdrops for the same card. */
+export const TEMPLATE_ORDER: TemplateId[] = ['pearl', 'glory', 'nations', 'emerald', 'royal', 'onyx']
 
 type Theme = { label: string; light?: boolean; paint: (ctx: CanvasRenderingContext2D, a: CardAssets, w: number, h: number) => void }
 
@@ -53,10 +54,15 @@ function cover(ctx: CanvasRenderingContext2D, img: PhotoSource, x: number, y: nu
   ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) * focusY, dw, dh)
 }
 
+const GOLD = ['#8a5f10', '#c2902a', '#94660f', '#cf9f3b', '#8f6210']
+/** For the dark backdrops. */
+const BRIGHT_GOLD = ['#a8781f', '#f6dc95', '#c48f2a', '#fff0c4', '#b07a1c']
+/** Deeper, because the date sits over the crowd and has to read at a glance. */
+const DEEP_GOLD = ['#6f4a07', '#966b18', '#7a5209', '#9c7019', '#744e08']
+
 /** Polished gold foil for rules, frame and headline type. */
-function foil(ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number, deep = false) {
+function foil(ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number, stops = GOLD) {
   const g = ctx.createLinearGradient(x0, y0, x1, y1)
-  const stops = deep ? ['#8a5f10', '#c2902a', '#94660f', '#cf9f3b', '#8f6210'] : ['#a8781f', '#f6dc95', '#c48f2a', '#fff0c4', '#b07a1c']
   ;[0, 0.22, 0.45, 0.7, 1].forEach((at, i) => g.addColorStop(at, stops[i]))
   return g
 }
@@ -98,8 +104,24 @@ function addGrain(ctx: CanvasRenderingContext2D, w: number, h: number, alpha: nu
   ctx.restore()
 }
 
+// ---------- the paper ----------
+function paintPaper(ctx: CanvasRenderingContext2D, w: number, h: number) {
+  const g = ctx.createLinearGradient(0, 0, w * 0.3, h)
+  g.addColorStop(0, '#fffefb')
+  g.addColorStop(0.62, '#fefcf6')
+  g.addColorStop(1, '#f9f0dd')
+  ctx.fillStyle = g
+  ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = radial(ctx, w * 0.18, 0, h * 0.45, [
+    [0, 'rgba(255,225,160,0.16)'],
+    [1, 'rgba(255,225,160,0)'],
+  ])
+  ctx.fillRect(0, 0, w, h)
+}
+
 // ---------- backdrops ----------
 export const TEMPLATES: Record<TemplateId, Theme> = {
+  pearl: { label: 'White & Gold', light: true, paint: (ctx, _a, w, h) => paintPaper(ctx, w, h) },
   glory: {
     label: 'Glory Dome',
     paint: (ctx, a, w, h) => {
@@ -112,28 +134,6 @@ export const TEMPLATES: Record<TemplateId, Theme> = {
       ])
       ctx.fillRect(0, 0, w, h)
       vignette(ctx, w, h, 0.55)
-    },
-  },
-  pearl: {
-    label: 'White & Gold',
-    light: true,
-    paint: (ctx, _a, w, h) => {
-      const g = ctx.createLinearGradient(0, 0, w * 0.3, h)
-      g.addColorStop(0, '#fffefb')
-      g.addColorStop(0.62, '#fbf5e8')
-      g.addColorStop(1, '#f5e9cf')
-      ctx.fillStyle = g
-      ctx.fillRect(0, 0, w, h)
-      ctx.fillStyle = radial(ctx, w / 2, h, h * 0.5, [
-        [0, 'rgba(240,169,43,0.3)'],
-        [1, 'rgba(240,169,43,0)'],
-      ])
-      ctx.fillRect(0, 0, w, h)
-      ctx.fillStyle = radial(ctx, w * 0.18, 0, h * 0.45, [
-        [0, 'rgba(255,225,160,0.35)'],
-        [1, 'rgba(255,225,160,0)'],
-      ])
-      ctx.fillRect(0, 0, w, h)
     },
   },
   nations: {
@@ -295,25 +295,35 @@ function spaced(ctx: CanvasRenderingContext2D, px: number) {
 }
 
 // ---------- the card ----------
-const CREAM = '#eee0bf'
-const WHITE = '#ffffff'
+const LIGHT_INK = { text: '#3a3122', strong: '#17130c', soft: 'rgba(58,49,34,0.9)', hair: 'rgba(154,106,12,0.35)', panel: '#efe6d2', figure: 'rgba(120,100,60,0.22)' }
+const DARK_INK = { text: '#eee0bf', strong: '#ffffff', soft: 'rgba(238,224,191,0.85)', hair: 'rgba(246,220,149,0.32)', panel: '#15110b', figure: 'rgba(238,224,191,0.13)' }
 const M = 64 // side margin
-const PHOTO = { x: M, y: 212, w: CARD.w - M * 2, h: 1120 }
+// Where the crowd layer starts, hidden behind the photo. It's made by scripts/render-card-crowd.mjs.
+const CROWD_TOP = 1240
+// The white card's photo is a little shorter, to leave room for the crowd.
+const LIGHT_LAYOUT = { photo: 1040, statement: 1304, rule: 1524, date: 1612, venue: 1672, tag: 1722 }
+const DARK_LAYOUT = { photo: 1120, statement: 1394, rule: 1640, date: 1742, venue: 1808, tag: 1862 }
 
 export function drawCard(ctx: CanvasRenderingContext2D, input: CardInput, assets: CardAssets, t = 1) {
   const { w, h } = CARD
   const font = input.font
   const light = Boolean(TEMPLATES[input.template].light)
-  const gold = (x0: number, y0: number, x1: number, y1: number) => foil(ctx, x0, y0, x1, y1, light)
-  const ink = light
-    ? { text: '#4c4231', strong: '#17130c', soft: 'rgba(76,66,49,0.75)', hair: 'rgba(154,106,12,0.35)', panel: '#efe6d2', figure: 'rgba(120,100,60,0.22)' }
-    : { text: CREAM, strong: WHITE, soft: 'rgba(238,224,191,0.7)', hair: 'rgba(246,220,149,0.32)', panel: '#15110b', figure: 'rgba(238,224,191,0.13)' }
+  const INK = light ? LIGHT_INK : DARK_INK
+  const LINE = light ? LIGHT_LAYOUT : DARK_LAYOUT
+  const PHOTO = { x: M, y: 212, w: w - M * 2, h: LINE.photo }
+  const gold = (x0: number, y0: number, x1: number, y1: number) => foil(ctx, x0, y0, x1, y1, light ? GOLD : BRIGHT_GOLD)
+  // A glow of paper on the white card, and a soft shadow on the dark ones, keeps the words crisp over the pictures.
+  const lift = (on: boolean) => {
+    ctx.shadowColor = !on ? 'transparent' : light ? 'rgba(255,251,241,0.95)' : 'rgba(0,0,0,0.85)'
+    ctx.shadowBlur = !on ? 0 : light ? 22 : 16
+    ctx.shadowOffsetY = on && !light ? 2 : 0
+  }
   ctx.save()
   ctx.clearRect(0, 0, w, h)
-  ctx.fillStyle = '#060606'
+  ctx.fillStyle = light ? '#fdf9f0' : '#060606'
   ctx.fillRect(0, 0, w, h)
 
-  // Backdrop settles in.
+  // The backdrop settles in. On the white card, the crowd rises into place.
   const bg = easeOut(seg(t, 0, 0.4))
   ctx.save()
   ctx.globalAlpha = clamp(seg(t, 0, 0.16))
@@ -322,6 +332,7 @@ export function drawCard(ctx: CanvasRenderingContext2D, input: CardInput, assets
   ctx.scale(z, z)
   ctx.translate(-w / 2, -h / 2)
   TEMPLATES[input.template].paint(ctx, assets, w, h)
+  if (light) ctx.drawImage(assets.crowd, 0, CROWD_TOP + (1 - easeOut(seg(t, 0.06, 0.5))) * 90, w, h - CROWD_TOP)
   ctx.restore()
   addGrain(ctx, w, h, 0.06)
 
@@ -334,7 +345,7 @@ export function drawCard(ctx: CanvasRenderingContext2D, input: CardInput, assets
   ctx.lineWidth = 3
   ctx.stroke()
   roundRect(ctx, 30, 30, w - 60, h - 60, 18)
-  ctx.strokeStyle = ink.hair
+  ctx.strokeStyle = INK.hair
   ctx.lineWidth = 1.2
   ctx.stroke()
 
@@ -344,7 +355,7 @@ export function drawCard(ctx: CanvasRenderingContext2D, input: CardInput, assets
   ctx.drawImage(assets.emblem, M, 50, logoW, logoH)
   ctx.textBaseline = 'alphabetic'
   ctx.textAlign = 'left'
-  ctx.fillStyle = ink.strong
+  ctx.fillStyle = INK.strong
   ctx.font = `600 31px ${font}`
   ctx.fillText('Dunamis International', M + logoW + 16, 98)
   ctx.fillText('Gospel Centre', M + logoW + 16, 138)
@@ -366,11 +377,11 @@ export function drawCard(ctx: CanvasRenderingContext2D, input: CardInput, assets
   ctx.translate(w / 2, PHOTO.y + PHOTO.h / 2)
   ctx.scale(ps, ps)
   ctx.translate(-w / 2, -(PHOTO.y + PHOTO.h / 2))
-  ctx.shadowColor = 'rgba(0,0,0,0.5)'
+  ctx.shadowColor = light ? 'rgba(92,62,12,0.34)' : 'rgba(0,0,0,0.5)'
   ctx.shadowBlur = 40
   ctx.shadowOffsetY = 16
   roundRect(ctx, PHOTO.x, PHOTO.y, PHOTO.w, PHOTO.h, 10)
-  ctx.fillStyle = ink.panel
+  ctx.fillStyle = INK.panel
   ctx.fill()
   ctx.shadowColor = 'transparent'
   ctx.save()
@@ -378,7 +389,7 @@ export function drawCard(ctx: CanvasRenderingContext2D, input: CardInput, assets
   if (input.photo) {
     cover(ctx, input.photo, PHOTO.x, PHOTO.y, PHOTO.w, PHOTO.h, input.zoom, 0.42)
   } else {
-    ctx.fillStyle = ink.figure
+    ctx.fillStyle = INK.figure
     ctx.beginPath()
     ctx.arc(w / 2, PHOTO.y + PHOTO.h * 0.4, PHOTO.w * 0.17, 0, Math.PI * 2)
     ctx.fill()
@@ -416,7 +427,9 @@ export function drawCard(ctx: CanvasRenderingContext2D, input: CardInput, assets
   const runs: Run[] = [{ text: 'I, ' }, { text: name, strong: true }]
   if (city) runs.push({ text: ', from ' }, { text: city, strong: true })
   runs.push({ text: `, will be attending the ${EVENT.title}.` })
-  drawStatement(ctx, runs, { cx: w / 2, top: 1394 + (1 - st) * 24, maxW: w - M * 2 - 40, font, colors: { text: ink.text, strong: ink.strong }, alpha: st })
+  lift(true)
+  drawStatement(ctx, runs, { cx: w / 2, top: LINE.statement + (1 - st) * 24, maxW: w - M * 2 - 40, font, colors: { text: INK.text, strong: INK.strong }, alpha: st })
+  lift(false)
 
   // Foil rule, date and venue.
   const d = easeOut(seg(t, 0.64, 0.9))
@@ -424,19 +437,20 @@ export function drawCard(ctx: CanvasRenderingContext2D, input: CardInput, assets
   ctx.globalAlpha = d
   ctx.fillStyle = gold(M, 0, w - M, 0)
   const ruleW = (w - M * 2) * d
-  ctx.fillRect(w / 2 - ruleW / 2, 1640, ruleW, 2)
+  ctx.fillRect(w / 2 - ruleW / 2, LINE.rule, ruleW, 2)
   ctx.textAlign = 'center'
   ctx.textBaseline = 'alphabetic'
+  lift(true)
   ctx.font = `700 58px ${font}`
-  ctx.fillStyle = gold(w * 0.2, 1700, w * 0.8, 1760)
-  ctx.fillText(EVENT.date, w / 2, 1742)
+  ctx.fillStyle = foil(ctx, w * 0.2, 0, w * 0.8, 0, light ? DEEP_GOLD : BRIGHT_GOLD)
+  ctx.fillText(EVENT.date, w / 2, LINE.date)
   ctx.font = `600 38px ${font}`
-  ctx.fillStyle = ink.strong
-  ctx.fillText(EVENT.venue, w / 2, 1808)
-  ctx.font = `600 26px ${font}`
-  spaced(ctx, 4)
-  ctx.fillStyle = ink.soft
-  ctx.fillText('#DUNAMISAT30', w / 2, 1862)
+  ctx.fillStyle = INK.strong
+  ctx.fillText(EVENT.venue, w / 2, LINE.venue)
+  ctx.font = `600 30px ${font}`
+  spaced(ctx, 2)
+  ctx.fillStyle = INK.soft
+  ctx.fillText('#Dunamis@30', w / 2, LINE.tag)
   spaced(ctx, 0)
   ctx.restore()
 

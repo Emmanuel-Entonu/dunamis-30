@@ -10,8 +10,8 @@ import { MapPin, socialIcons, WhatsApp } from '@/components/icons'
 import { PageHero } from '@/components/PageHero'
 import { Reveal } from '@/components/Reveal'
 import { ShareButtons } from '@/components/ShareButtons'
-import { getSite } from '@/lib/content'
-import { defaultContacts, defaultFaqs, directionsUrl, officialAccounts, venueAddress, whatsappLink, type ContactDesk } from '@/lib/ministry'
+import { getSite, testimonyFormOpen } from '@/lib/content'
+import { defaultContacts, faqsFor, directionsUrl, officialAccounts, venueAddress, whatsappLink, type ContactDesk } from '@/lib/ministry'
 import { services } from '@/lib/photos'
 
 export const revalidate = 300
@@ -52,10 +52,10 @@ function DeskActions({ desk }: { desk: ContactDesk }) {
 }
 
 export default async function ContactPage() {
-  const site = await getSite()
+  const [site, formOpen] = await Promise.all([getSite(), testimonyFormOpen()])
   const desks: ContactDesk[] = site.contacts?.length
     ? site.contacts.map((c) => ({ title: c.label, text: '', email: c.email ?? undefined, phone: c.phone ?? undefined, whatsapp: c.whatsapp ?? undefined }))
-    : defaultContacts
+    : defaultContacts.map((desk) => (!formOpen && desk.link?.href === '/testimonies#share' ? { ...desk, link: undefined } : desk))
 
   return (
     <>
@@ -160,7 +160,7 @@ export default async function ContactPage() {
             Questions people ask
           </Reveal>
           <div className="mt-10 lg:mt-[60px]">
-            <Faq items={site.faqs?.length ? site.faqs : defaultFaqs} />
+            <Faq items={site.faqs?.length ? site.faqs : faqsFor(formOpen)} />
           </div>
           <ShareButtons url="/contact" text="Everything you need to know about Dunamis at 30" className="mt-10 justify-center" />
         </div>

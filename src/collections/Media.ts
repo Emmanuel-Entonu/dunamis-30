@@ -4,7 +4,7 @@ import { hasRole, isEditor } from '@/access/roles'
 
 export const Media: CollectionConfig = {
   slug: 'media',
-  admin: { group: 'Media & Archive' },
+  admin: { hidden: true, group: 'Media & Archive' },
   access: {
     read: ({ req: { user } }) => (hasRole(user, 'admin', 'editor') ? true : { pendingReview: { not_equals: true } }),
     create: isEditor,

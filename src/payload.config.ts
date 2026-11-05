@@ -52,20 +52,37 @@ database.init = (args) => {
 export default buildConfig({
   admin: {
     user: Users.slug,
-    meta: { titleSuffix: ' — Dunamis@30 Admin' },
+    meta: { titleSuffix: ' | Dunamis at 30 dashboard' },
+    // The site is black and gold, and so is its dashboard.
+    theme: 'dark',
+    dateFormat: 'd MMM yyyy, h:mm a',
     components: {
-      // Pending testimonies / stories and new international guests, at a glance.
-      beforeDashboard: ['/components/admin/ReviewQueue#ReviewQueue'],
+      Nav: '/components/admin/Sidebar#Sidebar',
+      views: { dashboard: { Component: '/components/admin/Dashboard#Dashboard' } },
       graphics: { Logo: '/components/admin/Brand#Logo', Icon: '/components/admin/Brand#Icon' },
     },
     importMap: {
       baseDir: path.resolve(dirname),
     },
   },
+  // Column headings in plain words. Any word not listed here keeps Payload's own.
+  i18n: {
+    translations: {
+      en: {
+        general: { createdAt: 'Received', created: 'Received', updatedAt: 'Last changed', lastModified: 'Last changed', dashboard: 'Overview' },
+        authentication: { emailOrUsername: 'Username', login: 'Sign in', logOut: 'Sign out' },
+        // Payload uses either one, depending on how far the sign-in got.
+        error: {
+          emailOrPasswordIncorrect: 'Those sign-in details aren’t right. Please check them and try again.',
+          usernameOrPasswordIncorrect: 'Those sign-in details aren’t right. Please check them and try again.',
+        },
+      },
+    },
+  },
   collections: [
     Testimonies,
-    SonsStories,
     InternationalRegistrations,
+    SonsStories,
     CardEvents,
     Milestones,
     GalleryItems,

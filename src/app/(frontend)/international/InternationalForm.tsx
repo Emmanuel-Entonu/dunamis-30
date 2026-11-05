@@ -22,7 +22,7 @@ function YesNo({ name, legend, error }: { name: string; legend: string; error?: 
             key={o.v}
             className="flex min-h-[50px] cursor-pointer items-center gap-3 rounded-lg border border-line bg-hair px-4 text-base text-fg transition-colors has-checked:border-gold has-checked:bg-gold/10"
           >
-            <input type="radio" name={name} value={o.v} data-invalid={error ? 'true' : undefined} className="size-4 scroll-mt-28 accent-[#f0a92b]" />
+            <input type="radio" name={name} value={o.v} data-invalid={error ? 'true' : undefined} className="size-5 shrink-0 scroll-mt-28 accent-[#f0a92b]" />
             {o.l}
           </label>
         ))}
@@ -123,7 +123,7 @@ export function InternationalForm() {
       </div>
 
       <label className="mt-6 flex items-start gap-3 text-[15px]">
-        <input type="checkbox" name="consent" aria-invalid={!!e.consent} className="mt-1 size-4 scroll-mt-28 accent-[#f0a92b]" />
+        <input type="checkbox" name="consent" aria-invalid={!!e.consent} className="mt-0.5 size-5 shrink-0 scroll-mt-28 accent-[#f0a92b]" />
         <span>
           I agree that Dunamis may store these details and contact me about my visit.
           {e.consent && <span className="mt-1 block text-[#ff8a7a]">{e.consent}</span>}

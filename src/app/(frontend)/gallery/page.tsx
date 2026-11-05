@@ -16,6 +16,7 @@ export const metadata: Metadata = {
 }
 
 const categories: Record<string, string> = {
+  crusades: 'Crusades',
   historical: 'Historical Photographs',
   'old-church': 'Old Church Photographs',
   conventions: 'Major Conventions',

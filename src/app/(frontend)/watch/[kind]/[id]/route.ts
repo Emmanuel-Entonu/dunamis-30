@@ -29,10 +29,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ kind
       if (!hasRole(user as never, 'admin', 'editor')) return notFound()
     }
 
+    const location = await signedVideoUrl(path, LINK_LIFETIME_SECONDS)
+    if (new URL(request.url).searchParams.get('link') === '1') return Response.json({ url: location }, { headers: { 'Cache-Control': 'private, no-store' } })
+
     return new Response(null, {
       status: 302,
       headers: {
-        Location: await signedVideoUrl(path, LINK_LIFETIME_SECONDS),
+        Location: location,
         // Sharing the redirect briefly saves work at busy moments. Taking a video down stops new views within ten minutes.
         'Cache-Control': approved ? 'public, max-age=300, s-maxage=600' : 'private, no-store',
       },

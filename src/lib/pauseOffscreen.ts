@@ -29,6 +29,8 @@ export function pauseEndlessAnimationsOffscreen() {
     const effect = animation.effect as KeyframeEffect | null
     const target = effect?.target
     if (!target || effect.pseudoElement || effect.getComputedTiming().iterations !== Infinity) return
+    // Parts that must stay in step look after their own resting.
+    if (target.closest('[data-rests-together]')) return
     // Watch the parent, because a gloss band waiting off the edge of its card never counts as visible itself.
     const host = target.parentElement
     if (!host || !('style' in target)) return

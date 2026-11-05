@@ -4,14 +4,19 @@ import { adminFieldOnly, hasRole, isAdmin } from '@/access/roles'
 
 export const Users: CollectionConfig = {
   slug: 'users',
+  // Only ever seen at the top of someone's own account page.
+  labels: { singular: 'Account', plural: 'Account' },
   admin: {
-    useAsTitle: 'email',
-    defaultColumns: ['name', 'email', 'roles'],
+    hidden: true,
+    useAsTitle: 'username',
+    defaultColumns: ['name', 'username', 'roles'],
     group: 'Settings',
   },
   auth: {
     maxLoginAttempts: 5,
     lockTime: 15 * 60 * 1000,
+    // People sign in with a username. The first account was made with an email, and that keeps working.
+    loginWithUsername: { allowEmailLogin: true, requireEmail: false, requireUsername: false },
   },
   access: {
     // Only an admin adds users. The first-user screen on /admin works without this rule, and
@@ -37,6 +42,8 @@ export const Users: CollectionConfig = {
       required: true,
       defaultValue: ['editor'],
       access: { create: adminFieldOnly, update: adminFieldOnly },
+      // Not on the account page, where someone could remove their own access by accident.
+      admin: { hidden: true },
       options: [
         { label: 'Administrator', value: 'admin' },
         { label: 'Content editor', value: 'editor' },
