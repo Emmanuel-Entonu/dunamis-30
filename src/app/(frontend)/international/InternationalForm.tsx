@@ -33,7 +33,7 @@ function YesNo({ name, legend, error }: { name: string; legend: string; error?: 
 }
 
 export function InternationalForm() {
-  const { formRef, state, show, busy, setBusy, onFormChange, attempt } = useSubmission('international')
+  const { formRef, doneRef, state, show, busy, setBusy, onFormChange, attempt } = useSubmission('international')
   const e = state.fieldErrors ?? {}
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -49,7 +49,7 @@ export function InternationalForm() {
 
   if (state.ok) {
     return (
-      <div className="rounded-2xl border border-hair bg-[#171717] p-6 text-center sm:p-10" role="status">
+      <div ref={doneRef} className="rounded-2xl border border-hair bg-[#171717] p-6 text-center sm:p-10" role="status">
         <p className="text-lg">Application received</p>
         <p className="mt-3 text-4xl font-medium tracking-tight text-fg sm:text-5xl">{state.reference}</p>
         <p className="mx-auto mt-5 max-w-[460px]">

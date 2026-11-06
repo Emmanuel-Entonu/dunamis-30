@@ -36,6 +36,23 @@ const loadImage = (src: string) =>
     img.src = src
   })
 
+/** Bigger than the card ever needs, even zoomed in. */
+const MAX_PHOTO_SIDE = 2400
+
+/** A phone's photo can be 50 megapixels, far more than the card uses. Holding a smaller copy saves a lot of memory on a phone. */
+const fitted = (img: HTMLImageElement): PhotoSource => {
+  const scale = MAX_PHOTO_SIDE / Math.max(img.naturalWidth, img.naturalHeight)
+  if (scale >= 1) return img
+  const c = document.createElement('canvas')
+  c.width = Math.round(img.naturalWidth * scale)
+  c.height = Math.round(img.naturalHeight * scale)
+  const ctx = c.getContext('2d')
+  if (!ctx) return img
+  ctx.imageSmoothingQuality = 'high'
+  ctx.drawImage(img, 0, 0, c.width, c.height)
+  return c
+}
+
 /** Weak signal shouldn't stop someone making a card, so each piece of artwork gets a few tries. */
 const loadArtwork = async (src: string, tries = 3): Promise<HTMLImageElement> => {
   try {
@@ -438,7 +455,7 @@ export function CardStudio() {
     if (!file) return
     const url = URL.createObjectURL(file)
     try {
-      applyPhoto(await loadImage(url), url) // browsers apply EXIF orientation when decoding
+      applyPhoto(fitted(await loadImage(url)), url) // browsers apply EXIF orientation when decoding
     } catch {
       setNote('That file couldn’t be opened. Please try a JPG or PNG photo.')
     }

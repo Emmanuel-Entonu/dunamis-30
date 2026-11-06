@@ -15,6 +15,7 @@ import { Reveal } from '@/components/Reveal'
 import { blurFor } from '@/lib/image'
 import { getPastorPage, mediaUrl } from '@/lib/content'
 import { crusadePhotos, photos } from '@/lib/photos'
+import { anniversaryOver, kpg } from '@/lib/site'
 import { embedUrl } from '@/lib/video'
 import type { Media } from '@/payload-types'
 
@@ -272,7 +273,7 @@ export default async function SeniorPastorPage() {
 
       <ClosingBand
         title="Come and celebrate with them"
-        text="Join Dr. Paul and Dr. Becky at the Glory Dome on 10 November, or tell us what this ministry has meant to you."
+        text={`Join Dr. Paul and Dr. Becky at the Glory Dome ${anniversaryOver() ? `for ${kpg.title}, ${kpg.dates}` : 'on 10 November'}, or tell us what this ministry has meant to you.`}
         shareUrl="/senior-pastor"
         shareText="Dr. Paul Enenche, founder and senior pastor of Dunamis"
       >

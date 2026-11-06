@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Fragment } from 'react'
 import Link from '@/components/SiteLink'
 
 import { glass } from '@/assets/glass'
@@ -16,6 +17,12 @@ export const metadata: Metadata = {
   title: 'Testimonies',
   description:
     'Real stories from people God has touched through Dunamis International Gospel Centre. Read them, or share yours.',
+}
+
+/** The first and last pages and the ones around this page, so a long library still fits a phone. */
+const pageList = (current: number, total: number) => {
+  const shown = [...new Set([1, current - 1, current, current + 1, total])].filter((n) => n >= 1 && n <= total).sort((a, b) => a - b)
+  return shown.map((n, i) => ({ n, gapBefore: i > 0 && n - shown[i - 1] > 1 }))
 }
 
 type Search = { q?: string; category?: string; year?: string; sort?: string; page?: string; type?: string; mix?: string }
@@ -163,16 +170,22 @@ export default async function TestimoniesPage({ searchParams }: { searchParams: 
           )}
 
           {result.totalPages > 1 && (
-            <nav aria-label="Pages" className="mt-10 flex items-center justify-center gap-2">
-              {Array.from({ length: result.totalPages }, (_, i) => i + 1).map((n) => (
-                <Link
-                  key={n}
-                  href={href({ page: n })}
-                  aria-current={n === result.page ? 'page' : undefined}
-                  className={`grid size-11 place-items-center rounded-lg text-[15px] ${n === result.page ? 'bg-white text-canvas' : 'bg-hair text-soft hover:bg-line'}`}
-                >
-                  {n}
-                </Link>
+            <nav aria-label="Pages" className="mt-10 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+              {pageList(result.page, result.totalPages).map(({ n, gapBefore }) => (
+                <Fragment key={n}>
+                  {gapBefore && (
+                    <span aria-hidden className="px-0.5 text-[15px] text-muted">
+                      …
+                    </span>
+                  )}
+                  <Link
+                    href={href({ page: n })}
+                    aria-current={n === result.page ? 'page' : undefined}
+                    className={`grid size-11 place-items-center rounded-lg text-[15px] ${n === result.page ? 'bg-white text-canvas' : 'bg-hair text-soft hover:bg-line'}`}
+                  >
+                    {n}
+                  </Link>
+                </Fragment>
               ))}
             </nav>
           )}

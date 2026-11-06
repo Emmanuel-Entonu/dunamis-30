@@ -96,12 +96,18 @@ export const getHomepage = cache(async () =>
 type Social = { id?: string | null; platform: keyof typeof import('@/components/icons').socialIcons; url: string }
 
 /** The dashboard's switch for the testimony form. If the switch can't be read, the form stays as it normally is: on. */
-export const testimonyFormOpen = cache(async () =>
-  safely('testimony form switch', async () => (await (await getPayloadClient()).findGlobal({ slug: 'testimony-settings', depth: 0 })).formOpen !== false, true),
+const readFormSwitch = unstable_cache(
+  async () => (await (await getPayloadClient()).findGlobal({ slug: 'testimony-settings', depth: 0 })).formOpen !== false,
+  ['testimony-form-switch'],
+  { revalidate: 300, tags: ['testimony-settings'] },
 )
 
+export const testimonyFormOpen = cache(async () => safely('testimony form switch', readFormSwitch, true))
+
+const readSite = unstable_cache(async () => (await getPayloadClient()).findGlobal({ slug: 'site' }), ['site-settings'], { revalidate: 300, tags: ['site-settings'] })
+
 export const getSite = cache(async () => {
-  const site = await safely<Partial<Site>>('site', async () => (await getPayloadClient()).findGlobal({ slug: 'site' }), {})
+  const site = await safely<Partial<Site>>('site', readSite, {})
   const socials: Social[] = site.socials?.length ? site.socials : defaultSocials.map((s) => ({ ...s }))
   return { ...site, socials, officialWebsite: site.officialWebsite || defaults.officialWebsite }
 })

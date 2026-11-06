@@ -21,7 +21,7 @@ import { Reveal } from '@/components/Reveal'
 import { getEvent, getHomepage, getSite, testimonyFormOpen } from '@/lib/content'
 import { faqsFor, directionsUrl } from '@/lib/ministry'
 import { crusadeNations, defaultGallery, photos } from '@/lib/photos'
-import { defaults, kpg } from '@/lib/site'
+import { anniversaryOver, defaults, kpg } from '@/lib/site'
 
 export const revalidate = 60
 
@@ -214,7 +214,7 @@ export default async function HomePage() {
       {/* Coming? The card, the international form and the venue, in one place */}
       <section className="section">
         <div className="container-site">
-          <SplitHeader title="Coming on the 10th?">
+          <SplitHeader title={anniversaryOver() ? `Coming to ${kpg.title}?` : 'Coming on the 10th?'}>
             <p>You don’t need to register. Just come, and bring someone with you.</p>
           </SplitHeader>
 

@@ -25,7 +25,13 @@ export function useSubmission(draftKey: string, onRestore?: (values: Record<stri
   const [state, setState] = useState<SubmissionState>({})
   const [busy, setBusy] = useState(false)
   const saveTimer = useRef(0)
+  const doneRef = useRef<HTMLDivElement>(null)
   const storageKey = `dunamis-draft-${draftKey}`
+
+  // The thank you is much shorter than the form it replaces, so it would otherwise land above the top of a phone's screen.
+  useEffect(() => {
+    if (state.ok) doneRef.current?.scrollIntoView({ block: 'center' })
+  }, [state.ok])
 
   // Restore a draft once, after the page has loaded.
   useEffect(() => {
@@ -127,7 +133,7 @@ export function useSubmission(draftKey: string, onRestore?: (values: Record<stri
     [show],
   )
 
-  return { formRef, state, show, busy, setBusy, onFormChange, attempt }
+  return { formRef, doneRef, state, show, busy, setBusy, onFormChange, attempt }
 }
 
 /** The line beside the submit button when something needs fixing. */

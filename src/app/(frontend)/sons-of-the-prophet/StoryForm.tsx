@@ -36,7 +36,7 @@ const chapters = [
 ]
 
 export function StoryForm() {
-  const { formRef, state, show, busy, setBusy, onFormChange, attempt } = useSubmission('story')
+  const { formRef, doneRef, state, show, busy, setBusy, onFormChange, attempt } = useSubmission('story')
   const video = useVideoAttachment()
   const [before, setBefore] = useState<Picked | null>(null)
   const [after, setAfter] = useState<Picked | null>(null)
@@ -95,7 +95,7 @@ export function StoryForm() {
 
   if (state.ok) {
     return (
-      <div role="status" className="rounded-2xl border border-hair bg-[#171717] p-6 text-center sm:p-12">
+      <div ref={doneRef} role="status" className="rounded-2xl border border-hair bg-[#171717] p-6 text-center sm:p-12">
         <p className="text-sm tracking-[0.18em] text-gold uppercase">Story received</p>
         <p className="mt-4 text-2xl font-medium text-fg sm:text-3xl">Thank you{state.firstName ? `, ${state.firstName}` : ''}. You are part of the legacy.</p>
         <p className="mx-auto mt-4 max-w-[480px]">Our communications team will read it and may get in touch before it goes up on the website.</p>

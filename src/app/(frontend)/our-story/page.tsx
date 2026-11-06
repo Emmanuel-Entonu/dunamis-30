@@ -13,6 +13,7 @@ import { blurFor } from '@/lib/image'
 import { getMilestones, getStoryPage, mediaUrl, testimonyFormOpen } from '@/lib/content'
 import { defaultMilestones, defaultStats, vision, type GlassKey } from '@/lib/ministry'
 import { crusadePhotos, photoByFile, photos } from '@/lib/photos'
+import { anniversaryOver, kpg } from '@/lib/site'
 import type { Media } from '@/payload-types'
 
 export const revalidate = 300
@@ -234,7 +235,7 @@ export default async function OurStoryPage() {
 
       <ClosingBand
         title="You’re part of this story"
-        text={formOpen ? 'Come on 10 November, or tell us what God has done in your life.' : 'Come on 10 November and be part of it.'}
+        text={`${anniversaryOver() ? `Come to ${kpg.title}, ${kpg.dates}` : 'Come on 10 November'}${formOpen ? ', or tell us what God has done in your life.' : ' and be part of it.'}`}
         shareUrl="/our-story"
         shareText="The story of Dunamis International Gospel Centre, 30 years on"
       >

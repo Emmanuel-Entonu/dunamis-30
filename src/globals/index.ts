@@ -41,6 +41,19 @@ export const SiteSettings: GlobalConfig = {
   label: 'Contacts & socials',
   admin: { hidden: true, group: 'Settings' },
   access: { read: anyone, update: isAdmin },
+  hooks: {
+    afterChange: [
+      async ({ doc }) => {
+        try {
+          const { revalidateTag } = await import('next/cache')
+          revalidateTag('site-settings', { expire: 0 })
+        } catch {
+          // Outside a request (a script, for example). Pages catch up on their own within a few minutes.
+        }
+        return doc
+      },
+    ],
+  },
   fields: [
     { name: 'officialWebsite', type: 'text', defaultValue: 'https://dunamisgospel.org' },
     {
@@ -189,7 +202,8 @@ export const TestimonySettings: GlobalConfig = {
       async ({ doc }) => {
         try {
           // Buttons on other pages point to the form, so every page is refreshed straight away.
-          const { revalidatePath } = await import('next/cache')
+          const { revalidatePath, revalidateTag } = await import('next/cache')
+          revalidateTag('testimony-settings', { expire: 0 })
           revalidatePath('/', 'layout')
         } catch {
           // Outside a request (a script, for example). Pages catch up on their own within a few minutes.

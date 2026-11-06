@@ -59,9 +59,13 @@ export const defaults = {
   officialWebsite: 'https://dunamisgospel.org',
 }
 
+/** Once the anniversary service is over, invitations to it move on to the convention. Pages refresh within minutes. */
+export const anniversaryOver = () => Date.now() > Date.parse('2026-11-10T23:59:00+01:00')
+
 /** The home page timer counts down to this. dunamisgospel.org/calendar/kingdom-power-and-glory-world-conference-2026 */
 export const kpg = {
   title: 'Kingdom Power & Glory',
+  dates: '23 to 29 November',
   startsAt: '2026-11-23T09:30:00+01:00',
   programmeUrl: 'https://dunamisgospel.org/upcoming-programs/',
 }

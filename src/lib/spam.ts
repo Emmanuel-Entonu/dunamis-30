@@ -47,5 +47,7 @@ export async function checkSubmission(formData: FormData, bucket: string): Promi
   return { ok: true }
 }
 
-export const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)
+// The same rule the database uses. A looser one lets a slip like "name@gmail.com." past the form, and it then fails on saving.
+const EMAIL = /^(?!.*\.\.)[\w!#$%&'*+/=?^`{|}~-](?:[\w!#$%&'*+/=?^`{|}~.-]*[\w!#$%&'*+/=?^`{|}~-])?@[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*\.[a-z]{2,}$/i
+export const isEmail = (v: string) => EMAIL.test(v)
 export const esc = (v: string) => v.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)

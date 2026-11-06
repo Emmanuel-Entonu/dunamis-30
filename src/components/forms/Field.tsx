@@ -58,6 +58,8 @@ export function BotFields() {
   )
 }
 
+const MAX_SHRUNK_BYTES = 1_200_000
+
 /** Shrinks a photo in the browser (longest side ≤ max) so uploads stay small on mobile data. */
 export async function shrinkPhoto(file: File, max = 1600, quality = 0.85): Promise<Blob> {
   const url = URL.createObjectURL(file)
@@ -72,8 +74,19 @@ export async function shrinkPhoto(file: File, max = 1600, quality = 0.85): Promi
     const c = document.createElement('canvas')
     c.width = Math.round(img.naturalWidth * s)
     c.height = Math.round(img.naturalHeight * s)
-    c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height)
-    return await new Promise<Blob>((resolve, reject) => c.toBlob((b) => (b ? resolve(b) : reject(new Error('resize failed'))), 'image/jpeg', quality))
+    const ctx = c.getContext('2d')!
+    // A see-through picture would otherwise come out on black.
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(0, 0, c.width, c.height)
+    ctx.drawImage(img, 0, 0, c.width, c.height)
+    const encode = (q: number) => new Promise<Blob>((resolve, reject) => c.toBlob((b) => (b ? resolve(b) : reject(new Error('resize failed'))), 'image/jpeg', q))
+    // A form can carry two photos and a video cover, and the server refuses anything over 4.5 MB in one go.
+    let blob = await encode(quality)
+    for (const lower of [0.7, 0.55]) {
+      if (blob.size <= MAX_SHRUNK_BYTES) break
+      blob = await encode(lower)
+    }
+    return blob
   } finally {
     URL.revokeObjectURL(url)
   }

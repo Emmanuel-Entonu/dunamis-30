@@ -136,7 +136,7 @@ export const prepareSubmission: CollectionBeforeChangeHook = ({ data, originalDo
   return data
 }
 
-/** Publishes or hides a submission's photos with it, removes a replaced video, and refreshes the public pages. */
+/** Publishes or hides a submission's photos with it, removes a replaced photo or video, and refreshes the public pages. */
 export const afterSubmissionChange =
   ({ mediaFields, basePath, tag }: { mediaFields: string[]; basePath: string; tag: string }): CollectionAfterChangeHook =>
   async ({ doc, previousDoc, req }) => {
@@ -155,6 +155,12 @@ export const afterSubmissionChange =
         overrideAccess: true,
         req,
       })
+    }
+
+    // A photo or video cover taken off a submission goes for good. Nobody's picture stays in storage after it's removed.
+    const dropped = mediaIds(before, mediaFields).filter((id) => !ids.includes(id))
+    if (dropped.length) {
+      await req.payload.delete({ collection: 'media', where: { and: [{ id: { in: dropped } }, { fromSubmission: { equals: true } }] }, overrideAccess: true, req })
     }
 
     const oldVideo = before.videoFile?.path

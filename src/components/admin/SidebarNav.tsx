@@ -54,13 +54,13 @@ export function SidebarNav({ testimonies, guests, stories, person }: Props) {
 
           <p className="sb-label">Submissions</p>
           {testimonies !== null && (
-            <Item href="/admin/collections/testimonies" icon={<TestimonyIcon />} label="Testimonies" count={testimonies} active={under('/admin/collections/testimonies')} onClick={close} />
+            <Item href="/admin/collections/testimonies?where[status][equals]=pending" icon={<TestimonyIcon />} label="Testimonies" count={testimonies} active={under('/admin/collections/testimonies')} onClick={close} />
           )}
           {guests !== null && (
-            <Item href="/admin/collections/international-registrations" icon={<GuestIcon />} label="International guests" count={guests} active={under('/admin/collections/international-registrations')} onClick={close} />
+            <Item href="/admin/collections/international-registrations?where[logisticsStatus][equals]=new" icon={<GuestIcon />} label="International guests" count={guests} active={under('/admin/collections/international-registrations')} onClick={close} />
           )}
           {stories !== null && (
-            <Item href="/admin/collections/sons-stories" icon={<StoryIcon />} label="Sons of the Prophet" count={stories} active={under('/admin/collections/sons-stories')} onClick={close} />
+            <Item href="/admin/collections/sons-stories?where[status][equals]=pending" icon={<StoryIcon />} label="Sons of the Prophet" count={stories} active={under('/admin/collections/sons-stories')} onClick={close} />
           )}
         </nav>
 

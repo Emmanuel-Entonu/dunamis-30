@@ -7,6 +7,7 @@ import { GlassArt, GlassTile, Label } from '@/components/blocks'
 import { Faq } from '@/components/Faq'
 import { Carousel } from '@/components/home/Carousel'
 import { MapPin, socialIcons, WhatsApp } from '@/components/icons'
+import { LazyMap } from '@/components/LazyMap'
 import { PageHero } from '@/components/PageHero'
 import { Reveal } from '@/components/Reveal'
 import { ShareButtons } from '@/components/ShareButtons'
@@ -90,12 +91,10 @@ export default async function ContactPage() {
               </div>
             </div>
             <div className="relative min-h-[340px] bg-hair lg:min-h-[480px]">
-              <iframe
+              <LazyMap
                 title="Map showing the Glory Dome, Airport Road, Abuja"
                 src="https://www.google.com/maps?q=Glory+Dome+Dunamis+Abuja&z=14&output=embed"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="absolute inset-0 h-full w-full border-0 [filter:invert(0.92)_hue-rotate(180deg)_saturate(0.7)]"
+                className="h-full w-full border-0 [filter:invert(0.92)_hue-rotate(180deg)_saturate(0.7)]"
               />
             </div>
           </Reveal>
