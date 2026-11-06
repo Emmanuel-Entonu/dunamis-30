@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 const facts = [
   { Icon: Calendar, title: '30th Anniversary Service', text: 'Tuesday, 10 November 2026, 9:30am WAT' },
-  { Icon: Calendar, title: 'Kingdom Power & Glory 2026', text: '24 to 29 November 2026. The theme is Open Heavens.' },
+  { Icon: Calendar, title: 'Kingdom Power & Glory 2026', text: '23 to 29 November 2026. The theme is Open Heavens.' },
   { Icon: MapPin, title: 'The Glory Dome', text: 'Lord’s Garden, Airport Road, Abuja' },
   { Icon: Globe, title: 'Arriving by air', text: 'Nnamdi Azikiwe International Airport, Abuja (ABV)' },
 ]

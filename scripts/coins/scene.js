@@ -441,7 +441,7 @@ function arcText(group, text, { radius, centre, top, size, material, z, tracking
 
 /* ─── The coin ─── */
 
-function buildCoin({ emblem, word, finish, towardCentre }) {
+function buildCoin({ emblem, word, since, finish, towardCentre }) {
   const coin = new THREE.Group()
   const look = finishes[finish]()
   const half = 0.095 // half the coin's thickness
@@ -497,12 +497,12 @@ function buildCoin({ emblem, word, finish, towardCentre }) {
   relief.position.z = fieldZ + 0.002
   coin.add(relief)
 
-  // The inscription: what the coin stands for across the top, the years across the bottom.
+  // The inscription: what the coin stands for across the top, and since when across the bottom.
   const size = 0.122
   const capHeight = size * CAP
   const baseline = 0.635
   const spanTop = arcText(coin, word, { radius: baseline, centre: Math.PI / 2, top: true, size, material: look.relief, z: fieldZ + 0.001 })
-  const spanBottom = arcText(coin, '1996 – 2026', { radius: baseline + capHeight, centre: -Math.PI / 2, top: false, size, material: look.relief, z: fieldZ + 0.001 })
+  const spanBottom = arcText(coin, `SINCE ${since}`, { radius: baseline + capHeight, centre: -Math.PI / 2, top: false, size, material: look.relief, z: fieldZ + 0.001 })
   const dotAngle = Math.PI / 2 + spanTop / 2 + (Math.PI * 2 - spanTop - spanBottom) / 4
   ;[dotAngle, Math.PI - dotAngle].forEach((a) => {
     const dot = new THREE.Mesh(new THREE.SphereGeometry(0.015, 16, 16), look.relief)
@@ -528,7 +528,7 @@ window.renderCoin = (spec) => {
   const spin = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), roll)
 
   const local = outward.clone().multiplyScalar(-1).rotateAround(new THREE.Vector2(0, 0), -roll)
-  const coin = buildCoin({ emblem: spec.emblem, word: spec.word, finish: spec.finish, towardCentre: local })
+  const coin = buildCoin({ emblem: spec.emblem, word: spec.word, since: spec.since ?? 1996, finish: spec.finish, towardCentre: local })
   coin.quaternion.copy(turn).multiply(spin)
   scene.add(coin)
 

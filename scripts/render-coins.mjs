@@ -15,7 +15,7 @@ const FILL = 0.7 // the coin's share of the image, which leaves room for its glo
 
 /**
  * What each coin stands for: the words come from the ministry's mission and its founding story.
- * `direction` is the way the coin leans, with its lit edge on the opposite side. `tilt` is how far, in radians.
+ * `since` is the year on the coin, 1996 unless it says otherwise. `direction` is the way the coin leans, with its lit edge on the opposite side. `tilt` is how far, in radians.
  */
 const coins = [
   { name: 'crown', emblem: 'crown', word: 'LIFTING POWER', finish: 'obsidian', direction: [-0.72, -0.69], tilt: 0.72, roll: 0.1 },
@@ -26,7 +26,7 @@ const coins = [
   { name: 'chain', emblem: 'chain', word: 'DELIVERING POWER', finish: 'obsidian', direction: [0.86, 0.5], tilt: 0.7, roll: 0.08 },
   { name: 'thirty', emblem: 'thirty', word: 'THIRTY YEARS', finish: 'gold', direction: [0.5, 0.87], tilt: 0.58, roll: -0.12 },
   { name: 'bible', emblem: 'bible', word: 'THE WORD', finish: 'obsidian', direction: [-0.02, 1], tilt: 0.5, roll: 0.06 },
-  { name: 'dome', emblem: 'dome', word: 'THE GLORY DOME', finish: 'pale', direction: [-0.5, 0.87], tilt: 0.66, roll: 0.1 },
+  { name: 'dome', emblem: 'dome', word: 'THE GLORY DOME', since: 2018, finish: 'pale', direction: [-0.5, 0.87], tilt: 0.66, roll: 0.1 },
   { name: 'mountain', emblem: 'mountain', word: 'ONE INSTRUCTION', finish: 'obsidian', direction: [-0.88, 0.47], tilt: 0.7, roll: -0.06 },
   { name: 'dove', emblem: 'dove', word: 'HIS PRESENCE', finish: 'gold', direction: [-1, -0.1], tilt: 0.64, roll: 0.12, light: 0.42 },
 ]

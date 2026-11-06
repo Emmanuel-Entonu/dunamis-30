@@ -211,7 +211,7 @@ export function HeroRing() {
     <div ref={root} data-rests-together className="hero-ring">
       <div className="hero-origin">
         <div aria-hidden data-ring-light className="pointer-events-none">
-          <GlassImage src={rays} className="hero-rays" />
+          <GlassImage src={rays} soon className="hero-rays" />
           <div className="glow hero-halo [--glow-strength:0.5]" />
         </div>
 
@@ -246,7 +246,7 @@ export function HeroRing() {
               <circle cx="100" cy="100" r="98" fill="none" stroke="rgb(240 169 43 / 0.35)" strokeWidth="0.75" strokeDasharray="1 4" />
               <text fill="#ffd27a" fontSize="10.5" fontWeight="500" letterSpacing="0.6">
                 <textPath href="#hero-seal-line" textLength="548" lengthAdjust="spacing">
-                  THIRTY YEARS OF GOD’S FAITHFULNESS · 1996 – 2026 · SAME MISSION · GREATER IMPACT ·
+                  THIRTY YEARS OF GOD’S FAITHFULNESS · SINCE 1996 · SAME MISSION · GREATER IMPACT ·
                 </textPath>
               </text>
             </svg>

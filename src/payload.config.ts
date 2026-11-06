@@ -21,6 +21,16 @@ const dirname = path.dirname(filename)
 // Supabase Storage speaks S3. Without these env vars, uploads fall back to local disk (dev only).
 const useSupabaseStorage = Boolean(process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID)
 
+// A login cookie only counts on requests from these addresses, so another website can't act as a signed-in reviewer.
+// The Vercel addresses are the deployment's own. EXTRA_TRUSTED_ORIGINS is for a test server on another port.
+const trustedOrigins = [
+  'https://www.dunamis30thanniversary.com',
+  'https://dunamis30thanniversary.com',
+  'http://localhost:3000',
+  ...[process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL, process.env.VERCEL_PROJECT_PRODUCTION_URL].filter(Boolean).map((host) => `https://${host}`),
+  ...(process.env.EXTRA_TRUSTED_ORIGINS?.split(',') ?? []),
+]
+
 const databaseUrl = process.env.DATABASE_URL || ''
 const isLocalDatabase = /@(localhost|127\.0\.0\.1)[:/]/.test(databaseUrl)
 
@@ -98,6 +108,7 @@ export default buildConfig({
   db: database,
   // The site only uses Payload's REST API and Local API, so there's no reason to expose GraphQL.
   graphQL: { disable: true },
+  csrf: trustedOrigins,
   email: process.env.RESEND_API_KEY
     ? resendAdapter({
         apiKey: process.env.RESEND_API_KEY,

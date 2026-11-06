@@ -2,8 +2,7 @@ import { headers } from 'next/headers'
 
 /*
  * Light, layered protection for the public forms:
- * - a honeypot field real visitors never see ("company"),
- * - a minimum fill time (bots submit instantly),
+ * - a honeypot field real visitors and their browsers' autofill never see,
  * - a per-visitor rate limit (in memory, per server instance),
  * - Cloudflare Turnstile when TURNSTILE_SECRET_KEY is configured.
  */
@@ -21,10 +20,7 @@ export async function clientIp() {
 export type SpamVerdict = { ok: true } | { ok: false; silent: boolean; message?: string }
 
 export async function checkSubmission(formData: FormData, bucket: string): Promise<SpamVerdict> {
-  if (String(formData.get('company') ?? '')) return { ok: false, silent: true }
-
-  const startedAt = Number(formData.get('startedAt') ?? 0)
-  if (!startedAt || Date.now() - startedAt < 2500) return { ok: false, silent: true }
+  if (String(formData.get('leave_empty') ?? '')) return { ok: false, silent: true }
 
   const ip = await clientIp()
   const key = `${bucket}:${ip}`

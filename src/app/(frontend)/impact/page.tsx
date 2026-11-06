@@ -149,7 +149,7 @@ export default async function ImpactPage() {
             <p className="mt-4 max-w-[560px]">Every year, people travel to the Glory Dome for these.</p>
           </Reveal>
           <Reveal className="card relative mt-10 aspect-[1280/631] overflow-hidden lg:mt-[60px]">
-            <Image src={kpgPoster} alt="Kingdom Power and Glory World Conference 2026 poster: Open Heavens, 24th to 29th November" fill placeholder="blur" sizes="(min-width: 1240px) 1200px, 96vw" className="object-cover" />
+            <Image src={kpgPoster} alt="Kingdom Power and Glory World Conference 2026 poster: Open Heavens" fill placeholder="blur" sizes="(min-width: 1240px) 1200px, 96vw" className="object-cover" />
           </Reveal>
           <div className="mt-10 grid gap-10 sm:grid-cols-2 lg:mt-[60px] lg:grid-cols-3 lg:gap-5">
             {gatherings.map((g, i) => (

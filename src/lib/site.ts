@@ -4,14 +4,14 @@ const LIVE_SITE = 'https://www.dunamis30thanniversary.com'
 export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL ? LIVE_SITE : 'http://localhost:3000')).replace(/\/$/, '')
 
 /** The picture shown when a link to the site is shared. Rendered by scripts/render-og.mjs. */
-export const shareImage = { url: '/og-dunamis-30-slip.jpg', width: 1200, height: 630, alt: 'Dunamis at 30. Same Mission. Greater Impact.' }
+export const shareImage = { url: '/og-dunamis-30-coins.jpg', width: 1200, height: 630, alt: 'Dunamis at 30. Same Mission. Greater Impact.' }
 
 export const siteName = 'Dunamis at 30'
 
 export const tagline = 'One ministry. Thirty years. Millions of stories. One continuing legacy.'
 
 export const defaultDescription =
-  'Dunamis International Gospel Centre is 30. Join us at the Glory Dome, Abuja, for Kingdom Power & Glory, 24 to 29 November 2026, read the testimonies, and make your I Am Attending card.'
+  'Dunamis International Gospel Centre is 30. Join us at the Glory Dome, Abuja, for Kingdom Power & Glory, 23 to 29 November 2026, read the testimonies, and make your I Am Attending card.'
 
 export type NavItem = { href: string; label: string }
 
@@ -62,7 +62,7 @@ export const defaults = {
 /** The home page timer counts down to this. dunamisgospel.org/calendar/kingdom-power-and-glory-world-conference-2026 */
 export const kpg = {
   title: 'Kingdom Power & Glory',
-  startsAt: '2026-11-24T09:30:00+01:00',
+  startsAt: '2026-11-23T09:30:00+01:00',
   programmeUrl: 'https://dunamisgospel.org/upcoming-programs/',
 }
 

@@ -1,6 +1,6 @@
 import config from '@payload-config'
 import { unstable_cache } from 'next/cache'
-import { getPayload, type Where } from 'payload'
+import { getPayload, type Payload, type Where } from 'payload'
 import { cache } from 'react'
 
 import type { Event, Gallery, Homepage, ImpactPage, Media, Milestone, PastorPage, Site, SonsStory, StoryPage, Testimony } from '@/payload-types'
@@ -148,6 +148,27 @@ export type TestimonyQuery = {
 const PAGE_SIZE = 12
 
 /**
+ * What a public search matches. This step needs to look at names, which visitors can't filter on, so it
+ * runs with full access and only returns ids. It only looks at the names of people who chose to show them.
+ */
+async function searchTestimonies(payload: Payload, q: string) {
+  const { docs } = await payload.find({
+    collection: 'testimonies',
+    where: {
+      and: [
+        { status: { equals: 'approved' } },
+        { or: [{ title: { like: q } }, { summary: { like: q } }, { body: { like: q } }, { and: [{ name: { like: q } }, { showName: { equals: true } }] }] },
+      ],
+    },
+    pagination: false,
+    depth: 0,
+    select: { status: true },
+    overrideAccess: true,
+  })
+  return docs.map((t) => t.id)
+}
+
+/**
  * Public testimony library. overrideAccess: false makes Payload apply the collection's access
  * rules as an anonymous visitor: only approved testimonies, and never the submitter's contacts.
  */
@@ -157,7 +178,11 @@ async function findTestimonies({ q, category, year, videos, sort = 'mix', seed =
   if (category) and.push({ category: { equals: category } })
   if (videos) and.push({ hasVideo: { equals: true } })
   if (year) and.push({ publishedAt: { greater_than_equal: `${year}-01-01T00:00:00.000Z`, less_than: `${year + 1}-01-01T00:00:00.000Z` } })
-  if (q) and.push({ or: [{ title: { like: q } }, { summary: { like: q } }, { name: { like: q } }, { body: { like: q } }] })
+  if (q) {
+    const matches = await searchTestimonies(payload, q)
+    if (!matches.length) return { docs: [], page: 1, totalPages: 0, total: 0 }
+    and.push({ id: { in: matches } })
+  }
 
   if (sort !== 'mix') {
     const res = await payload.find({

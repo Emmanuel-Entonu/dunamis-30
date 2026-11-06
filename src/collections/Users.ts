@@ -13,6 +13,8 @@ export const Users: CollectionConfig = {
     group: 'Settings',
   },
   auth: {
+    // https only on the live site. A local server runs on plain http, where the cookie would be refused.
+    cookies: { secure: Boolean(process.env.VERCEL), sameSite: 'Lax' },
     maxLoginAttempts: 5,
     lockTime: 15 * 60 * 1000,
     // People sign in with a username. The first account was made with an email, and that keeps working.

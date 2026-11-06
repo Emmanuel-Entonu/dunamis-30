@@ -10,9 +10,9 @@ export type TemplateId = 'pearl' | 'glory' | 'nations' | 'emerald' | 'royal' | '
 export type PhotoSource = HTMLImageElement | HTMLCanvasElement
 
 export const CARD = { w: 1080, h: 1920 }
-export const EVENT = { title: 'Kingdom Power & Glory World Conference', date: '24 to 29 November 2026', venue: 'The Glory Dome, Abuja' }
+export const EVENT = { title: 'Kingdom Power & Glory World Conference', date: '23 to 29 November 2026', venue: 'The Glory Dome, Abuja' }
 
-export type CardAssets = { crest: HTMLImageElement; emblem: HTMLImageElement; crowd: HTMLImageElement; dome: HTMLImageElement; nations: HTMLImageElement | null }
+export type CardAssets = { crest: HTMLImageElement; emblem: HTMLImageElement; crowd: HTMLImageElement; dome: HTMLImageElement | null; nations: HTMLImageElement | null }
 
 export type CardInput = {
   name: string
@@ -125,7 +125,7 @@ export const TEMPLATES: Record<TemplateId, Theme> = {
   glory: {
     label: 'Glory Dome',
     paint: (ctx, a, w, h) => {
-      cover(ctx, a.dome, 0, 0, w, h)
+      if (a.dome) cover(ctx, a.dome, 0, 0, w, h)
       ctx.fillStyle = 'rgba(8,6,3,0.62)'
       ctx.fillRect(0, 0, w, h)
       ctx.fillStyle = radial(ctx, w / 2, h, h * 0.62, [

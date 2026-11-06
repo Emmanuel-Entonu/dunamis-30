@@ -36,7 +36,7 @@ const chapters = [
 ]
 
 export function StoryForm() {
-  const { formRef, state, show, busy, setBusy, startedAt, onFormChange, attempt } = useSubmission('story')
+  const { formRef, state, show, busy, setBusy, onFormChange, attempt } = useSubmission('story')
   const video = useVideoAttachment()
   const [before, setBefore] = useState<Picked | null>(null)
   const [after, setAfter] = useState<Picked | null>(null)
@@ -105,7 +105,7 @@ export function StoryForm() {
 
   return (
     <form ref={formRef} onSubmit={onSubmit} onChange={onFormChange} noValidate className="relative rounded-2xl border border-hair bg-[#171717] p-5 sm:p-10">
-      <BotFields startedAt={startedAt} />
+      <BotFields />
 
       <h3 className="h-card">About you</h3>
       <div className="mt-6 grid gap-5 sm:grid-cols-2 sm:gap-[25px]">

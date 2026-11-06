@@ -10,7 +10,7 @@ import { prepareTestimonyVideo, submitTestimony } from './actions'
 
 export function TestimonyForm() {
   const [summaryLength, setSummaryLength] = useState(0)
-  const { formRef, state, show, busy, setBusy, startedAt, onFormChange, attempt } = useSubmission('testimony', (values) => setSummaryLength(values.summary?.length ?? 0))
+  const { formRef, state, show, busy, setBusy, onFormChange, attempt } = useSubmission('testimony', (values) => setSummaryLength(values.summary?.length ?? 0))
   const video = useVideoAttachment()
   const [photo, setPhoto] = useState<{ blob: Blob; url: string } | null>(null)
   const [photoNote, setPhotoNote] = useState('')
@@ -76,7 +76,7 @@ export function TestimonyForm() {
 
   return (
     <form ref={formRef} onSubmit={onSubmit} onChange={onFormChange} noValidate className="relative rounded-2xl border border-hair bg-[#171717] p-5 sm:p-10">
-      <BotFields startedAt={startedAt} />
+      <BotFields />
 
       <h3 className="h-card">About you</h3>
       <div className="mt-6 grid gap-5 sm:grid-cols-2 sm:gap-[25px]">

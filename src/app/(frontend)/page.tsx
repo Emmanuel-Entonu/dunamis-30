@@ -187,7 +187,7 @@ export default async function HomePage() {
               <StarList items={['Papa E.A. Adeboye', 'Archbishop Margaret Idahosa', 'Bishop David Oyedepo', 'Dr. Paul and Dr. Becky Paul-Enenche']} />
               <div>
                 <p className="flex items-center gap-3 text-fg">
-                  <Calendar width={18} height={18} className="text-gold" /> 24 to 29 November 2026
+                  <Calendar width={18} height={18} className="text-gold" /> 23 to 29 November 2026
                 </p>
                 <p className="mt-2 flex items-center gap-3 text-fg">
                   <MapPin width={18} height={18} className="text-gold" /> The Glory Dome, Abuja

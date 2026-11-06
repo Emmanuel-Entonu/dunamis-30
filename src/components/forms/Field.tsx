@@ -39,15 +39,15 @@ export function Field({
 const turnstileKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
 /** Hidden anti-bot fields shared by every public form, plus the Turnstile check once it's configured. */
-export function BotFields({ startedAt }: { startedAt: number }) {
+export function BotFields() {
   return (
     <>
-      <div aria-hidden className="absolute -left-[9999px] h-0 overflow-hidden">
+      {/* Truly hidden and neutrally named, so a browser's autofill can't fill it in and lose someone's form. */}
+      <div aria-hidden hidden>
         <label>
-          Company <input name="company" tabIndex={-1} autoComplete="off" />
+          Leave this empty <input name="leave_empty" tabIndex={-1} autoComplete="off" />
         </label>
       </div>
-      <input type="hidden" name="startedAt" value={startedAt} />
       {turnstileKey && (
         <>
           <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="lazyOnload" />

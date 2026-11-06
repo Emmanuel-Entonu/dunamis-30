@@ -33,7 +33,7 @@ function YesNo({ name, legend, error }: { name: string; legend: string; error?: 
 }
 
 export function InternationalForm() {
-  const { formRef, state, show, busy, setBusy, startedAt, onFormChange, attempt } = useSubmission('international')
+  const { formRef, state, show, busy, setBusy, onFormChange, attempt } = useSubmission('international')
   const e = state.fieldErrors ?? {}
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -62,7 +62,7 @@ export function InternationalForm() {
 
   return (
     <form ref={formRef} onSubmit={onSubmit} onChange={onFormChange} noValidate className="relative rounded-2xl border border-hair bg-[#171717] p-5 sm:p-10">
-      <BotFields startedAt={startedAt} />
+      <BotFields />
 
       <h2 className="h-card">About You</h2>
       <div className="mt-6 grid gap-5 sm:grid-cols-2 sm:gap-[25px]">

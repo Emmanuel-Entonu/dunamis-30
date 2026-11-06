@@ -72,7 +72,7 @@ const STEPS = ['Photo', 'Details', 'Backdrop'] as const
 const LAST_STEP = STEPS.length - 1
 const isPhone = () => window.matchMedia('(max-width: 1023px)').matches
 
-const SHARE_TEXT = 'I will be attending the Kingdom Power & Glory World Conference, 24 to 29 November! #DunamisAt30'
+const SHARE_TEXT = 'I will be attending the Kingdom Power & Glory World Conference, 23 to 29 November! #DunamisAt30'
 const CARD_PAGE = '/social-card'
 
 /** Counting cards is nice to have. If it fails, with no signal for example, the visitor never needs to know. */
@@ -357,11 +357,11 @@ export function CardStudio() {
     let alive = true
     ;(async () => {
       try {
-        const [crest, emblem, crowd, dome] = await Promise.all([loadArtwork(crestImg.src), loadArtwork(emblemImg.src), loadArtwork(crowdImg.src), loadArtwork(domeBackdrop)])
+        const [crest, emblem, crowd] = await Promise.all([loadArtwork(crestImg.src), loadArtwork(emblemImg.src), loadArtwork(crowdImg.src)])
         font.current = getComputedStyle(document.body).fontFamily
         await Promise.all([700, 600, 500].map((w) => document.fonts.load(`${w} 40px ${font.current}`).catch(() => undefined)))
         if (!alive) return
-        assets.current = { crest, emblem, crowd, dome, nations: null }
+        assets.current = { crest, emblem, crowd, dome: null, nations: null }
         setReady(true)
       } catch {
         if (alive) setFailed(true)
@@ -372,10 +372,12 @@ export function CardStudio() {
     }
   }, [])
 
-  // The Nations backdrop is only fetched if someone chooses it.
+  // The photo backdrops are only fetched if someone chooses one.
   const ensureBackdrop = useCallback(async () => {
-    if (template !== 'nations' || !assets.current || assets.current.nations) return
-    assets.current.nations = await loadImage(nationsBackdrop)
+    const art = assets.current
+    if (!art) return
+    if (template === 'glory' && !art.dome) art.dome = await loadArtwork(domeBackdrop)
+    if (template === 'nations' && !art.nations) art.nations = await loadArtwork(nationsBackdrop)
   }, [template])
 
   // Live preview.
@@ -384,7 +386,7 @@ export function CardStudio() {
     if (!ready || !ctx || !assets.current) return
     let alive = true
     drawCard(ctx, cardInput(), assets.current, 1)
-    if (template === 'nations' && !assets.current.nations) {
+    if ((template === 'glory' && !assets.current.dome) || (template === 'nations' && !assets.current.nations)) {
       ensureBackdrop()
         .then(() => {
           if (alive && assets.current) drawCard(ctx, cardInput(), assets.current, 1)
@@ -463,6 +465,12 @@ export function CardStudio() {
     if (!name.trim()) {
       goTo(1)
       needsName()
+      return
+    }
+    try {
+      await ensureBackdrop()
+    } catch {
+      setNote('That backdrop didn’t load. Please check your connection and try again, or choose another one.')
       return
     }
     const blob = await renderImage()

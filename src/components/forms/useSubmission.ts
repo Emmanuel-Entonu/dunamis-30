@@ -13,7 +13,7 @@ export type SubmissionState = {
 const OFFLINE = 'We couldn’t reach the website. Please check your connection and try again. Everything you typed is still here.'
 
 /** Choices that are never restored: consent must be given fresh, and these fields aren't typed. */
-const NOT_SAVED = new Set(['consent', 'company', 'startedAt', 'cf-turnstile-response'])
+const NOT_SAVED = new Set(['consent', 'leave_empty', 'cf-turnstile-response'])
 
 /**
  * Shared behaviour for the public forms: the submitting state, a clear error when the connection
@@ -24,14 +24,11 @@ export function useSubmission(draftKey: string, onRestore?: (values: Record<stri
   const formRef = useRef<HTMLFormElement>(null)
   const [state, setState] = useState<SubmissionState>({})
   const [busy, setBusy] = useState(false)
-  const [startedAt, setStartedAt] = useState(0)
   const saveTimer = useRef(0)
   const storageKey = `dunamis-draft-${draftKey}`
 
   // Restore a draft once, after the page has loaded.
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- the time must be read in the browser, or it wouldn't match the server's markup.
-    setStartedAt(Date.now())
     const form = formRef.current
     if (!form) return
     let saved: Record<string, string> = {}
@@ -130,7 +127,7 @@ export function useSubmission(draftKey: string, onRestore?: (values: Record<stri
     [show],
   )
 
-  return { formRef, state, show, busy, setBusy, startedAt, onFormChange, attempt }
+  return { formRef, state, show, busy, setBusy, onFormChange, attempt }
 }
 
 /** The line beside the submit button when something needs fixing. */

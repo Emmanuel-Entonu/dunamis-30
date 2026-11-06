@@ -23,9 +23,12 @@ export const approvedOrEditor: Access = ({ req: { user } }) => {
   return { status: { equals: 'approved' } }
 }
 
-/** Someone who asked not to be named stays unnamed everywhere outside the admin. */
+/**
+ * Someone who asked not to be named stays unnamed everywhere outside the admin. There's no doc when the
+ * field is being filtered or sorted on, and an answer there would give the name away, so only editors can.
+ */
 export const nameIfShown: FieldAccess = ({ req: { user }, doc }) =>
-  hasRole(user, 'admin', 'editor') || (doc as { showName?: boolean | null } | undefined)?.showName !== false
+  hasRole(user, 'admin', 'editor') || (doc !== undefined && (doc as { showName?: boolean | null }).showName !== false)
 
 /** Submitter contact details are never exposed publicly. */
 export const editorFieldOnly: FieldAccess = ({ req: { user } }) => hasRole(user, 'admin', 'editor')

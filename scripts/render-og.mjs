@@ -11,11 +11,14 @@ import sharp from 'sharp'
 
 const WIDTH = 1200
 const HEIGHT = 630
-const OUTPUT = 'public/og-dunamis-30-slip.jpg'
+const OUTPUT = 'public/og-dunamis-30-coins.jpg'
 
 const inline = (file, type = 'image/webp') => `data:${type};base64,${fs.readFileSync(file).toString('base64')}`
 const font = inline('src/fonts/onest-variable.woff2', 'font/woff2')
-const hand = inline('src/assets/brand/hero-hand.webp')
+const coinThirty = inline('src/assets/coins/thirty.webp')
+const coinDome = inline('src/assets/coins/dome.webp')
+const coinGlobe = inline('src/assets/coins/globe.webp')
+const coinCross = inline('src/assets/coins/cross.webp')
 const crest = inline('src/assets/brand/crest-official.webp')
 const emblem = inline('src/assets/brand/emblem-official.webp')
 const lockup = inline('src/assets/brand/lockup-white.webp')
@@ -122,7 +125,10 @@ const html = `<!doctype html>
     <circle cx="764" cy="150" r="4.5" fill="#fff" />
   </svg>
 
-  <img class="object" src="${hand}" style="width: 470px; left: 26px; top: 396px; filter: drop-shadow(0 18px 26px rgb(0 0 0 / .6))" />
+  <img class="object" src="${coinGlobe}" style="width: 104px; left: 400px; top: 424px; transform: rotate(10deg); filter: drop-shadow(0 12px 16px rgb(0 0 0 / .55))" />
+  <img class="object" src="${coinCross}" style="width: 128px; left: 34px; top: 424px; transform: rotate(-12deg); filter: drop-shadow(0 14px 18px rgb(0 0 0 / .55))" />
+  <img class="object" src="${coinDome}" style="width: 150px; left: 268px; top: 494px; transform: rotate(7deg); filter: drop-shadow(0 16px 20px rgb(0 0 0 / .6))" />
+  <img class="object" src="${coinThirty}" style="width: 186px; left: 112px; top: 462px; transform: rotate(-5deg); filter: drop-shadow(0 18px 24px rgb(0 0 0 / .6))" />
 
   <div class="card">
     <span class="pattern"></span>

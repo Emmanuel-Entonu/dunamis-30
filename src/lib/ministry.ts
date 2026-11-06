@@ -35,7 +35,7 @@ export const defaultFaqs: FaqEntry[] = [
   },
   {
     question: 'When is Kingdom Power & Glory this year?',
-    answer: '24 to 29 November 2026 at the Glory Dome. The theme is Open Heavens.',
+    answer: '23 to 29 November 2026 at the Glory Dome. The theme is Open Heavens.',
   },
   {
     question: 'How do I share my testimony or my story?',

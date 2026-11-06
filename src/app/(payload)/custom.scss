@@ -1501,3 +1501,9 @@ a[href$='/forgot'] {
     flex: 1 1 auto;
   }
 }
+
+/* On phones Payload keeps a fixed, empty bar at the foot of a list, which sat over the page controls. */
+.collection-list__list-selection {
+  position: static;
+  padding: 0;
+}
