@@ -89,7 +89,7 @@ const STEPS = ['Photo', 'Details', 'Backdrop'] as const
 const LAST_STEP = STEPS.length - 1
 const isPhone = () => window.matchMedia('(max-width: 1023px)').matches
 
-const SHARE_TEXT = 'I will be attending the Kingdom Power & Glory World Conference, 23 to 29 November! #DunamisAt30'
+const SHARE_TEXT = 'I will be attending the Kingdom Power & Glory World Conference, 23rd to 29th November! #DunamisAt30'
 const CARD_PAGE = '/social-card'
 
 /** Counting cards is nice to have. If it fails, with no signal for example, the visitor never needs to know. */

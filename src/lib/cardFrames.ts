@@ -10,7 +10,8 @@ export type TemplateId = 'pearl' | 'glory' | 'nations' | 'emerald' | 'royal' | '
 export type PhotoSource = HTMLImageElement | HTMLCanvasElement
 
 export const CARD = { w: 1080, h: 1920 }
-export const EVENT = { title: 'Kingdom Power & Glory World Conference', date: '23 to 29 November 2026', venue: 'The Glory Dome, Abuja' }
+// The card says 23rd and 29th, at the church's request (7 Nov 2026). The rest of the site says 23 to 29 November.
+export const EVENT = { title: 'Kingdom Power & Glory World Conference', date: '23rd to 29th November 2026', venue: 'The Glory Dome, Abuja' }
 
 export type CardAssets = { crest: HTMLImageElement; emblem: HTMLImageElement; crowd: HTMLImageElement; dome: HTMLImageElement | null; nations: HTMLImageElement | null }
 
@@ -441,7 +442,13 @@ export function drawCard(ctx: CanvasRenderingContext2D, input: CardInput, assets
   ctx.textAlign = 'center'
   ctx.textBaseline = 'alphabetic'
   lift(true)
-  ctx.font = `700 58px ${font}`
+  // The date fills the line at most: a longer date gets a slightly smaller size rather than running into the frame.
+  let dateSize = 58
+  ctx.font = `700 ${dateSize}px ${font}`
+  while (ctx.measureText(EVENT.date).width > w - M * 2 - 48 && dateSize > 44) {
+    dateSize -= 2
+    ctx.font = `700 ${dateSize}px ${font}`
+  }
   ctx.fillStyle = foil(ctx, w * 0.2, 0, w * 0.8, 0, light ? DEEP_GOLD : BRIGHT_GOLD)
   ctx.fillText(EVENT.date, w / 2, LINE.date)
   ctx.font = `600 38px ${font}`
