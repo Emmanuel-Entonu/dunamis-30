@@ -6,7 +6,7 @@ import crest from '@/assets/brand/crest-official.webp'
 export function Logo() {
   return (
     <span className="brand-sign-in">
-      <Image src={crest} alt="" width={84} height={83} priority />
+      <Image src={crest} alt="" width={84} height={94} priority />
       <strong>Dunamis at 30</strong>
       <span>Sign in to the dashboard</span>
     </span>

@@ -1,6 +1,8 @@
 import * as migration_20261104_102850_initial from './20261104_102850_initial';
 import * as migration_20261105_103233_testimony_switch from './20261105_103233_testimony_switch';
 import * as migration_20261105_121837_username_login from './20261105_121837_username_login';
+import * as migration_20261106_214155_dashboard_uploads from './20261106_214155_dashboard_uploads';
+import * as migration_20261106_235000_site_events from './20261106_235000_site_events';
 
 export const migrations = [
   {
@@ -16,6 +18,16 @@ export const migrations = [
   {
     up: migration_20261105_121837_username_login.up,
     down: migration_20261105_121837_username_login.down,
-    name: '20261105_121837_username_login'
+    name: '20261105_121837_username_login',
+  },
+  {
+    up: migration_20261106_214155_dashboard_uploads.up,
+    down: migration_20261106_214155_dashboard_uploads.down,
+    name: '20261106_214155_dashboard_uploads'
+  },
+  {
+    up: migration_20261106_235000_site_events.up,
+    down: migration_20261106_235000_site_events.down,
+    name: '20261106_235000_site_events'
   },
 ];

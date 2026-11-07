@@ -25,7 +25,7 @@ import {
   type PhotoSource,
   type TemplateId,
 } from '@/lib/cardFrames'
-import { logCardEvent } from './actions'
+import { logCardEvent, logCardMade } from './actions'
 
 const loadImage = (src: string) =>
   new Promise<HTMLImageElement>((resolve, reject) => {
@@ -494,6 +494,7 @@ export function CardStudio() {
     imageRef.current = blob
     setNote('')
     setPresented(URL.createObjectURL(blob))
+    void logCardMade().catch(() => undefined)
   }
 
   const fileName = (ext: string) => `dunamis-at-30-${(name.trim() || 'my-card').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.${ext}`

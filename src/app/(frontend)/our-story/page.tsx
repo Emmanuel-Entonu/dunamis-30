@@ -13,7 +13,7 @@ import { blurFor } from '@/lib/image'
 import { getMilestones, getStoryPage, mediaUrl, testimonyFormOpen } from '@/lib/content'
 import { defaultMilestones, defaultStats, vision, type GlassKey } from '@/lib/ministry'
 import { crusadePhotos, photoByFile, photos } from '@/lib/photos'
-import { anniversaryOver, kpg } from '@/lib/site'
+import { kpg } from '@/lib/site'
 import type { Media } from '@/payload-types'
 
 export const revalidate = 300
@@ -119,7 +119,7 @@ export default async function OurStoryPage() {
 
           <div className="mt-14 lg:mt-24">
             <StorySplit title="Two people. Two places. One instruction." visual={<PhotoWithGlass photo={mediaUrl(asMedia(page.beginning?.image), 'hero') || photos.prayerBlackWhite} alt="A woman in prayer during a service" art={glass.mountain} />}>
-              <p>Seeking direction, he withdrew to Gannarup Mountain in Jos for prayer and fasting. He came down with a conviction that would change the course of their lives. But something remarkable had happened at home.</p>
+              <p>Seeking direction, he withdrew to the mountains at Gana Ropp, near Jos, for prayer and fasting. He came down with a conviction that would change the course of their lives. But something remarkable had happened at home.</p>
               <p>Dr. Becky had also been seeking God in prayer and fasting concerning their future. When they compared what they had received, they discovered that the direction was exactly the same.</p>
               <p>They would leave the familiar and move to the unfamiliar: Abuja. They obeyed. And here we are today, 30 years later.</p>
             </StorySplit>
@@ -235,7 +235,7 @@ export default async function OurStoryPage() {
 
       <ClosingBand
         title="You’re part of this story"
-        text={`${anniversaryOver() ? `Come to ${kpg.title}, ${kpg.dates}` : 'Come on 10 November'}${formOpen ? ', or tell us what God has done in your life.' : ' and be part of it.'}`}
+        text={`Come to the Glory Dome, ${kpg.dates}${formOpen ? ', or tell us what God has done in your life.' : ', and be part of it.'}`}
         shareUrl="/our-story"
         shareText="The story of Dunamis International Gospel Centre, 30 years on"
       >

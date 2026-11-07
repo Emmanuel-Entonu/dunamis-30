@@ -6,7 +6,7 @@ import { Calendar, Globe, MapPin } from '@/components/icons'
 import { PageHero } from '@/components/PageHero'
 import { Reveal } from '@/components/Reveal'
 import { crusadePhotos } from '@/lib/photos'
-import { anniversaryOver, kpg } from '@/lib/site'
+import { kpg } from '@/lib/site'
 import { InternationalForm } from './InternationalForm'
 
 export const metadata: Metadata = {
@@ -15,7 +15,6 @@ export const metadata: Metadata = {
 }
 
 const facts = [
-  { Icon: Calendar, title: '30th Anniversary Service', text: 'Tuesday, 10 November 2026, 9:30am WAT' },
   { Icon: Calendar, title: 'Kingdom Power & Glory 2026', text: `${kpg.dates} 2026. The theme is Open Heavens.` },
   { Icon: MapPin, title: 'The Glory Dome', text: 'Lord’s Garden, Airport Road, Abuja' },
   { Icon: Globe, title: 'Arriving by air', text: 'Nnamdi Azikiwe International Airport, Abuja (ABV)' },
@@ -35,7 +34,7 @@ export default function InternationalPage() {
             <GlassArt art={glass.plane} className="mx-auto mb-8 w-[150px] sm:w-[190px]" dots="inset-[-40%]" />
             <h2 className="h-card">Planning your visit</h2>
             <ul className="mt-6">
-              {(anniversaryOver() ? facts.slice(1) : facts).map(({ Icon, title, text }) => (
+              {facts.map(({ Icon, title, text }) => (
                 <li key={title} className="flex items-start justify-between gap-5 border-b border-hair py-5 first:pt-0 last:border-0 last:pb-0">
                   <div>
                     <p className="font-medium text-fg">{title}</p>

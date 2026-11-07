@@ -17,7 +17,7 @@ const sections: LegalSection[] = [
   {
     id: 'attending',
     title: 'Attending the celebration',
-    body: <p>The 30th Anniversary Service is open to all, and no registration is needed. We may need to change event details such as times or arrangements, and the latest details will appear on this website.</p>,
+    body: <p>The 30th anniversary celebration is open to all, and no registration is needed. We may need to change event details such as times or arrangements, and the latest details will appear on this website.</p>,
   },
   {
     id: 'international',

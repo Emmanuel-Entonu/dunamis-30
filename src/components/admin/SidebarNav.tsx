@@ -39,7 +39,7 @@ export function SidebarNav({ testimonies, guests, stories, person }: Props) {
       <button type="button" aria-label="Close the menu" tabIndex={open ? 0 : -1} onClick={close} className={`sb-scrim${open ? ' sb-scrim--open' : ''}`} />
       <aside className={`sb${open ? ' sb--open' : ''}`}>
         <div className="sb-brand">
-          <Image src={crest} alt="" width={40} height={40} className="sb-brand__crest" />
+          <Image src={crest} alt="" width={40} height={45} className="sb-brand__crest" />
           <span className="sb-brand__words">
             <strong>Dunamis at 30</strong>
             <span>Dashboard</span>

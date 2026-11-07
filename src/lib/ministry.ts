@@ -5,9 +5,9 @@
  *   dunamisgospel.org: /the-genesis (founding account), /about-us, /the-mandate, /the-vision,
  *     /the-mission, /the-goal, /welfare, /the-leadership, /contact-us, homepage counters (branches,
  *     home churches, conferences).
- *   Press: Wikipedia (Glory Dome dates), PM News 2018, Premium Times 2023 (KPG and IMFFC nations),
- *     Leadership 2025 (109 countries, scholarships) and 2026 (Kogi and Benue outreach),
- *     TheWill 2023 (honorary doctorate).
+ *   Press: Wikipedia (Glory Dome dates, Gana Ropp), PM News 2018, Premium Times 2023 (KPG and IMFFC nations),
+ *     Periscope 2025 (Flaming Fire, over 68 nations; another report says 71), Leadership 2025 (109 countries,
+ *     scholarships) and 2026 (Kogi and Benue outreach), TheWill 2023 (honorary doctorate).
  *
  * Branch figure: dunamisgospel.org/locate-a-branch had 861 entries on 3 November 2026. Without 36
  * repeats and one test entry that is 824 places, 8 of them viewing centres. The church's homepage
@@ -22,8 +22,8 @@ export type FaqEntry = { question: string; answer: string }
 
 export const defaultFaqs: FaqEntry[] = [
   {
-    question: 'When and where is the anniversary service?',
-    answer: 'Tuesday, 10 November 2026 at 9:30am, at the Glory Dome, Lord’s Garden, Airport Road, Abuja.',
+    question: 'When and where is the anniversary?',
+    answer: '23 to 29 November 2026, at the Glory Dome, Lord’s Garden, Airport Road, Abuja.',
   },
   {
     question: 'Do I need to register?',
@@ -34,8 +34,8 @@ export const defaultFaqs: FaqEntry[] = [
     answer: 'Fill the International Guests form and tell us what you need. The form isn’t a confirmation, so please wait to hear from our logistics team before you rely on it.',
   },
   {
-    question: 'When is Kingdom Power & Glory this year?',
-    answer: '23 to 29 November 2026 at the Glory Dome. The theme is Open Heavens.',
+    question: 'What is Kingdom Power & Glory?',
+    answer: 'Our yearly anniversary conference. This year’s theme is Open Heavens.',
   },
   {
     question: 'How do I share my testimony or my story?',
@@ -75,7 +75,7 @@ export const defaultMilestones: DefaultMilestone[] = [
     art: 'flame',
     date: '10 November 1996',
     title: 'Dunamis begins',
-    text: 'Dunamis International Gospel Centre is founded in Abuja. The name came with the instruction to start: dunamis is the Greek word for power, from Acts 1:8.',
+    text: 'Dunamis International Gospel Centre is founded in Abuja. The name is taken from Acts 1:8: dunamis is the Greek word for power.',
     photo: 'hands-raised',
   },
   {
@@ -123,7 +123,7 @@ export const defaultMilestones: DefaultMilestone[] = [
     art: 'plane',
     date: '2025',
     title: 'Visitors from 109 countries',
-    text: 'Pilgrims from 109 countries visit the Glory Dome. The church also announces full university scholarships for orphans and members who can’t afford school.',
+    text: 'Pilgrims from 109 countries visit the Glory Dome, and delegations from over 68 nations come for the Flaming Fire conference. The church also announces full university scholarships for orphans and members who can’t afford school.',
     photo: 'nations-crowd',
   },
   {
@@ -146,7 +146,7 @@ export const defaultMilestones: DefaultMilestone[] = [
   {
     key: 'thirty',
     art: 'thirty',
-    date: '10 November 2026',
+    date: '23 to 29 November 2026',
     title: 'Thirty years',
     text: 'We gather at the Glory Dome to say thank you.',
     photo: 'nations-celebration',
@@ -177,7 +177,7 @@ export type ContactDesk = {
 export const defaultContacts: ContactDesk[] = [
   {
     title: 'General enquiries',
-    text: 'Anything about the anniversary service, directions or the church.',
+    text: 'Anything about the anniversary, directions or the church.',
     whatsapp: '+234 903 498 6089',
   },
   {

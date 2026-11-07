@@ -31,6 +31,7 @@ function validate(data: ReturnType<typeof read>, formData: FormData, hasVideo: b
   const fieldErrors: NonNullable<SubmissionState['fieldErrors']> = {}
   if (data.name.length < 2) fieldErrors.name = 'Please enter your full name.'
   if (data.location.length < 2) fieldErrors.location = 'Please tell us where you are based.'
+  if (data.headline.length < 4) fieldErrors.headline = 'Please give your story a title.'
   if (!isEmail(data.email)) fieldErrors.email = 'Please enter a valid email address.'
   if (data.phone.replace(/\D/g, '').length < 7) fieldErrors.phone = 'Please enter a phone number we can reach you on.'
   const written = [data.before, data.encounter, data.transformation, data.today, data.meaning].join('').length
@@ -77,7 +78,7 @@ export async function submitSonsStory(formData: FormData): Promise<SubmissionSta
   try {
     const payload = await getPayloadClient()
     if (video && (await videoAlreadySaved(payload, video.path))) return { ok: true, firstName: data.name.split(/\s+/)[0] }
-    const title = data.headline || 'A Sons of the Prophet story'
+    const title = data.headline
     const [beforePhoto, afterPhoto, videoPoster] = await Promise.all([
       saveSubmissionPhoto(payload, formData.get('beforePhoto'), `${title}, before`),
       saveSubmissionPhoto(payload, formData.get('afterPhoto'), `${title}, today`),
@@ -90,7 +91,7 @@ export async function submitSonsStory(formData: FormData): Promise<SubmissionSta
       data: {
         name: data.name,
         location: data.location,
-        headline: data.headline || undefined,
+        headline: data.headline,
         currentRole: data.currentRole || undefined,
         beforePhoto,
         afterPhoto,

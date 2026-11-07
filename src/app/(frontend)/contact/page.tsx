@@ -108,7 +108,7 @@ export default async function ContactPage() {
           header={
             <Reveal>
               <h2 className="h-section max-w-[560px]">Worship with us any week</h2>
-              <p className="mt-4 max-w-[560px]">Sunday services are at 6:30am and 9:00am. These are the other times we meet at the Glory Dome.</p>
+              <p className="mt-4 max-w-[560px]">Sunday services run from 6:30am to 12:30pm, and we meet midweek too. These are our regular services at the Glory Dome.</p>
             </Reveal>
           }
         >

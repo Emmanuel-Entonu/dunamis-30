@@ -1507,3 +1507,121 @@ a[href$='/forgot'] {
   position: static;
   padding: 0;
 }
+
+/* Adding a testimony or story. This form stands in for the collapsed section, which holds the same fields. */
+form:has(.add-entry) .collapsible-field {
+  display: none;
+}
+
+/* One Save, at the end of the form, beside the note about what saving does. */
+form:has(.add-entry) .doc-controls {
+  display: none;
+}
+
+/* The heading says what this screen is for, instead of "[Untitled]". */
+.template-default__wrap:has(.add-entry) {
+  .custom-view-description {
+    display: none;
+  }
+
+  .doc-header__title {
+    font-size: 0;
+
+    &::before {
+      font-size: 32px;
+    }
+  }
+}
+
+.template-default__wrap:has(.add-entry--testimony) .doc-header__title::before {
+  content: 'Add a testimony';
+}
+
+.template-default__wrap:has(.add-entry--story) .doc-header__title::before {
+  content: 'Add a story';
+}
+
+/* Every label on the form reads the same, whichever part of the dashboard it was borrowed from. */
+.add-entry .review-block h3 {
+  color: var(--theme-text);
+  font-weight: 500;
+}
+
+.add-entry .review-tools summary {
+  margin-top: 0;
+  color: var(--theme-text);
+  font-size: 14px;
+  font-weight: 500;
+  list-style: none;
+  opacity: 1;
+  cursor: default;
+  pointer-events: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+}
+
+.add-entry__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label,
+  .add-entry__label {
+    margin: 0;
+    color: var(--theme-text);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  input,
+  textarea,
+  select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--theme-elevation-200);
+    border-radius: 10px;
+    background: var(--theme-elevation-50);
+    color: var(--theme-text);
+    font: inherit;
+    font-size: 15px;
+    line-height: 1.5;
+
+    &:focus {
+      border-color: $gold;
+      outline: none;
+    }
+  }
+
+  textarea {
+    min-height: 140px;
+    resize: vertical;
+  }
+
+  input {
+    /* Keeps the label in view when the page jumps back to the box. */
+    scroll-margin-top: 110px;
+  }
+
+  input[aria-invalid] {
+    border-color: #ff8a7a;
+  }
+}
+
+.add-entry__needed {
+  color: $gold;
+}
+
+.add-entry__save {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.ov-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}

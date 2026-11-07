@@ -30,7 +30,7 @@ const areas: Area[] = [
   { label: 'Branches', title: 'Churches planted', text: 'More than 800 branches and over 5,000 home church locations, in Nigeria and around the world.', image: photos.domeInteriorWide, art: glass.church },
   { label: 'Nations', title: 'People from everywhere', text: 'Pilgrims from 109 countries visited the Glory Dome in 2025.', image: photos.nationsCameroon, art: glass.flag },
   { label: 'Crusades', title: 'Crusades in the nations', text: 'In 2026 the crusades have gone to Venezuela, Argentina, Canada, Romania, Latvia, Angola, Lesotho and Zambia.', image: crusadePhotos.romaniaCrowd.src, art: glass.world },
-  { label: 'Ministers', title: 'Ministers raised', text: 'Sons and daughters of this house now serve God in many places. Ministers from 48 nations came to the Flaming Fire conference in 2023.', image: photos.handsRaised, art: glass.crown, href: '/sons-of-the-prophet', cta: 'Sons of the Prophet' },
+  { label: 'Ministers', title: 'Ministers raised', text: 'Sons and daughters of this house now serve God in many places. Delegations from over 68 nations came to the Flaming Fire conference in 2025.', image: photos.handsRaised, art: glass.crown, href: '/sons-of-the-prophet', cta: 'Sons of the Prophet' },
   { label: 'Welfare', title: 'Caring for people in need', text: 'Boreholes, electricity, roads and orphanage homes for communities that need them, plus food, clothes and scholarships.', image: photos.welfareFood, art: glass.cap },
   { label: 'Medical', title: 'Free medical care', text: 'In February 2026, a team took free care to communities in Kogi and Benue. Reports put the number reached at 5,000.', image: photos.medicalCare, art: glass.medical },
 ]

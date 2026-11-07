@@ -140,7 +140,7 @@ export function SidewaysScroll({ header, children, className = '' }: { header?: 
   )
 }
 
-/** A figure that counts up as it scrolls into place (and back down if you scroll back). */
+/** A figure that counts up by itself as soon as it comes on screen, however fast or slowly the page is scrolled. */
 export function CountUp({ value, suffix = '', className = '' }: { value: number; suffix?: string; className?: string }) {
   const root = useRef<HTMLSpanElement>(null)
   const format = (n: number) => Math.round(n).toLocaleString('en-US')
@@ -150,10 +150,12 @@ export function CountUp({ value, suffix = '', className = '' }: { value: number;
     if (!el || reducedMotion()) return
     gsap.registerPlugin(ScrollTrigger)
     const state = { n: 0 }
+    el.textContent = `${format(0)}${suffix}`
     const tween = gsap.to(state, {
       n: value,
-      ease: 'none',
-      scrollTrigger: { trigger: el, start: 'top 92%', end: 'top 45%', scrub: 0.4 },
+      duration: 1.6,
+      ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top bottom', once: true },
       onUpdate: () => {
         el.textContent = `${format(state.n)}${suffix}`
       },

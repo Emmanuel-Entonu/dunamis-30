@@ -7,6 +7,7 @@ import { FormStage, GlassArt } from '@/components/blocks'
 import { inputClass } from '@/components/forms/Field'
 import { Play } from '@/components/icons'
 import { PageHero } from '@/components/PageHero'
+import { ResultsLoading } from '@/components/PageSkeleton'
 import { TestimonyCard } from '@/components/TestimonyCard'
 import { categoryLabels } from '@/lib/categories'
 import { getTestimonies, testimonyFormOpen } from '@/lib/content'
@@ -142,6 +143,7 @@ export default async function TestimoniesPage({ searchParams }: { searchParams: 
             </p>
           )}
 
+          <ResultsLoading count={Math.min(Math.max(result.docs.length, 3), 6)}>
           {result.docs.length > 0 ? (
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {result.docs.map((t) => (
@@ -168,6 +170,7 @@ export default async function TestimoniesPage({ searchParams }: { searchParams: 
               )}
             </div>
           )}
+          </ResultsLoading>
 
           {result.totalPages > 1 && (
             <nav aria-label="Pages" className="mt-10 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">

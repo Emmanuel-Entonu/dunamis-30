@@ -407,7 +407,7 @@ export function drawCard(ctx: CanvasRenderingContext2D, input: CardInput, assets
   // The official 30th-anniversary crest, set like a seal on the photo's corner.
   const sl = seg(t, 0.42, 0.68)
   if (sl > 0) {
-    const size = 184 * (0.6 + 0.4 * easeOutBack(sl))
+    const size = 168 * (0.6 + 0.4 * easeOutBack(sl))
     const ch = size * (assets.crest.naturalHeight / assets.crest.naturalWidth)
     const cx = PHOTO.x + PHOTO.w - 92
     const cy = PHOTO.y + PHOTO.h - 40

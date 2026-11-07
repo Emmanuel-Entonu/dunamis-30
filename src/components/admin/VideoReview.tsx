@@ -6,15 +6,25 @@ import { useEffect, useRef, useState } from 'react'
 import { inspectVideo, MAX_VIDEO_SECONDS, prepareVideo, uploadVideo } from '@/lib/videoPipeline'
 import type { VideoTicket } from '@/lib/videoStorage'
 
-const length = (seconds?: number | null) => (seconds ? `${Math.floor(seconds / 60)}:${String(Math.round(seconds % 60)).padStart(2, '0')}` : null)
-const size = (bytes?: number | null) => (bytes ? `${Math.max(1, Math.round(bytes / (1024 * 1024)))} MB` : null)
+const length = (seconds?: number | null) =>
+  seconds
+    ? `${Math.floor(seconds / 60)}:${String(Math.round(seconds % 60)).padStart(2, '0')}`
+    : null
+const size = (bytes?: number | null) =>
+  bytes ? `${Math.max(1, Math.round(bytes / (1024 * 1024)))} MB` : null
 
 /**
  * In a testimony or story: watch the video before approving it. Changing it is tucked away underneath.
  * A saved video plays from a temporary link the page asks for itself. Pointing the player at the protected
  * address would rely on the browser sending the login along with the video, which not every phone does.
  */
-export function VideoReview({ kind }: { kind: 'testimony' | 'story' }) {
+export function VideoReview({
+  kind,
+  startOpen = false,
+}: {
+  kind: 'testimony' | 'story'
+  startOpen?: boolean
+}) {
   const { id, collectionSlug } = useDocumentInfo()
   const path = useField<string | null>({ path: 'videoFile.path' })
   const sizeBytes = useField<number | null>({ path: 'videoFile.sizeBytes' })
@@ -37,7 +47,11 @@ export function VideoReview({ kind }: { kind: 'testimony' | 'story' }) {
     if (!id || !savedPath) return
     let live = true
     fetch(`/watch/${kind}/${id}?link=1`, { credentials: 'include', cache: 'no-store' })
-      .then((res) => (res.ok ? (res.json() as Promise<{ url: string }>) : Promise.reject(new Error(String(res.status)))))
+      .then((res) =>
+        res.ok
+          ? (res.json() as Promise<{ url: string }>)
+          : Promise.reject(new Error(String(res.status))),
+      )
       .then(({ url }) => {
         if (live) setSignedUrl(url)
       })
@@ -57,20 +71,52 @@ export function VideoReview({ kind }: { kind: 'testimony' | 'story' }) {
     try {
       setStatus('Reading the video…')
       const details = await inspectVideo(file)
-      if (details.durationSec > MAX_VIDEO_SECONDS) throw new Error(`That video is too long. Please use one under ${MAX_VIDEO_SECONDS / 60} minutes.`)
+      if (details.durationSec > MAX_VIDEO_SECONDS)
+        throw new Error(
+          `That video is too long. Please use one under ${MAX_VIDEO_SECONDS / 60} minutes.`,
+        )
 
-      const res = await fetch(`/api/${collectionSlug}/video-ticket`, { method: 'POST', credentials: 'include' })
+      const res = await fetch(`/api/${collectionSlug}/video-ticket`, {
+        method: 'POST',
+        credentials: 'include',
+      })
       if (!res.ok) throw new Error('You don’t have permission to upload videos.')
       const ticket = (await res.json()) as VideoTicket
 
-      const prepared = await prepareVideo(file, details, ticket.maxBytes, (share) => setStatus(`Getting it ready… ${Math.round(share * 100)}%`), controller.signal)
-      await uploadVideo(prepared, ticket, (share) => setStatus(`Uploading… ${Math.round(share * 100)}%`), controller.signal, {})
+      const prepared = await prepareVideo(
+        file,
+        details,
+        ticket.maxBytes,
+        (share) => setStatus(`Getting it ready… ${Math.round(share * 100)}%`),
+        controller.signal,
+      )
+      await uploadVideo(
+        prepared,
+        ticket,
+        (share) => setStatus(`Uploading… ${Math.round(share * 100)}%`),
+        controller.signal,
+        {},
+      )
 
       if (details.poster) {
         const form = new FormData()
-        form.set('file', new File([details.poster], `${ticket.path.split('/').pop()}.jpg`, { type: 'image/jpeg' }))
-        form.set('_payload', JSON.stringify({ alt: 'Cover of a video testimony', pendingReview: true, fromSubmission: true }))
-        const saved = await fetch('/api/media', { method: 'POST', credentials: 'include', body: form })
+        form.set(
+          'file',
+          new File([details.poster], `${ticket.path.split('/').pop()}.jpg`, { type: 'image/jpeg' }),
+        )
+        form.set(
+          '_payload',
+          JSON.stringify({
+            alt: 'Cover of a video testimony',
+            pendingReview: true,
+            fromSubmission: true,
+          }),
+        )
+        const saved = await fetch('/api/media', {
+          method: 'POST',
+          credentials: 'include',
+          body: form,
+        })
         if (saved.ok) poster.setValue(((await saved.json()) as { doc: { id: number } }).doc.id)
       }
 
@@ -83,7 +129,11 @@ export function VideoReview({ kind }: { kind: 'testimony' | 'story' }) {
       setStatus('Uploaded. Press Save to keep it.')
     } catch (error) {
       setStatus('')
-      setProblem(error instanceof Error ? error.message : 'The video couldn’t be uploaded. Please try again.')
+      setProblem(
+        error instanceof Error
+          ? error.message
+          : 'The video couldn’t be uploaded. Please try again.',
+      )
     }
   }
 
@@ -106,7 +156,7 @@ export function VideoReview({ kind }: { kind: 'testimony' | 'story' }) {
 
   return (
     <section className="review-block">
-      {path.value ? <h3>Their video</h3> : null}
+      {path.value ? <h3>{startOpen ? 'The video' : 'Their video'}</h3> : null}
       {source ? (
         <>
           {/* Reviewers watch the original recording. Captions don't exist at this stage. */}
@@ -118,7 +168,14 @@ export function VideoReview({ kind }: { kind: 'testimony' | 'story' }) {
             preload="metadata"
             onError={() => setPlayable(false)}
             onLoadedMetadata={() => setPlayable(true)}
-            style={{ display: 'block', width: '100%', maxWidth: 560, maxHeight: 460, borderRadius: 12, background: '#000' }}
+            style={{
+              display: 'block',
+              width: '100%',
+              maxWidth: 560,
+              maxHeight: 460,
+              borderRadius: 12,
+              background: '#000',
+            }}
           />
           {facts && <p style={{ margin: '8px 0 0', fontSize: 13, opacity: 0.75 }}>{facts}</p>}
           {!playable && (
@@ -132,23 +189,45 @@ export function VideoReview({ kind }: { kind: 'testimony' | 'story' }) {
           )}
         </>
       ) : saved && linkFailed ? (
-        <p className="review-problem">The video couldn’t be loaded just now. Please check your connection and reload this page.</p>
+        <p className="review-problem">
+          The video couldn’t be loaded just now. Please check your connection and reload this page.
+        </p>
       ) : saved ? (
         <p className="review-muted">Loading the video…</p>
       ) : null}
-      <details className="review-tools">
-        <summary>{path.value ? 'Change or remove this video' : 'Add a video someone sent you'}</summary>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
-          <Button buttonStyle="secondary" size="small" margin={false} disabled={Boolean(status) && /…/.test(status)} onClick={() => input.current?.click()}>
-            {path.value ? 'Replace video' : 'Choose a video'}
-          </Button>
-          {path.value && (
-            <Button buttonStyle="secondary" size="small" margin={false} disabled={Boolean(status) && /…/.test(status)} onClick={remove}>
-              Remove video
+      {!saved && (
+        <details className="review-tools" open={startOpen}>
+          <summary>
+            {path.value
+              ? 'Change or remove this video'
+              : startOpen
+                ? 'A video (optional)'
+                : 'Add a video someone sent you'}
+          </summary>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+            <Button
+              buttonStyle="secondary"
+              size="small"
+              margin={false}
+              disabled={Boolean(status) && /…/.test(status)}
+              onClick={() => input.current?.click()}
+            >
+              {path.value ? 'Replace video' : 'Choose a video'}
             </Button>
-          )}
-        </div>
-      </details>
+            {path.value && (
+              <Button
+                buttonStyle="secondary"
+                size="small"
+                margin={false}
+                disabled={Boolean(status) && /…/.test(status)}
+                onClick={remove}
+              >
+                Remove video
+              </Button>
+            )}
+          </div>
+        </details>
+      )}
       <input
         ref={input}
         type="file"

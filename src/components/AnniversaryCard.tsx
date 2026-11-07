@@ -49,9 +49,9 @@ export function AnniversaryCard({ className = '' }: { className?: string }) {
       <div className="relative flex h-full flex-col items-center justify-between px-[8cqw] pt-[16cqw] pb-[9cqw]">
         <Image
           src={crest}
-          alt="Dunamis International Gospel Centre 30th Anniversary, 1996 – 2026"
+          alt="Dunamis International Gospel Centre 30th Anniversary, since 1996"
           sizes="(min-width: 1024px) 240px, 140px"
-          className="w-[68cqw] drop-shadow-[0_10px_16px_rgba(90,40,0,0.45)]"
+          className="w-[62cqw] drop-shadow-[0_10px_16px_rgba(90,40,0,0.45)]"
         />
         <span className="text-[10cqw] leading-none font-semibold tracking-[-0.02em] text-gold-ink">Dunamis@30</span>
       </div>

@@ -121,8 +121,8 @@ export function StoryForm() {
         <Field name="phone" label="Phone number" required error={e.phone}>
           <input id="phone" name="phone" type="tel" autoComplete="tel" className={inputClass} aria-invalid={!!e.phone} />
         </Field>
-        <Field name="headline" label="A headline for your story" hint="e.g. “From the back row to the pulpit”.">
-          <input id="headline" name="headline" maxLength={90} className={inputClass} />
+        <Field name="headline" label="Title of your story" required error={e.headline} hint="e.g. “From the back row to the pulpit”.">
+          <input id="headline" name="headline" maxLength={90} className={inputClass} aria-invalid={!!e.headline} />
         </Field>
         <Field name="currentRole" label="What you do today" hint="e.g. “Pastor and church planter”.">
           <input id="currentRole" name="currentRole" maxLength={90} className={inputClass} />
@@ -134,8 +134,11 @@ export function StoryForm() {
         <PhotoPicker id="beforePhoto" label="Photo from before (optional)" value={before} onPick={pick(setBefore)} error={e.beforePhoto ?? photoNote} />
         <PhotoPicker id="afterPhoto" label="Photo from today (optional)" value={after} onPick={pick(setAfter)} error={e.afterPhoto} />
       </div>
-      <div className="mt-5">
-        <VideoField video={video} label="Video of your story (optional)" hint="Up to 5 minutes, and it can stand in for the writing below. We shrink it on your phone first, so it uses less data." error={e.video} />
+
+      <h3 className="h-card mt-10">Your video</h3>
+      <p className="mt-2">Rather tell your story on camera? Upload a video here, and you won’t need to write anything below.</p>
+      <div className="mt-6">
+        <VideoField video={video} label="Video of your story (optional)" hint="Up to 5 minutes. We shrink it on your phone first, so it uses less data." error={e.video} />
       </div>
 
       <h3 className="h-card mt-10">Your story</h3>

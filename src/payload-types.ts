@@ -158,7 +158,7 @@ export interface UserAuthOperations {
       };
 }
 /**
- * Testimonies people send from the website. Open one to read it or watch the video, then approve or reject it.
+ * Testimonies people send from the website, and ones you add yourself. Open one to read it or watch the video, then approve or reject it.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "testimonies".
@@ -166,14 +166,14 @@ export interface UserAuthOperations {
 export interface Testimony {
   id: number;
   title: string;
-  name: string;
+  name?: string | null;
   location?: string | null;
   category:
     'healing' | 'family' | 'financial' | 'destiny' | 'deliverance' | 'career' | 'academic' | 'spiritual' | 'other';
   /**
    * Shown on the testimony’s card on the website.
    */
-  summary: string;
+  summary?: string | null;
   body?: string | null;
   showName?: boolean | null;
   /**
@@ -297,15 +297,15 @@ export interface InternationalRegistration {
   createdAt: string;
 }
 /**
- * Stories people send from the website. Open one to read it, then approve or reject it.
+ * Stories people send from the website, and ones you add yourself. Open one to read it, then approve or reject it.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "sons-stories".
  */
 export interface SonsStory {
   id: number;
-  name: string;
-  headline?: string | null;
+  headline: string;
+  name?: string | null;
   location?: string | null;
   currentRole?: string | null;
   story?: {
@@ -613,8 +613,8 @@ export interface InternationalRegistrationsSelect<T extends boolean = true> {
  * via the `definition` "sons-stories_select".
  */
 export interface SonsStoriesSelect<T extends boolean = true> {
-  name?: T;
   headline?: T;
+  name?: T;
   location?: T;
   currentRole?: T;
   story?:

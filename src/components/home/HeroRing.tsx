@@ -250,7 +250,7 @@ export function HeroRing() {
                 </textPath>
               </text>
             </svg>
-            <Image src={crest} alt="Dunamis International Gospel Centre 30th Anniversary, 1996 – 2026" preload sizes="240px" className="hero-crest" />
+            <Image src={crest} alt="Dunamis International Gospel Centre 30th Anniversary, since 1996" preload sizes="240px" className="hero-crest" />
           </div>
         </div>
       </div>

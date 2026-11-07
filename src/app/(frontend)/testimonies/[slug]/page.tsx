@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import Image, { getImageProps } from 'next/image'
+import { getImageProps } from 'next/image'
+import { LoadingImage } from '@/components/LoadingImage'
 import Link from '@/components/SiteLink'
 import { notFound } from 'next/navigation'
 
@@ -21,8 +22,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const og = mediaUrl(t.photo ?? t.videoPoster ?? null, 'og')
   return {
     title: t.title,
-    description: t.summary,
-    openGraph: { type: 'article', title: t.title, description: t.summary, images: og ? [{ url: og, width: 1200, height: 630 }] : [shareImage] },
+    description: t.teaser || undefined,
+    openGraph: { type: 'article', title: t.title, description: t.teaser || undefined, images: og ? [{ url: og, width: 1200, height: 630 }] : [shareImage] },
   }
 }
 
@@ -60,16 +61,18 @@ export default async function TestimonyPage({ params }: Params) {
           </div>
         ) : image ? (
           <div className="card relative mt-10 aspect-[16/10] overflow-hidden">
-            <Image src={image} alt={t.title} fill priority sizes="(min-width: 900px) 860px, 100vw" className="object-cover" />
+            <LoadingImage src={image} alt={t.title} fill priority sizes="(min-width: 900px) 860px, 100vw" className="object-cover" />
           </div>
         ) : null}
 
-        <p className="mt-10 text-xl leading-relaxed text-fg sm:text-2xl">{t.summary}</p>
-        <div className="mt-8 grid gap-5 text-lg leading-relaxed">
-          {paragraphs.map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
-        </div>
+        {t.summary && <p className="mt-10 text-xl leading-relaxed text-fg sm:text-2xl">{t.summary}</p>}
+        {paragraphs.length > 0 && (
+          <div className={`${t.summary ? 'mt-8' : 'mt-10'} grid gap-5 text-lg leading-relaxed`}>
+            {paragraphs.map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
+          </div>
+        )}
         {t.videoUrl && !video && (
           <a href={t.videoUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline mt-8">
             Watch the video

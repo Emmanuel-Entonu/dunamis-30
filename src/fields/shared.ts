@@ -1,4 +1,5 @@
-import type { CollectionAfterChangeHook, CollectionAfterDeleteHook, CollectionBeforeChangeHook, Endpoint, Field } from 'payload'
+import type { CollectionAfterChangeHook, CollectionAfterDeleteHook, CollectionBeforeChangeHook, Endpoint, Field, TextFieldSingleValidation } from 'payload'
+import { text } from 'payload/shared'
 
 import { editorFieldOnly, hasRole } from '@/access/roles'
 
@@ -10,6 +11,9 @@ export const slugify = (value: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '')
     .slice(0, 80)
+
+/** Every testimony and story needs a title, and spaces alone don't count. */
+export const needsTitle: TextFieldSingleValidation = (value, args) => (value?.trim() ? text(value, args) : 'Please add a title.')
 
 /** URL slug generated from another field when left blank. */
 export const slugField = (from: string): Field => ({
@@ -61,6 +65,8 @@ export const moderationFields: Field[] = [
     name: 'consentToPublish',
     type: 'checkbox',
     required: true,
+    // The public forms ask for it. A reviewer adding an entry has it already.
+    defaultValue: true,
     admin: { hidden: true },
   },
 ]
@@ -113,6 +119,7 @@ type SubmissionDoc = Record<string, unknown> & {
   status?: string
   slug?: string | null
   videoFile?: { path?: string | null } | null
+  videoPoster?: unknown
   videoUrl?: string | null
   publishedAt?: string | null
 }
@@ -130,6 +137,11 @@ export const prepareSubmission: CollectionBeforeChangeHook = ({ data, originalDo
   const before = (originalDoc ?? {}) as SubmissionDoc
   const status = data.status ?? before.status
   if (status === 'approved' && !data.publishedAt && !before.publishedAt) data.publishedAt = new Date().toISOString()
+  // A video stays with its submission once saved: it can't be taken away or swapped, by anyone.
+  if (before.videoFile?.path) {
+    data.videoFile = before.videoFile
+    data.videoPoster = before.videoPoster
+  }
   const file = data.videoFile !== undefined ? data.videoFile : before.videoFile
   const link = data.videoUrl !== undefined ? data.videoUrl : before.videoUrl
   data.hasVideo = Boolean(file?.path || link)

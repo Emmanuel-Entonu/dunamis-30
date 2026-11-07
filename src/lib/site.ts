@@ -4,7 +4,7 @@ const LIVE_SITE = 'https://www.dunamis30thanniversary.com'
 export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL ? LIVE_SITE : 'http://localhost:3000')).replace(/\/$/, '')
 
 /** The picture shown when a link to the site is shared. Rendered by scripts/render-og.mjs. */
-export const shareImage = { url: '/og-dunamis-30-coins.jpg', width: 1200, height: 630, alt: 'Dunamis at 30. Same Mission. Greater Impact.' }
+export const shareImage = { url: '/og-dunamis-30-since-1996.jpg', width: 1200, height: 630, alt: 'Dunamis at 30. Same Mission. Greater Impact.' }
 
 export const siteName = 'Dunamis at 30'
 
@@ -43,26 +43,21 @@ export const moreLinks: NavItem[] = [
 
 /**
  * Fallback copy and facts, used until the communications team fills the CMS.
- * Event details: dunamisgospel.org/calendar/dunamis-intl-gospel-centre-30th-anniversary
  * Campaign line "Same Mission. Greater Impact." is from the official anniversary poster.
  */
 export const defaults = {
   headline: 'Same Mission. Greater Impact.',
-  heroMessage:
-    'Join us at the Glory Dome on 10 November 2026 as Dunamis International Gospel Centre turns 30.',
   welcome:
     'In 1996, a young couple held on to one instruction from God and started a church in Abuja. Thirty years on, we want to say thank you, and we’d love you to be there when we do.',
-  eventTitle: '30th Anniversary Service',
-  eventStartsAt: '2026-11-10T09:30:00+01:00',
   venue: 'The Glory Dome',
   city: 'Lord’s Garden, Airport Road, Abuja',
   officialWebsite: 'https://dunamisgospel.org',
 }
 
-/** Once the anniversary service is over, invitations to it move on to the convention. Pages refresh within minutes. */
-export const anniversaryOver = () => Date.now() > Date.parse('2026-11-10T23:59:00+01:00')
-
-/** The home page timer counts down to this. dunamisgospel.org/calendar/kingdom-power-and-glory-world-conference-2026 */
+/**
+ * The anniversary is celebrated at this conference, and the home page timer counts down to it. The church confirmed it
+ * starts on the 23rd, though dunamisgospel.org/calendar/kingdom-power-and-glory-world-conference-2026 still says the 24th.
+ */
 export const kpg = {
   title: 'Kingdom Power & Glory',
   dates: '23 to 29 November',

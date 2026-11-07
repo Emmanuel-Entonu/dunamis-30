@@ -9,13 +9,13 @@ import triggersBook from '@/assets/books/triggers-of-the-move-of-god.webp'
 import { glass } from '@/assets/glass'
 import { ClosingBand, CrusadeTile, FeatureTile, GlassArt, GlassTile, PhotoWithGlass, ShowcaseCard, SplitHeader, StorySplit } from '@/components/blocks'
 import { ArrowRight, Play } from '@/components/icons'
-import { ScrubText } from '@/components/motion'
+import { GrowFrame, ScrubText } from '@/components/motion'
 import { PageHero } from '@/components/PageHero'
 import { Reveal } from '@/components/Reveal'
 import { blurFor } from '@/lib/image'
 import { getPastorPage, mediaUrl } from '@/lib/content'
 import { crusadePhotos, photos } from '@/lib/photos'
-import { anniversaryOver, kpg } from '@/lib/site'
+import { kpg } from '@/lib/site'
 import { embedUrl } from '@/lib/video'
 import type { Media } from '@/payload-types'
 
@@ -62,7 +62,7 @@ export default async function SeniorPastorPage() {
               <div className="relative w-[78%] max-w-[380px]">
                 <div aria-hidden className="dots absolute inset-[-22%]" />
                 <div className="relative aspect-[5/7] overflow-hidden rounded-2xl border border-line">
-                  <Image src={portrait || photos.pastorPaulPreaching} alt={name} fill sizes="(min-width: 1024px) 380px, 78vw" placeholder={blurFor(portrait || photos.pastorPaulPreaching)} className="object-cover" />
+                  <Image src={portrait || photos.pastorPaulPortrait} alt={name} fill sizes="(min-width: 1024px) 380px, 78vw" placeholder={blurFor(portrait || photos.pastorPaulPortrait)} className="object-cover" />
                 </div>
                 <GlassImage src={glass.crown} className="absolute -top-9 -right-7 h-auto w-[104px] rotate-[10deg] drop-shadow-[0_18px_26px_rgba(0,0,0,0.8)] sm:-top-12 sm:-right-14 sm:w-[160px]" />
               </div>
@@ -114,7 +114,7 @@ export default async function SeniorPastorPage() {
               paragraphs(page.calling.body)
             ) : (
               <>
-                <p>Seeking direction, he withdrew to Gannarup Mountain in Jos for prayer and fasting, and came down with a conviction that would change the course of their lives.</p>
+                <p>Seeking direction, he withdrew to the mountains at Gana Ropp, near Jos, for prayer and fasting, and came down with a conviction that would change the course of their lives.</p>
                 <p>Dr. Becky had also been seeking God in prayer and fasting. When they compared what they had received, the direction was exactly the same. They left the familiar for Abuja, and for the first 13 months they lived in one room in Zone 7.</p>
               </>
             )}
@@ -134,7 +134,7 @@ export default async function SeniorPastorPage() {
               <FeatureTile className="lg:flex-1" label="The harvest" title="Winning souls" text="Crusades since the early days of the Gospel Power Team have led hundreds of thousands to Christ." art={glass.flame} delay={100} />
             </div>
             <div className="flex flex-col gap-4 sm:gap-[25px] lg:flex-row">
-              <FeatureTile className="lg:flex-1" label="The leaders" title="Raising ministers" text="Ministers from 48 nations came to the Flaming Fire conference in 2023." art={glass.mic} />
+              <FeatureTile className="lg:flex-1" label="The leaders" title="Raising ministers" text="Delegations from over 68 nations came to the Flaming Fire conference in 2025." art={glass.mic} />
               <FeatureTile className="lg:flex-[1.6]" label="The nations" title="Going far beyond Abuja" text="People from Nigeria and 53 other countries came for Kingdom Power & Glory in 2023." art={glass.flag} delay={100} />
             </div>
             <div className="grid gap-4 sm:grid-cols-2 sm:gap-[25px]">
@@ -173,7 +173,7 @@ export default async function SeniorPastorPage() {
           <StorySplit
             flip
             title={page.family?.heading || 'He and Dr. Becky'}
-            visual={<PhotoWithGlass photo={mediaUrl(asMedia(page.family?.image), 'hero') || photos.seniorPastors} alt="Dr. Paul Enenche and Dr. Becky Paul-Enenche in Basotho blankets, arriving in Lesotho" art={glass.heart} className="mx-auto aspect-square max-w-[470px]" />}
+            visual={<PhotoWithGlass photo={mediaUrl(asMedia(page.family?.image), 'hero') || photos.seniorPastors} alt="Dr. Paul Enenche and Dr. Becky Paul-Enenche smiling together, he in a dark velvet jacket and she in a green hat" art={glass.heart} className="mx-auto aspect-square max-w-[470px]" />}
           >
             {page.family?.body ? (
               paragraphs(page.family.body)
@@ -181,6 +181,9 @@ export default async function SeniorPastorPage() {
               <p>When the call came, Dr. Becky was nursing their first baby, only a few months old. She’s a medical doctor too, and she stepped out with him. They’ve led the church side by side ever since.</p>
             )}
           </StorySplit>
+          <GrowFrame className="mt-10 aspect-[4/3] sm:aspect-[16/9] lg:mt-[60px]">
+            <Image src={photos.pastorsBeforeTheCrowd} alt="Dr. Paul and Dr. Becky Paul-Enenche in red, hand in hand with their backs to the camera, facing a vast crowd with their hands lifted" fill sizes="96vw" placeholder="blur" className="object-cover" />
+          </GrowFrame>
         </div>
       </section>
 
@@ -273,7 +276,7 @@ export default async function SeniorPastorPage() {
 
       <ClosingBand
         title="Come and celebrate with them"
-        text={`Join Dr. Paul and Dr. Becky at the Glory Dome ${anniversaryOver() ? `for ${kpg.title}, ${kpg.dates}` : 'on 10 November'}, or tell us what this ministry has meant to you.`}
+        text={`Join Dr. Paul and Dr. Becky at the Glory Dome, ${kpg.dates}, or tell us what this ministry has meant to you.`}
         shareUrl="/senior-pastor"
         shareText="Dr. Paul Enenche, founder and senior pastor of Dunamis"
       >

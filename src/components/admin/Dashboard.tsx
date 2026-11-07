@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Payload, TypedUser } from 'payload'
 import type { ReactNode } from 'react'
 
+import { hasRole } from '@/access/roles'
 import { buildOverview, longDay, timeAgo, type GuestRow, type ItemKind, type StoryRow, type TestimonyRow } from '@/lib/overview'
 import { ActivityChart } from './ActivityChart'
 import { ChevronIcon, ExternalIcon, GlobeIcon, GuestIcon, InboxIcon, StoryIcon, TestimonyIcon, WaitingIcon } from './AdminIcons'
@@ -122,10 +123,22 @@ export async function Dashboard({ payload, user }: { payload: Payload; user?: Ty
           <h1>Overview</h1>
           <p>{longDay(now)}. Nothing goes on the website until it is approved here.</p>
         </div>
-        <a href="/" target="_blank" rel="noopener noreferrer" className="ov-site">
-          View the website
-          <ExternalIcon width={15} height={15} />
-        </a>
+        <div className="ov-head__actions">
+          {hasRole(user as never, 'admin', 'editor') && (
+            <>
+              <Link href="/admin/collections/testimonies/create" prefetch={false} className="ov-site">
+                Add a testimony
+              </Link>
+              <Link href="/admin/collections/sons-stories/create" prefetch={false} className="ov-site">
+                Add a story
+              </Link>
+            </>
+          )}
+          <a href="/" target="_blank" rel="noopener noreferrer" className="ov-site">
+            View the website
+            <ExternalIcon width={15} height={15} />
+          </a>
+        </div>
       </header>
 
       <section aria-label="At a glance" className="ov-stats">

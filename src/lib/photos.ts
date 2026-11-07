@@ -101,7 +101,11 @@ import stripVenezuelaCrutches from '@/assets/crusades/strip/venezuela-crutches.w
 import stripZambiaWelcome from '@/assets/crusades/strip/zambia-welcome.webp'
 import gloryDomeInterior from '@/assets/photos/glory-dome-interior.webp'
 import pastorBeckyRed from '@/assets/photos/pastor-becky-red.webp'
-import pastorPaulPreaching from '@/assets/photos/pastor-paul-preaching.webp'
+import pastorBeckyHome from '@/assets/photos/pastor-becky-home.webp'
+import pastorBeckyPortrait from '@/assets/photos/pastor-becky-portrait.webp'
+import pastorPaulHome from '@/assets/photos/pastor-paul-home.webp'
+import pastorPaulPortrait from '@/assets/photos/pastor-paul-portrait.webp'
+import pastorsBeforeTheCrowd from '@/assets/photos/pastors-before-the-crowd.webp'
 import pastorPaulRed from '@/assets/photos/pastor-paul-red.webp'
 import seniorPastors from '@/assets/photos/senior-pastors.webp'
 import anointingPoster from '@/assets/posters/anointing-service.webp'
@@ -113,7 +117,8 @@ import thanksgivingPoster from '@/assets/posters/thanksgiving-service.webp'
 
 /**
  * Official photographs (dunamisgospel.org). The CMS gallery replaces these once it has items.
- * The pastors' photos are from the church's YouTube channels, posted in early November 2026.
+ * The pastors' photos are from the church's YouTube channels, posted in early November 2026, and
+ * from the church directly on 6 November 2026, along with the Glory Dome from the outside.
  */
 export const photos = {
   altarCall,
@@ -130,9 +135,10 @@ export const photos = {
   nationsCelebration,
   nationsCrowd,
   nationsInThePews,
-  pastorBeckyRed,
-  pastorPaulPreaching,
-  pastorPaulRed,
+  pastorBeckyHome,
+  pastorPaulHome,
+  pastorPaulPortrait,
+  pastorsBeforeTheCrowd,
   praiseSinging,
   prayerBlackWhite,
   seniorPastors,
@@ -255,6 +261,11 @@ export const defaultGallery: GalleryEntry[] = [
   { key: 'cameroon', src: nationsCameroon, title: 'The flag of Cameroon at the altar', category: 'international', event: 'Nations at Dunamis' },
   { key: 'tears', src: worshipTears, title: 'Tears in the presence of God', category: 'events', event: 'Glory Dome services' },
   { key: 'pastors', src: seniorPastors, title: 'Our Senior Pastors', category: 'pastor', event: 'Our Senior Pastors' },
+  { key: 'before-the-crowd', src: pastorsBeforeTheCrowd, title: 'Hand in hand before the crowd', category: 'pastor', event: 'Our Senior Pastors' },
+  { key: 'paul-portrait', src: pastorPaulPortrait, title: 'Dr. Paul Enenche', category: 'pastor', event: 'Our Senior Pastors' },
+  { key: 'becky-portrait', src: pastorBeckyPortrait, title: 'Dr. Becky Paul-Enenche', category: 'pastor', event: 'Our Senior Pastors' },
+  { key: 'paul-red', src: pastorPaulRed, title: 'Dr. Paul Enenche ministering', category: 'pastor', event: 'Our Senior Pastors' },
+  { key: 'becky-red', src: pastorBeckyRed, title: 'Dr. Becky Paul-Enenche ministering', category: 'pastor', event: 'Our Senior Pastors' },
   ...Object.entries(crusadePhotos).map(([key, photo]) => ({ key: `crusade-${key}`, src: photo.src, title: photo.title, category: 'crusades', event: `${photo.place} ${('label' in photo ? photo.label : 'crusade').toLowerCase()}` })),
   { key: 'celebration', src: nationsCelebration, title: 'Dancing with the nations', category: 'international', event: 'Nations at Dunamis' },
   { key: 'prayer', src: prayerBlackWhite, title: 'In prayer', category: 'events', event: 'Glory Dome services' },

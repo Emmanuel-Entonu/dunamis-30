@@ -18,10 +18,10 @@ import { SleeveCard } from '@/components/home/SleeveCard'
 import { YearStack } from '@/components/home/YearStack'
 import { ArrowRight, BookOpen, Calendar, CrossIcon, Crown, Flame, Globe, Heart, MapPin, Share, Sparkle } from '@/components/icons'
 import { Reveal } from '@/components/Reveal'
-import { getEvent, getHomepage, getSite, testimonyFormOpen } from '@/lib/content'
+import { getHomepage, getSite, testimonyFormOpen } from '@/lib/content'
 import { faqsFor, directionsUrl } from '@/lib/ministry'
 import { crusadeNations, defaultGallery, photos } from '@/lib/photos'
-import { anniversaryOver, defaults, kpg } from '@/lib/site'
+import { defaults, kpg } from '@/lib/site'
 
 export const revalidate = 60
 
@@ -72,9 +72,8 @@ function VisualTile({ label, title, text, visual, delay = 0 }: { label: string; 
 }
 
 export default async function HomePage() {
-  const [event, home, site, formOpen] = await Promise.all([getEvent(), getHomepage(), getSite(), testimonyFormOpen()])
+  const [home, site, formOpen] = await Promise.all([getHomepage(), getSite(), testimonyFormOpen()])
   const time = (iso: string) => fmt(iso, { hour: 'numeric', minute: '2-digit', hour12: true }).replace(' ', '')
-  const eventTime = time(event.startsAt)
   const kpgDay = fmt(kpg.startsAt, { day: 'numeric', month: 'long' })
 
   return (
@@ -95,7 +94,7 @@ export default async function HomePage() {
         {/* The words above and the button below take the same height, so the crest sits in the exact middle */}
         <div data-hero-words className="hero-title relative z-10 flex flex-col items-center justify-center px-5 text-center">
           <p className="text-[13px] font-medium text-gold-light sm:text-base">
-            {fmt(event.startsAt, { day: 'numeric', month: 'long', year: 'numeric' })} · {event.venue}, Abuja
+            {kpg.dates} 2026 · The Glory Dome, Abuja
           </p>
           <h1 className="mt-1.5 text-[clamp(1.75rem,1rem+3vw,3.5rem)] leading-[1.08] font-medium tracking-[-0.018em] text-fg [text-shadow:0_2px_24px_rgb(0_0_0/0.75)] sm:mt-2">{home.hero?.headline || defaults.headline}</h1>
         </div>
@@ -134,8 +133,8 @@ export default async function HomePage() {
           </Reveal>
                     <Reveal delay={120} className="card grid w-full grid-cols-2 gap-2 p-2 sm:gap-3 sm:p-3 lg:w-[580px]">
             {[
-              { src: photos.pastorPaulRed, name: 'Dr. Paul Enenche', role: 'Founder and Senior Pastor' },
-              { src: photos.pastorBeckyRed, name: 'Dr. Becky Paul-Enenche', role: 'Senior Pastor' },
+              { src: photos.pastorPaulHome, name: 'Dr. Paul Enenche', role: 'Founder and Senior Pastor' },
+              { src: photos.pastorBeckyHome, name: 'Dr. Becky Paul-Enenche', role: 'Senior Pastor' },
             ].map((p) => (
               <figure key={p.name} className="group relative aspect-[5/7] overflow-hidden rounded-xl sm:rounded-2xl">
                 <Image src={p.src} alt={p.name} fill placeholder="blur" sizes="(min-width: 1024px) 280px, 46vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
@@ -179,9 +178,9 @@ export default async function HomePage() {
           <Reveal className="card flex flex-col overflow-hidden lg:flex-row lg:items-stretch">
             <div className="flex flex-col gap-8 p-5 sm:p-10 lg:w-[45%] lg:justify-between lg:py-[95px] lg:pl-[95px]">
               <div>
-                <h2 className="h-section">Stay for Kingdom Power &amp; Glory</h2>
+                <h2 className="h-section">Join us for Kingdom Power &amp; Glory</h2>
                 <p className="mt-4">
-                  Our yearly conference starts two weeks after the anniversary. This year’s theme is <span className="text-fg">Open Heavens</span>, and these are the guests joining our Senior Pastors.
+                  Our yearly anniversary conference runs from 23 to 29 November. This year’s theme is <span className="text-fg">Open Heavens</span>, and these are the guests joining our Senior Pastors.
                 </p>
               </div>
               <StarList items={['Papa E.A. Adeboye', 'Archbishop Margaret Idahosa', 'Bishop David Oyedepo', 'Dr. Paul and Dr. Becky Paul-Enenche']} />
@@ -214,7 +213,7 @@ export default async function HomePage() {
       {/* Coming? The card, the international form and the venue, in one place */}
       <section className="section">
         <div className="container-site">
-          <SplitHeader title={anniversaryOver() ? `Coming to ${kpg.title}?` : 'Coming on the 10th?'}>
+          <SplitHeader title="Coming from the 23rd to the 29th?">
             <p>You don’t need to register. Just come, and bring someone with you.</p>
           </SplitHeader>
 
@@ -235,15 +234,15 @@ export default async function HomePage() {
             </Reveal>
 
             <div className="flex flex-col gap-4 sm:gap-[25px] lg:flex-1">
-              <Reveal delay={100} className="card grid flex-1 overflow-hidden sm:grid-cols-[1fr_1.1fr]">
+              <Reveal delay={100} className="card grid flex-[1_0_auto] overflow-hidden sm:grid-cols-[1fr_1.1fr]">
                 <div className="relative min-h-[220px] sm:order-2">
-                  <Image src={photos.domeExterior} alt="The Glory Dome from the outside" fill placeholder="blur" sizes="(min-width: 1024px) 400px, 96vw" className="object-cover" />
+                  <Image src={photos.domeExterior} alt="The Glory Dome from the outside" fill placeholder="blur" sizes="(min-width: 1024px) 400px, 96vw" className="object-cover object-bottom" />
                 </div>
                 <div className="flex flex-col justify-between gap-6 p-5 sm:p-10">
                   <div>
                     <h3 className="h-card">Where to find us</h3>
                     <p className="mt-3 text-base sm:text-lg">
-                      The Glory Dome, Lord’s Garden, Airport Road, Abuja. We start at {eventTime}.
+                      The Glory Dome, Lord’s Garden, Airport Road, Abuja. We start on {kpgDay} at {time(kpg.startsAt)}.
                     </p>
                   </div>
                   <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary self-start">
@@ -252,7 +251,7 @@ export default async function HomePage() {
                 </div>
               </Reveal>
 
-              <Reveal delay={200} className="card group relative flex flex-1 flex-col justify-between gap-6 overflow-hidden p-5 sm:p-10">
+              <Reveal delay={200} className="card group relative flex flex-[1_0_auto] flex-col justify-between gap-6 overflow-hidden p-5 sm:p-10">
                 <GlassArt fit art={glass.plane} className="!absolute top-4 right-4 size-[92px] sm:top-6 sm:right-8 sm:size-[150px]" dots="inset-[-45%]" />
                 <div className="relative max-w-[calc(100%-100px)] sm:max-w-[360px]">
                   <h3 className="h-card">Coming from outside Nigeria?</h3>

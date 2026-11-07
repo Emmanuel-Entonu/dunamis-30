@@ -23,6 +23,13 @@ const nextConfig: NextConfig = {
     // Built-in images have the file's fingerprint in their address, and uploads get new names.
     minimumCacheTTL: 60 * 60 * 24 * 30,
   },
+  // The dashboard everyone uses is at /dashboard. Payload's screens stay behind it as a fallback.
+  async redirects() {
+    return [
+      { source: '/admin', destination: '/dashboard', permanent: false },
+      { source: '/admin/login', destination: '/dashboard', permanent: false },
+    ]
+  },
   async headers() {
     return [
       {

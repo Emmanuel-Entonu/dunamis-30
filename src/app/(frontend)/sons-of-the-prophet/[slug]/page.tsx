@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import Image, { getImageProps } from 'next/image'
+import { getImageProps } from 'next/image'
+import { LoadingImage } from '@/components/LoadingImage'
 import Link from '@/components/SiteLink'
 import { notFound } from 'next/navigation'
 
@@ -62,7 +63,7 @@ export default async function SonsStoryPage({ params }: Params) {
           <BeforeAfter before={before} after={after} name={s.name} className="card mt-10 aspect-[4/3]" />
         ) : single ? (
           <div className="card relative mt-10 aspect-[16/10] overflow-hidden">
-            <Image src={single} alt={s.name} fill priority sizes="(min-width: 900px) 860px, 100vw" className="object-cover" />
+            <LoadingImage src={single} alt={s.name} fill priority sizes="(min-width: 900px) 860px, 100vw" className="object-cover" />
           </div>
         ) : null}
 
@@ -80,18 +81,20 @@ export default async function SonsStoryPage({ params }: Params) {
           </a>
         )}
 
-        <div className="mt-12 grid gap-10">
-          {chapters.map((c) => (
-            <section key={c.title}>
-              <h2 className="h-section">{c.title}</h2>
-              <div className="mt-4 grid gap-4 text-lg leading-relaxed">
-                {c.text!.split(/\n{2,}|\r\n\r\n/).map((p, i) => (
-                  <p key={i}>{p}</p>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+        {chapters.length > 0 && (
+          <div className="mt-12 grid gap-10">
+            {chapters.map((c) => (
+              <section key={c.title}>
+                <h2 className="h-section">{c.title}</h2>
+                <div className="mt-4 grid gap-4 text-lg leading-relaxed">
+                  {c.text!.split(/\n{2,}|\r\n\r\n/).map((p, i) => (
+                    <p key={i}>{p}</p>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        )}
 
         {s.milestones && s.milestones.length > 0 && (
           <div className="card mt-12 p-5 sm:p-10">

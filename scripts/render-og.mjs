@@ -11,7 +11,7 @@ import sharp from 'sharp'
 
 const WIDTH = 1200
 const HEIGHT = 630
-const OUTPUT = 'public/og-dunamis-30-coins.jpg'
+const OUTPUT = 'public/og-dunamis-30-since-1996.jpg'
 
 const inline = (file, type = 'image/webp') => `data:${type};base64,${fs.readFileSync(file).toString('base64')}`
 const font = inline('src/fonts/onest-variable.woff2', 'font/woff2')
@@ -81,7 +81,7 @@ const html = `<!doctype html>
   .card .rim { position: absolute; inset: 0; border-radius: inherit;
     box-shadow: inset 0 0 0 1px rgb(255 255 255 / .3), inset 0 1px 0 rgb(255 255 255 / .6), inset 0 -16px 28px -12px rgb(110 52 0 / .4); }
   .card .inner { position: relative; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 14cqw 8cqw 9cqw; }
-  .card .crest { width: 68cqw; filter: drop-shadow(0 10px 16px rgb(90 40 0 / .45)); }
+  .card .crest { width: 62cqw; filter: drop-shadow(0 10px 16px rgb(90 40 0 / .45)); }
   .card .name { font-size: 10cqw; line-height: 1; font-weight: 600; letter-spacing: -.02em; color: #140c02; }
 
   .slip { position: absolute; left: 884px; top: 330px; width: 372px; aspect-ratio: 325 / 488; transform: rotate(-12deg);

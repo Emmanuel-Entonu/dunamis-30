@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { approvedOrEditor, isEditor, nameIfShown } from '@/access/roles'
-import { afterSubmissionChange, afterSubmissionDelete, moderationFields, prepareSubmission, showNameField, slugField, submitterFields, uploadedVideoFields, videoTicketEndpoint } from '@/fields/shared'
+import { afterSubmissionChange, afterSubmissionDelete, moderationFields, prepareSubmission, showNameField, slugField, submitterFields, uploadedVideoFields, videoTicketEndpoint, needsTitle } from '@/fields/shared'
 
 const mediaFields = ['beforePhoto', 'afterPhoto', 'videoPoster']
 
@@ -11,18 +11,18 @@ export const SonsStories: CollectionConfig = {
   disableDuplicate: true,
   disableBulkEdit: true,
   admin: {
-    useAsTitle: 'name',
-    defaultColumns: ['name', 'headline', 'location', 'hasVideo', 'status', 'createdAt'],
+    useAsTitle: 'headline',
+    defaultColumns: ['headline', 'name', 'location', 'hasVideo', 'status', 'createdAt'],
     group: 'Submissions',
     hideAPIURL: true,
-    description: 'Stories people send from the website. Open one to read it, then approve or reject it.',
+    description: 'Stories people send from the website, and ones you add yourself. Open one to read it, then approve or reject it.',
     components: { beforeListTable: ['/components/admin/ListTabs#StoryTabs'] },
   },
   defaultSort: '-createdAt',
   access: {
     read: approvedOrEditor,
-    // Stories only ever come from the public form, whose server action always saves them as "pending".
-    create: () => false,
+    // The public form saves through its server action, always as "pending". Reviewers can add one from the dashboard.
+    create: isEditor,
     update: isEditor,
     delete: isEditor,
   },
@@ -43,8 +43,8 @@ export const SonsStories: CollectionConfig = {
       label: 'Fix a spelling mistake or change the wording',
       admin: { initCollapsed: true, description: 'Make your change, then press Save, Approve or Reject.' },
       fields: [
-        { name: 'name', type: 'text', required: true, label: 'From', access: { read: nameIfShown } },
-        { name: 'headline', type: 'text', label: 'Headline' },
+        { name: 'headline', type: 'text', required: true, label: 'Title', validate: needsTitle },
+        { name: 'name', type: 'text', label: 'From', access: { read: nameIfShown } },
         { name: 'location', type: 'text', label: 'Location' },
         { name: 'currentRole', type: 'text', label: 'Where they are today, in one line' },
         {
@@ -77,7 +77,8 @@ export const SonsStories: CollectionConfig = {
     { name: 'beforePhoto', type: 'upload', relationTo: 'media', admin: { hidden: true } },
     { name: 'afterPhoto', type: 'upload', relationTo: 'media', admin: { hidden: true } },
     { name: 'videoUrl', type: 'text', admin: { hidden: true } },
-    slugField('name'),
+    // From the title, never the name: the address is public, even for someone who asked not to be named.
+    slugField('headline'),
     ...moderationFields,
   ],
 }

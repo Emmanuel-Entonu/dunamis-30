@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { GlassImage } from '@/components/GlassImage'
+import { LoadingImage } from '@/components/LoadingImage'
 import { blurFor } from '@/lib/image'
 import cameraGlass from '@/assets/glass/camera.webp'
 import { inputClass } from '@/components/forms/Field'
@@ -159,7 +160,7 @@ export function GalleryBrowser({ items, categories }: { items: GalleryCard[]; ca
                 aria-label={`Open ${item.title}`}
               >
                 {item.thumb ? (
-                  <Image
+                  <LoadingImage
                     src={item.thumb}
                     alt=""
                     width={item.width ?? 700}

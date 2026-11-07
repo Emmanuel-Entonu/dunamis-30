@@ -46,7 +46,8 @@ const database = postgresAdapter({
     // Each serverless instance keeps a few connections; the Supabase pooler shares them out.
     max: 5,
     idleTimeoutMillis: 10_000,
-    connectionTimeoutMillis: 8_000,
+    // The live site sits next to the database. A preview on a slow connection needs longer to reach it.
+    connectionTimeoutMillis: process.env.VERCEL ? 8_000 : 30_000,
   },
 })
 
@@ -79,7 +80,7 @@ export default buildConfig({
   i18n: {
     translations: {
       en: {
-        general: { createdAt: 'Received', created: 'Received', updatedAt: 'Last changed', lastModified: 'Last changed', dashboard: 'Overview' },
+        general: { createNew: 'Add new', createNewLabel: 'Add a new {{label}}', creatingNewLabel: 'Add a new {{label}}', createdAt: 'Received', created: 'Received', updatedAt: 'Last changed', lastModified: 'Last changed', dashboard: 'Overview' },
         authentication: { emailOrUsername: 'Username', login: 'Sign in', logOut: 'Sign out' },
         // Payload uses either one, depending on how far the sign-in got.
         error: {

@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { approvedOrEditor, isEditor, nameIfShown } from '@/access/roles'
-import { afterSubmissionChange, afterSubmissionDelete, moderationFields, prepareSubmission, showNameField, slugField, submitterFields, uploadedVideoFields, videoTicketEndpoint } from '@/fields/shared'
+import { afterSubmissionChange, afterSubmissionDelete, moderationFields, prepareSubmission, showNameField, slugField, submitterFields, uploadedVideoFields, videoTicketEndpoint, needsTitle } from '@/fields/shared'
 
 const mediaFields = ['photo', 'videoPoster']
 
@@ -30,14 +30,14 @@ export const Testimonies: CollectionConfig = {
     group: 'Submissions',
     listSearchableFields: ['title', 'name', 'summary'],
     hideAPIURL: true,
-    description: 'Testimonies people send from the website. Open one to read it or watch the video, then approve or reject it.',
+    description: 'Testimonies people send from the website, and ones you add yourself. Open one to read it or watch the video, then approve or reject it.',
     components: { beforeListTable: ['/components/admin/TestimonySwitch#TestimonyFormSwitch', '/components/admin/ListTabs#TestimonyTabs'] },
   },
   defaultSort: '-createdAt',
   access: {
     read: approvedOrEditor,
-    // Testimonies only ever come from the public form, whose server action always saves them as "pending".
-    create: () => false,
+    // The public form saves through its server action, always as "pending". Reviewers can add one from the dashboard.
+    create: isEditor,
     update: isEditor,
     delete: isEditor,
   },
@@ -58,21 +58,21 @@ export const Testimonies: CollectionConfig = {
       label: 'Fix a spelling mistake or change the wording',
       admin: { initCollapsed: true, description: 'Make your change, then press Save, Approve or Reject.' },
       fields: [
-        { name: 'title', type: 'text', required: true, label: 'Title' },
-        { name: 'name', type: 'text', required: true, label: 'From', access: { read: nameIfShown } },
+        { name: 'title', type: 'text', required: true, label: 'Title', validate: needsTitle },
+        { name: 'name', type: 'text', label: 'From', access: { read: nameIfShown } },
         { name: 'location', type: 'text', label: 'Location' },
         {
           name: 'category',
           type: 'select',
           required: true,
           index: true,
+          defaultValue: 'other',
           label: 'Type',
           options: testimonyCategories.map((c) => ({ ...c })),
         },
         {
           name: 'summary',
           type: 'textarea',
-          required: true,
           maxLength: 320,
           label: 'In short',
           admin: { description: 'Shown on the testimony’s card on the website.' },

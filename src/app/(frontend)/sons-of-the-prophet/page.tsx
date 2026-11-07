@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
+import { LoadingImage } from '@/components/LoadingImage'
 import Link from '@/components/SiteLink'
 
 import { glass } from '@/assets/glass'
@@ -28,11 +28,11 @@ function StoryCard({ story }: { story: CardSonsStory }) {
       <div className="relative aspect-[4/3] overflow-hidden bg-hair">
         {before && after ? (
           <div className="grid h-full grid-cols-2 gap-0.5">
-            <Image src={before} alt={`${story.name} before`} width={400} height={400} sizes="(min-width: 1024px) 200px, 48vw" className="h-full w-full object-cover" />
-            <Image src={after} alt={`${story.name} today`} width={400} height={400} sizes="(min-width: 1024px) 200px, 48vw" className="h-full w-full object-cover" />
+            <LoadingImage src={before} alt={`${story.name} before`} width={400} height={400} sizes="(min-width: 1024px) 200px, 48vw" className="h-full w-full object-cover" />
+            <LoadingImage src={after} alt={`${story.name} today`} width={400} height={400} sizes="(min-width: 1024px) 200px, 48vw" className="h-full w-full object-cover" />
           </div>
         ) : after || before ? (
-          <Image src={(after || before)!} alt={story.name} fill sizes="(min-width: 1024px) 400px, 96vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+          <LoadingImage src={(after || before)!} alt={story.name} fill sizes="(min-width: 1024px) 400px, 96vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (
           <div className="grid h-full place-items-center">
             <GlassArt art={glass.crown} className="w-[130px]" />
@@ -121,7 +121,7 @@ export default async function SonsPage() {
         </div>
       </section>
 
-      <FormStage id="share" title="Share your story and become part of the 30-year legacy" text="Our communications team reads every story before it goes up. Your contacts stay private. If you’d rather not write, send a link to a video.">
+      <FormStage id="share" title="Share your story and become part of the 30-year legacy" text="Our communications team reads every story before it goes up. Your contacts stay private. If you’d rather not write, you can upload a video instead.">
         <StoryForm />
       </FormStage>
 

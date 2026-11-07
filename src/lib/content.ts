@@ -3,7 +3,7 @@ import { unstable_cache } from 'next/cache'
 import { getPayload, type Payload, type Where } from 'payload'
 import { cache } from 'react'
 
-import type { Event, Gallery, Homepage, ImpactPage, Media, Milestone, PastorPage, Site, SonsStory, StoryPage, Testimony } from '@/payload-types'
+import type { Gallery, Homepage, ImpactPage, Media, Milestone, PastorPage, Site, SonsStory, StoryPage, Testimony } from '@/payload-types'
 import { defaults, defaultSocials } from './site'
 import { mixTestimonies } from './testimonyMix'
 
@@ -40,51 +40,6 @@ async function safely<T>(label: string, fn: () => Promise<T>, fallback: T): Prom
   }
 }
 
-export type EventInfo = {
-  title: string
-  startsAt: string
-  dateConfirmed: boolean
-  venue: string
-  venueConfirmed: boolean
-  city: string
-  onlineAttendance: boolean
-  livestreamUrl?: string | null
-}
-
-// Published on the official church calendar, so treated as confirmed until the CMS says otherwise.
-const officialEvent: EventInfo = {
-  title: defaults.eventTitle,
-  startsAt: defaults.eventStartsAt,
-  dateConfirmed: true,
-  venue: defaults.venue,
-  venueConfirmed: true,
-  city: defaults.city,
-  onlineAttendance: true,
-}
-
-export const getEvent = cache(
-  async (): Promise<EventInfo> =>
-    safely<EventInfo>(
-      'event',
-      async () => {
-        const payload = await getPayloadClient()
-        const event: Event = await payload.findGlobal({ slug: 'event' })
-        if (!event.startsAt) return officialEvent
-        return {
-          title: event.title || defaults.eventTitle,
-          startsAt: event.startsAt,
-          dateConfirmed: Boolean(event.dateConfirmed),
-          venue: event.venue || defaults.venue,
-          venueConfirmed: Boolean(event.venueConfirmed),
-          city: event.city || defaults.city,
-          onlineAttendance: event.onlineAttendance ?? true,
-          livestreamUrl: event.livestreamUrl,
-        }
-      },
-      officialEvent,
-    ),
-)
-
 export const getHomepage = cache(async () =>
   safely<Partial<Homepage>>(
     'homepage',
@@ -114,6 +69,8 @@ export const getSite = cache(async () => {
 
 export type CardTestimony = Pick<Testimony, 'id' | 'title' | 'category' | 'summary' | 'slug' | 'videoUrl'> & {
   name: string | null
+  /** What the card shows: the short version, or the start of the write-up. Empty when there's neither. */
+  teaser: string
   hasVideo: boolean
   photo?: Media | null
   videoPoster?: Media | null
@@ -123,11 +80,18 @@ const publicName = (t: { name?: string | null; showName?: boolean | null }) => (
 
 const populated = (value: unknown) => (typeof value === 'object' && value !== null ? (value as Media) : null)
 
+/** The start of a write-up, for the card of a testimony with no short version. */
+const excerpt = (text?: string | null) => {
+  const flat = (text ?? '').replace(/\s+/g, ' ').trim()
+  return flat.length > 180 ? `${flat.slice(0, 180).replace(/\s+\S*$/, '')}…` : flat
+}
+
 const toCard = (t: Testimony): CardTestimony => ({
   id: t.id,
   title: t.title,
   category: t.category,
   summary: t.summary,
+  teaser: t.summary || excerpt(t.body),
   slug: t.slug,
   videoUrl: t.videoUrl,
   name: publicName(t),
@@ -260,7 +224,8 @@ export const getTestimonyBySlug = cache(async (slug: string) =>
   ),
 )
 
-export type CardSonsStory = Pick<SonsStory, 'id' | 'name' | 'headline' | 'location' | 'currentRole' | 'slug'> & {
+export type CardSonsStory = Pick<SonsStory, 'id' | 'headline' | 'location' | 'currentRole' | 'slug'> & {
+  name: string
   before?: string | null
   beforePhoto?: Media | null
   afterPhoto?: Media | null
@@ -270,7 +235,7 @@ export type CardSonsStory = Pick<SonsStory, 'id' | 'name' | 'headline' | 'locati
 
 const toSonsCard = (s: SonsStory): CardSonsStory => ({
   ...s,
-  name: s.showName === false ? 'A son of the ministry' : s.name,
+  name: s.showName === false || !s.name ? 'A son of the ministry' : s.name,
   before: s.story?.before,
   beforePhoto: typeof s.beforePhoto === 'object' ? s.beforePhoto : null,
   afterPhoto: typeof s.afterPhoto === 'object' ? s.afterPhoto : null,

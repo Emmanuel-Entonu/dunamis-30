@@ -3,9 +3,11 @@ import localFont from 'next/font/local'
 import Script from 'next/script'
 import React from 'react'
 
+import { PageSkeleton } from '@/components/PageSkeleton'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
 import { PerformanceWatch } from '@/components/PerformanceWatch'
+import { VisitCount } from '@/components/VisitCount'
 import { liteScript } from '@/lib/lite'
 import { defaultDescription, shareImage, siteName, siteUrl } from '@/lib/site'
 import './styles.css'
@@ -61,7 +63,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SiteHeader />
         <main id="main">{children}</main>
         <SiteFooter />
+        <PageSkeleton />
         <PerformanceWatch />
+        <VisitCount />
         {gaId && (
           <>
             <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />

@@ -4,6 +4,7 @@ import Link from '@/components/SiteLink'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
+import { usePageLoad } from '@/lib/pageLoad'
 import { headerLinks, moreLinks, navItems } from '@/lib/site'
 import { ArrowRight, ChevronDown } from './icons'
 import { Logo } from './Logo'
@@ -23,10 +24,13 @@ export function SiteHeader() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Moving to another page closes any open menu.
+  // Moving to another page closes any open menu, as soon as the link is pressed.
+  const load = usePageLoad()
   const [lastPath, setLastPath] = useState(pathname)
-  if (pathname !== lastPath) {
+  const [lastLoad, setLastLoad] = useState(load)
+  if (pathname !== lastPath || load !== lastLoad) {
     setLastPath(pathname)
+    setLastLoad(load)
     setMenuOpen(false)
     setMoreOpen(false)
   }
