@@ -167,6 +167,14 @@ import place_siemReapCambodia from '@/assets/crusades/places/siem-reap-cambodia.
 import place_ambonIndonesia from '@/assets/crusades/places/ambon-indonesia.webp'
 import place_maseruLesotho from '@/assets/crusades/places/maseru-lesotho.webp'
 import place_lusakaZambia from '@/assets/crusades/places/lusaka-zambia.webp'
+import place_ankpaNigeria from '@/assets/crusades/places/ankpa-nigeria.webp'
+import place_panama from '@/assets/crusades/places/panama.webp'
+import place_makurdiNigeria from '@/assets/crusades/places/makurdi-nigeria.webp'
+import place_benueStateUniversityNigeria from '@/assets/crusades/places/benue-state-university-nigeria.webp'
+import place_gbokoNigeria from '@/assets/crusades/places/gboko-nigeria.webp'
+import place_gwaGwaTashaNigeria from '@/assets/crusades/places/gwa-gwa-tasha-nigeria.webp'
+import place_pagadianPhilippines from '@/assets/crusades/places/pagadian-philippines.webp'
+import place_newKuchingoroNigeria from '@/assets/crusades/places/new-kuchingoro-nigeria.webp'
 
 /**
  * Official photographs (dunamisgospel.org). The CMS gallery replaces these once it has items.
@@ -315,12 +323,22 @@ export const crusadePlaces: { key: string; src: StaticImageData; place: string; 
   { key: 'ambonIndonesia', src: place_ambonIndonesia, place: 'Ambon', country: 'Indonesia' },
   { key: 'maseruLesotho', src: place_maseruLesotho, place: 'Maseru', country: 'Lesotho' },
   { key: 'lusakaZambia', src: place_lusakaZambia, place: 'Lusaka', country: 'Zambia' },
+  { key: 'ankpaNigeria', src: place_ankpaNigeria, place: 'Ankpa', country: 'Nigeria' },
+  { key: 'panama', src: place_panama, place: '', country: 'Panama' },
+  { key: 'makurdiNigeria', src: place_makurdiNigeria, place: 'Makurdi', country: 'Nigeria' },
+  { key: 'benueStateUniversityNigeria', src: place_benueStateUniversityNigeria, place: 'Benue State University', country: 'Nigeria' },
+  { key: 'gbokoNigeria', src: place_gbokoNigeria, place: 'Gboko', country: 'Nigeria' },
+  { key: 'gwaGwaTashaNigeria', src: place_gwaGwaTashaNigeria, place: 'Gwa Gwa Tasha', country: 'Nigeria' },
+  { key: 'pagadianPhilippines', src: place_pagadianPhilippines, place: 'Pagadian', country: 'Philippines' },
+  { key: 'newKuchingoroNigeria', src: place_newKuchingoroNigeria, place: 'New Kuchingoro', country: 'Nigeria' },
 ]
+
+const placeName = (p: { place: string; country: string }) => (p.place ? `${p.place}, ${p.country}` : p.country)
 
 const placePhoto = (key: string): CrusadePhoto => {
   const p = crusadePlaces.find((c) => c.key === key)
   if (!p) throw new Error(`No crusade photo called ${key}`)
-  return { src: p.src, place: p.country, title: `${p.place}, ${p.country}`, alt: `The crowd at the crusade in ${p.place}, ${p.country}` }
+  return { src: p.src, place: p.country, title: placeName(p), alt: `The crowd at the crusade in ${placeName(p)}` }
 }
 
 /**
@@ -341,6 +359,7 @@ export const crusadeNations: { name: string; event?: string; when?: string; phot
   { name: 'United States', when: 'Miami, Florida', photo: placePhoto('miamiFloridaUnitedStates') },
   { name: 'Uganda', when: 'Kampala', photo: placePhoto('kampalaUganda') },
   { name: 'Latvia', event: 'Revival Fire Crusade', when: 'Riga, 16 to 17 July 2026', photo: placePhoto('rigaLatvia') },
+  { name: 'Panama', photo: placePhoto('panama') },
   { name: 'Brazil', when: 'São Paulo', photo: placePhoto('saoPauloBrazil') },
   { name: 'Zambia', event: 'Healing and Deliverance Crusade', when: 'Lusaka, 4 to 5 November 2026', photo: placePhoto('lusakaZambia') },
   { name: 'Czech Republic', when: 'Prague', photo: placePhoto('pragueCzechRepublic') },
@@ -349,6 +368,7 @@ export const crusadeNations: { name: string; event?: string; when?: string; phot
   { name: 'Cambodia', event: 'The Love and Mercy of God', when: 'Siem Reap, 21 October 2026', photo: placePhoto('siemReapCambodia') },
   { name: 'Philippines', when: 'Bicolandia', photo: placePhoto('bicolandiaPhilippines') },
   { name: 'Angola', event: 'Healing and Deliverance Crusade', when: 'Luanda', photo: placePhoto('luandaAngola') },
+  { name: 'Philippines', when: 'Pagadian', photo: placePhoto('pagadianPhilippines') },
   { name: 'United States', when: 'Maryland', photo: placePhoto('marylandUnitedStates') },
   { name: 'Indonesia', when: 'Ambon, October 2026', photo: placePhoto('ambonIndonesia') },
 ]
@@ -401,7 +421,7 @@ export const defaultGallery: GalleryEntry[] = [
   { key: 'becky-portrait', src: pastorBeckyPortrait, title: 'Dr. Becky Paul-Enenche', category: 'pastor', event: 'Our Senior Pastors' },
   { key: 'paul-red', src: pastorPaulRed, title: 'Dr. Paul Enenche ministering', category: 'pastor', event: 'Our Senior Pastors' },
   { key: 'becky-red', src: pastorBeckyRed, title: 'Dr. Becky Paul-Enenche ministering', category: 'pastor', event: 'Our Senior Pastors' },
-  ...crusadePlaces.map((p) => ({ key: `place-${p.key}`, src: p.src, title: `${p.place}, ${p.country}`, category: 'crusades', event: `${p.country} crusade`, titled: true })),
+  ...crusadePlaces.map((p) => ({ key: `place-${p.key}`, src: p.src, title: placeName(p), category: 'crusades', event: `${p.country} crusade`, titled: true })),
   { key: 'becky-microphone', src: pastorBeckyMicrophone, title: 'Dr. Becky Paul-Enenche at the Argentina Revival Crusade', category: 'pastor', event: 'Our Senior Pastors' },
   ...Object.entries(crusadePhotos).map(([key, photo]) => ({ key: `crusade-${key}`, src: photo.src, title: photo.title, category: 'crusades', event: `${photo.place} ${('label' in photo ? photo.label : 'crusade').toLowerCase()}` })),
   { key: 'celebration', src: nationsCelebration, title: 'Dancing with the nations', category: 'international', event: 'Nations at Dunamis' },
