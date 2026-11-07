@@ -61,6 +61,7 @@ export default async function GalleryPage() {
         width: g.src.width,
         height: g.src.height,
         blur: g.src.blurDataURL,
+        titled: g.titled,
       }))
 
   return (

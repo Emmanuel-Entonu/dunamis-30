@@ -86,7 +86,7 @@ export default async function OurStoryPage() {
 
   return (
     <>
-      <PageHero eyebrow="Our Story" title="Our story: 30 years of God’s faithfulness" intro="How one fast on a mountain near Jos became a church that fills a 100,000-seat dome." />
+      <PageHero eyebrow="Our Story" title="Our story: 30 years of God’s faithfulness" intro="How one fast on a mountain near Jos became a church with a 100,000-capacity sanctuary." />
 
       {/* The story in one card */}
       <section>

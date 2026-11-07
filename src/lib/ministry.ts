@@ -11,7 +11,8 @@
  *
  * Branch figure: dunamisgospel.org/locate-a-branch had 861 entries on 3 November 2026. Without 36
  * repeats and one test entry that is 824 places, 8 of them viewing centres. The church's homepage
- * counter still says 580+.
+ * counter still says 580+. The site shows no branch number: Dr. Becky asked for "branches all over Nigeria and
+ * around the world" instead. The Glory Dome is a 100,000-capacity sanctuary, never "seats".
  */
 
 import type { glass } from '@/assets/glass'
@@ -84,14 +85,14 @@ export const defaultMilestones: DefaultMilestone[] = [
     date: 'November 1997',
     title: 'Under canopies, then a 700-seater',
     text: 'A colleague offered land behind the old Federal Secretariat in Area 1 for temporary use. We worshipped under canopies for six weeks. By the first anniversary we had a 700-seat auditorium, with people still sitting outside.',
-    photo: 'worship-eyes-closed',
+    photo: 'congregation-praise',
   },
   {
     key: 'growth',
     art: 'church',
     date: 'The Area 1 years',
     title: 'Room for 10,000',
-    text: 'That auditorium was expanded twice, to more than 10,000 seats. The Gospel Power Team took the message outdoors, to Eagle Square, the old parade ground and the national stadium.',
+    text: 'That auditorium was expanded twice, until it held more than 10,000 people. The Gospel Power Team took the message outdoors, to Eagle Square, the old parade ground and the national stadium.',
     photo: 'worship-tears',
   },
   {
@@ -107,7 +108,7 @@ export const defaultMilestones: DefaultMilestone[] = [
     art: 'dome',
     date: '24 November 2018',
     title: 'The Glory Dome is dedicated',
-    text: 'The 100,000-seat auditorium is dedicated during Kingdom Power & Glory. It was finished without debt and without a bank loan.',
+    text: 'The 100,000-capacity sanctuary is dedicated during Kingdom Power & Glory. It was finished without debt and without a bank loan.',
     photo: 'dome-interior-wide',
   },
   {
@@ -139,7 +140,7 @@ export const defaultMilestones: DefaultMilestone[] = [
     art: 'world',
     date: '2026',
     title: 'Crusades across the nations',
-    text: 'This year the crusades have gone to Venezuela, Argentina, Canada, Romania, Latvia, Angola, Lesotho and Zambia, and to Madalla, Lagos and Enugu here in Nigeria.',
+    text: 'This year the crusades have gone to Venezuela, Nicaragua, Argentina, Canada, Romania, Latvia, Cameroon, Angola, Lesotho and Zambia, with missions to Thailand, Cambodia and Indonesia, and to Madalla, Lagos and Enugu here in Nigeria.',
     photo: 'lesotho-prayer',
     label: 'Lesotho',
   },
@@ -156,10 +157,10 @@ export const defaultMilestones: DefaultMilestone[] = [
 export type DefaultStat = { value: number; suffix?: string; label: string; note?: string }
 
 export const defaultStats: DefaultStat[] = [
-  { value: 800, suffix: '+', label: 'Branches worldwide', note: 'Listed on our branch locator' },
+  { value: 100000, label: 'Capacity of the Glory Dome', note: 'Finished without debt' },
   { value: 5000, suffix: '+', label: 'Home church locations', note: 'Fellowship in people’s homes' },
   { value: 45, suffix: '+', label: 'Conferences and crusades a year' },
-  { value: 100000, label: 'Seats in the Glory Dome', note: 'Finished without debt' },
+  { value: 68, suffix: '+', label: 'Nations at Flaming Fire', note: 'In 2025' },
   { value: 109, label: 'Countries our visitors came from', note: 'In 2025' },
   { value: 30, label: 'Years', note: 'Since 10 November 1996' },
 ]

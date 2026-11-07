@@ -26,13 +26,14 @@ import { defaults, kpg } from '@/lib/site'
 export const revalidate = 60
 
 /** The official photographs on the Moments ring, by their gallery key. */
-const momentKeys = ['crusade-argentinaHands', 'eyes', 'crusade-romaniaSunset', 'cameroon', 'crusade-canadaWorship', 'wide', 'crusade-lesothoRaised', 'celebration', 'crusade-thailandStudents', 'singing']
+const momentKeys = ['crusade-argentinaHands', 'crusade-argentinaJoy', 'crusade-romaniaSunset', 'cameroon', 'crusade-canadaWorship', 'wide', 'crusade-lesothoRaised', 'celebration', 'crusade-romaniaArmsRaised', 'singing']
 const moments = momentKeys.flatMap((key) => {
   const photo = defaultGallery.find((g) => g.key === key)
   if (!photo) return []
   // Sized for the ring's cards, rather than the full original.
-  const { src } = getImageProps({ src: photo.src, alt: photo.title, width: 320, height: 320 }).props
-  const liteSrc = getImageProps({ src: photo.src, alt: photo.title, width: 192, height: 192 }).props.src
+  // Ring cards are up to 340px wide, so this serves about 830px: sharp on high-density screens.
+  const { src } = getImageProps({ src: photo.src, alt: photo.title, width: 420, height: 420 }).props
+  const liteSrc = getImageProps({ src: photo.src, alt: photo.title, width: 256, height: 256 }).props.src
   return [{ src, liteSrc, alt: photo.title, title: photo.title, subtitle: photo.event === photo.title ? undefined : photo.event }]
 })
 
@@ -155,17 +156,15 @@ export default async function HomePage() {
           header={
             <Reveal>
               <h2 className="h-section max-w-[560px]">Taking the gospel to the nations</h2>
-              <p className="mt-4 max-w-[560px]">This year alone, Dr. Paul and Dr. Becky have held crusades from Argentina to Romania and from Canada to Lesotho.</p>
+              <p className="mt-4 max-w-[560px]">Dr. Paul and Dr. Becky have held crusades from Manila to Miami, from Paris to Kampala and from Riga to Lusaka.</p>
             </Reveal>
           }
         >
           {crusadeNations.map((nation) => (
-            <figure key={nation.name} className="card group relative aspect-[5/4] overflow-hidden">
-              <Image src={nation.photo.src} alt={nation.photo.alt} fill sizes="(min-width: 640px) 580px, 86vw" placeholder="blur" className="object-cover transition-transform duration-700 group-hover:scale-105" />
-              <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/55 to-transparent p-5 pt-20 sm:p-7 sm:pt-24">
-                <span className="block text-[clamp(1.5rem,1.2rem+1.2vw,2.125rem)] leading-tight font-medium text-fg">{nation.name}</span>
-                <span className="mt-1 block text-[15px] leading-snug text-soft sm:text-base">{[nation.event, nation.when].filter(Boolean).join(', ')}</span>
-              </figcaption>
+            // Each photo is shown whole, in its own shape, with the church's printed title: nothing cropped.
+            <figure key={nation.photo.title} className="card relative aspect-[16/9] overflow-hidden">
+              <Image src={nation.photo.src} alt={nation.photo.alt} fill sizes="(min-width: 640px) 580px, 86vw" placeholder="blur" className="object-contain" />
+              <figcaption className="sr-only">{[nation.name, nation.event, nation.when].filter(Boolean).join(', ')}</figcaption>
             </figure>
           ))}
         </Carousel>
@@ -280,7 +279,7 @@ export default async function HomePage() {
                 delay={100}
                 label="Our home"
                 title="The Glory Dome"
-                text="100,000 seats, dedicated in 2018 and built without debt."
+                text="A 100,000-capacity sanctuary, dedicated in 2018 and built without debt."
                 visual={
                   <>
                     <div className="absolute top-8 right-1/2 flex translate-x-1/2 gap-2 lg:top-[70px] lg:right-10 lg:translate-x-0">
@@ -318,7 +317,7 @@ export default async function HomePage() {
                   </div>
                 }
               />
-              <TextTile label="Our reach" title="800+ branches" text="From one meeting in a hotel hall to churches and home fellowships around the world.">
+              <TextTile label="Our reach" title="Branches all over Nigeria and around the world" text="It all started with one meeting in a hotel hall.">
                 <div className="mt-6 border-t border-hair pt-6">
                   <Link href="/our-story" className="btn btn-primary">
                     Read our story

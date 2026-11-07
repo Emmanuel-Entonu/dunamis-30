@@ -25,6 +25,8 @@ export type GalleryCard = {
   /** Embeddable player URL, or the plain link when the host cannot be embedded. */
   video?: string | null
   videoLink?: string | null
+  /** The photo has its own printed title, so no caption is laid over it. */
+  titled?: boolean
 }
 
 const selectClass = `${inputClass} appearance-none`
@@ -178,10 +180,12 @@ export function GalleryBrowser({ items, categories }: { items: GalleryCard[]; ca
                     <Play width={22} height={22} />
                   </span>
                 )}
-                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-3 pt-12 text-[13px] leading-snug text-fg sm:p-5 sm:pt-16 sm:text-base">
-                  {item.title}
-                  {item.year ? <span className="text-soft"> · {item.year}</span> : null}
-                </span>
+                {!item.titled && (
+                  <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-3 pt-12 text-[13px] leading-snug text-fg sm:p-5 sm:pt-16 sm:text-base">
+                    {item.title}
+                    {item.year ? <span className="text-soft"> · {item.year}</span> : null}
+                  </span>
+                )}
               </button>
             </li>
           ))}

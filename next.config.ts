@@ -17,8 +17,11 @@ const nextConfig: NextConfig = {
       },
     ],
     formats: ['image/webp'],
+    // Every photo is served at quality 90: Next uses the closest allowed value, so this one entry covers them all.
+    qualities: [90],
     // Fewer sizes means each one is shared by more visitors, so more of them are already cached.
-    deviceSizes: [640, 828, 1080, 1440, 1920],
+    // 2048 lets wide photos stay sharp on high-density screens.
+    deviceSizes: [640, 828, 1080, 1440, 1920, 2048],
     imageSizes: [96, 128, 256, 384, 512],
     // Built-in images have the file's fingerprint in their address, and uploads get new names.
     minimumCacheTTL: 60 * 60 * 24 * 30,

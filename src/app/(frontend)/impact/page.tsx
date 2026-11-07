@@ -27,9 +27,9 @@ type Area = { label: string; title: string; text: string; image: StaticImageData
 
 const areas: Area[] = [
   { label: 'Testimonies', title: 'Lives changed', text: 'People healed, families restored, destinies turned around. They can tell you better than we can.', image: photos.altarCall, art: glass.heart, href: '/testimonies', cta: 'Read the testimonies' },
-  { label: 'Branches', title: 'Churches planted', text: 'More than 800 branches and over 5,000 home church locations, in Nigeria and around the world.', image: photos.domeInteriorWide, art: glass.church },
+  { label: 'Branches', title: 'Churches planted', text: 'Branches and home churches all over Nigeria and around the world.', image: photos.domeInteriorWide, art: glass.church },
   { label: 'Nations', title: 'People from everywhere', text: 'Pilgrims from 109 countries visited the Glory Dome in 2025.', image: photos.nationsCameroon, art: glass.flag },
-  { label: 'Crusades', title: 'Crusades in the nations', text: 'In 2026 the crusades have gone to Venezuela, Argentina, Canada, Romania, Latvia, Angola, Lesotho and Zambia.', image: crusadePhotos.romaniaCrowd.src, art: glass.world },
+  { label: 'Crusades', title: 'Crusades in the nations', text: 'In 2026 the crusades have gone to Venezuela, Nicaragua, Argentina, Canada, Romania, Latvia, Cameroon, Angola, Lesotho and Zambia, with missions to Thailand, Cambodia and Indonesia.', image: crusadePhotos.romaniaCrowd.src, art: glass.world },
   { label: 'Ministers', title: 'Ministers raised', text: 'Sons and daughters of this house now serve God in many places. Delegations from over 68 nations came to the Flaming Fire conference in 2025.', image: photos.handsRaised, art: glass.crown, href: '/sons-of-the-prophet', cta: 'Sons of the Prophet' },
   { label: 'Welfare', title: 'Caring for people in need', text: 'Boreholes, electricity, roads and orphanage homes for communities that need them, plus food, clothes and scholarships.', image: photos.welfareFood, art: glass.cap },
   { label: 'Medical', title: 'Free medical care', text: 'In February 2026, a team took free care to communities in Kogi and Benue. Reports put the number reached at 5,000.', image: photos.medicalCare, art: glass.medical },
@@ -61,7 +61,7 @@ function AreaPanel({ area }: { area: Area }) {
   )
 }
 
-const statArt = [glass.church, glass.house, glass.mic, glass.dome, glass.plane, glass.thirty]
+const statArt = [glass.dome, glass.house, glass.mic, glass.world, glass.plane, glass.thirty]
 
 const gatherings = [
   { chip: 'Every November', title: 'Kingdom Power & Glory World Conference', text: 'Our yearly anniversary conference. The whole Dunamis family comes home for it.', art: glass.coinCrown },
@@ -135,7 +135,7 @@ export default async function ImpactPage() {
               </div>
             }
           >
-            <p>The Glory Dome seats 100,000 people, and it was finished without borrowing from any bank.</p>
+            <p>The Glory Dome is a 100,000-capacity sanctuary, and it was finished without borrowing from any bank.</p>
             <p>The foundation was laid on 14 September 2014 on the Lord’s Garden, along Airport Road in Abuja. It was dedicated on 24 November 2018, during Kingdom Power &amp; Glory.</p>
           </StorySplit>
         </div>

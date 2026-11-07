@@ -39,7 +39,6 @@ import walkingTogether from '@/assets/gallery/walking-together.webp'
 import welcomingGuests from '@/assets/gallery/welcoming-guests.webp'
 import welfareFood from '@/assets/gallery/welfare-food.webp'
 import worshipCrowd from '@/assets/gallery/worship-crowd.webp'
-import worshipEyesClosed from '@/assets/gallery/worship-eyes-closed.webp'
 import worshipLeader from '@/assets/gallery/worship-leader.webp'
 import worshipTears from '@/assets/gallery/worship-tears.webp'
 import angolaWelcome from '@/assets/crusades/angola-welcome.webp'
@@ -57,6 +56,10 @@ import canadaStage from '@/assets/crusades/canada-stage.webp'
 import canadaWelcome from '@/assets/crusades/canada-welcome.webp'
 import canadaWorship from '@/assets/crusades/canada-worship.webp'
 import lagosOverflow from '@/assets/crusades/lagos-overflow.webp'
+import romaniaArmsRaised from '@/assets/crusades/romania-arms-raised.webp'
+import cameroonFlag from '@/assets/crusades/cameroon-flag.webp'
+import nicaraguaCrowd from '@/assets/crusades/nicaragua-crowd.webp'
+import indonesiaWelcome from '@/assets/crusades/indonesia-welcome.webp'
 import latviaHall from '@/assets/crusades/latvia-hall.webp'
 import latviaStage from '@/assets/crusades/latvia-stage.webp'
 import latviaWorship from '@/assets/crusades/latvia-worship.webp'
@@ -114,6 +117,56 @@ import healingPoster from '@/assets/posters/healing-deliverance.webp'
 import impartationPoster from '@/assets/posters/impartation-service.webp'
 import communionPoster from '@/assets/posters/power-communion.webp'
 import thanksgivingPoster from '@/assets/posters/thanksgiving-service.webp'
+import pastorBeckyMicrophone from '@/assets/photos/pastor-becky-microphone.webp'
+import place_bicolandiaPhilippines from '@/assets/crusades/places/bicolandia-philippines.webp'
+import place_manilaPhilippines from '@/assets/crusades/places/manila-philippines.webp'
+import place_bayelsaNigeria from '@/assets/crusades/places/bayelsa-nigeria.webp'
+import place_onitshaNigeria from '@/assets/crusades/places/onitsha-nigeria.webp'
+import place_beninNigeria from '@/assets/crusades/places/benin-nigeria.webp'
+import place_universityOfBeninNigeria from '@/assets/crusades/places/university-of-benin-nigeria.webp'
+import place_damangazaNigeria from '@/assets/crusades/places/damangaza-nigeria.webp'
+import place_abaNigeria from '@/assets/crusades/places/aba-nigeria.webp'
+import place_umuahiaNigeria from '@/assets/crusades/places/umuahia-nigeria.webp'
+import place_michaelOkparaUniversityNigeria from '@/assets/crusades/places/michael-okpara-university-nigeria.webp'
+import place_newcastleUnitedKingdom from '@/assets/crusades/places/newcastle-united-kingdom.webp'
+import place_mararabaNigeria from '@/assets/crusades/places/mararaba-nigeria.webp'
+import place_gbuduwyiAndPasaliNigeria from '@/assets/crusades/places/gbuduwyi-and-pasali-nigeria.webp'
+import place_ebiralandOkeneNigeria from '@/assets/crusades/places/ebiraland-okene-nigeria.webp'
+import place_jalingoNigeria from '@/assets/crusades/places/jalingo-nigeria.webp'
+import place_tarabaStateUniversityNigeria from '@/assets/crusades/places/taraba-state-university-nigeria.webp'
+import place_uyoNigeria from '@/assets/crusades/places/uyo-nigeria.webp'
+import place_managuaNicaragua from '@/assets/crusades/places/managua-nicaragua.webp'
+import place_bwariNigeria from '@/assets/crusades/places/bwari-nigeria.webp'
+import place_doualaCameroon from '@/assets/crusades/places/douala-cameroon.webp'
+import place_jahiFctNigeria from '@/assets/crusades/places/jahi-fct-nigeria.webp'
+import place_gosaFctNigeria from '@/assets/crusades/places/gosa-fct-nigeria.webp'
+import place_laGuairaVenezuela from '@/assets/crusades/places/la-guaira-venezuela.webp'
+import place_bassaFctNigeria from '@/assets/crusades/places/bassa-fct-nigeria.webp'
+import place_iddoSarkiFctNigeria from '@/assets/crusades/places/iddo-sarki-fct-nigeria.webp'
+import place_resistenciaArgentina from '@/assets/crusades/places/resistencia-argentina.webp'
+import place_saoPauloBrazil from '@/assets/crusades/places/sao-paulo-brazil.webp'
+import place_ontarioCanada from '@/assets/crusades/places/ontario-canada.webp'
+import place_oradeaRomania from '@/assets/crusades/places/oradea-romania.webp'
+import place_parisFrance from '@/assets/crusades/places/paris-france.webp'
+import place_berlinGermany from '@/assets/crusades/places/berlin-germany.webp'
+import place_rigaLatvia from '@/assets/crusades/places/riga-latvia.webp'
+import place_lugbeBergerFctNigeria from '@/assets/crusades/places/lugbe-berger-fct-nigeria.webp'
+import place_pragueCzechRepublic from '@/assets/crusades/places/prague-czech-republic.webp'
+import place_marylandUnitedStates from '@/assets/crusades/places/maryland-united-states.webp'
+import place_lugbeBergerFctNigeria2 from '@/assets/crusades/places/lugbe-berger-fct-nigeria-2.webp'
+import place_karshiFctNigeria from '@/assets/crusades/places/karshi-fct-nigeria.webp'
+import place_luandaAngola from '@/assets/crusades/places/luanda-angola.webp'
+import place_kampalaUganda from '@/assets/crusades/places/kampala-uganda.webp'
+import place_wuseFctNigeria from '@/assets/crusades/places/wuse-fct-nigeria.webp'
+import place_madallaNigeria from '@/assets/crusades/places/madalla-nigeria.webp'
+import place_miamiFloridaUnitedStates from '@/assets/crusades/places/miami-florida-united-states.webp'
+import place_lagosNigeria from '@/assets/crusades/places/lagos-nigeria.webp'
+import place_enuguNigeria from '@/assets/crusades/places/enugu-nigeria.webp'
+import place_rayongThailand from '@/assets/crusades/places/rayong-thailand.webp'
+import place_siemReapCambodia from '@/assets/crusades/places/siem-reap-cambodia.webp'
+import place_ambonIndonesia from '@/assets/crusades/places/ambon-indonesia.webp'
+import place_maseruLesotho from '@/assets/crusades/places/maseru-lesotho.webp'
+import place_lusakaZambia from '@/assets/crusades/places/lusaka-zambia.webp'
 
 /**
  * Official photographs (dunamisgospel.org). The CMS gallery replaces these once it has items.
@@ -143,7 +196,6 @@ export const photos = {
   prayerBlackWhite,
   seniorPastors,
   welfareFood,
-  worshipEyesClosed,
   worshipTears,
 }
 
@@ -197,6 +249,10 @@ export const crusadePhotos = {
   madallaPreaching: { src: madallaPreaching, place: 'Madalla', title: 'From behind the pulpit', alt: 'Preaching to the crowd at the Madalla crusade, seen from behind the pulpit, in black and white' },
   madallaStage: { src: madallaStage, place: 'Madalla', title: 'The stage and the field', alt: 'Ministering from the stage at the Madalla crusade, with the crowd across the field' },
   lagosOverflow: { src: lagosOverflow, place: 'Lagos', title: 'The overflow from above', alt: 'The Lagos Apostolic Crusade from above, with the overflow crowds marked' },
+  romaniaArmsRaised: { src: romaniaArmsRaised, place: 'Romania', title: 'Both arms raised', alt: 'A man raising both arms in worship in the city square at the Romania Revival Fire Crusade' },
+  cameroonFlag: { src: cameroonFlag, place: 'Cameroon', title: 'The flag of Cameroon', alt: 'A crowd waving the flag of Cameroon to welcome the team to Douala for the crusade' },
+  nicaraguaCrowd: { src: nicaraguaCrowd, place: 'Nicaragua', title: 'The crowd in Nicaragua', alt: 'The crowd at the Nicaragua Revival Fire Crusade at night, under trees of coloured lights' },
+  indonesiaWelcome: { src: indonesiaWelcome, place: 'Indonesia', title: 'A warm welcome in Indonesia', alt: 'Dr. Paul Enenche in a woven scarf and Dr. Becky Paul-Enenche being welcomed to Indonesia at night' },
   lesothoWorship: { src: lesothoWorship, place: 'Lesotho', title: 'A hand raised in worship', alt: 'Dr. Becky Paul-Enenche with her hand raised at the Lesotho crusade' },
   lesothoHands: { src: lesothoHands, place: 'Lesotho', title: 'Hands raised for prayer', alt: 'People with their hands raised as they are prayed for at the Lesotho crusade' },
   madallaRaisedHand: { src: madallaRaisedHand, place: 'Madalla', title: 'Facing the crowd', alt: 'A hand raised over the crowd at the Madalla crusade, in black and white' },
@@ -205,17 +261,96 @@ export const crusadePhotos = {
   lesothoPrayer: { src: lesothoPrayer, place: 'Lesotho', title: 'In prayer', alt: 'People in prayer at the Lesotho crusade' },
 } satisfies Record<string, CrusadePhoto>
 
-/** The nations on the home page, as the church's own posts name each one. */
-export const crusadeNations: { name: string; event: string; when?: string; photo: CrusadePhoto }[] = [
-  { name: 'Romania', event: 'Revival Fire Crusade', when: '3 to 4 July 2026', photo: crusadePhotos.romaniaSquare },
-  { name: 'Argentina', event: 'Revival Crusade', when: '15 to 16 June 2026', photo: crusadePhotos.argentinaFlag },
-  { name: 'Lesotho', event: 'Healing and Deliverance Crusade', when: 'Maseru, 2 to 3 November 2026', photo: crusadePhotos.lesothoBlankets },
-  { name: 'Canada', event: 'Revival Crusade', photo: crusadePhotos.canadaStage },
-  { name: 'Thailand', event: 'Night of Revival and Miracles', when: 'October 2026', photo: crusadePhotos.thailandNight },
-  { name: 'Latvia', event: 'Revival Fire Crusade', when: 'Riga, 16 to 17 July 2026', photo: crusadePhotos.latviaHall },
-  { name: 'Zambia', event: 'Healing and Deliverance Crusade', when: 'Matero, 4 to 5 November 2026', photo: crusadePhotos.zambiaArrival },
-  { name: 'Venezuela', event: 'Revival Fire Crusade', when: 'La Guaira, 4 to 5 June 2026', photo: crusadePhotos.venezuelaDome },
-  { name: 'Angola', event: 'Healing and Deliverance Crusade', photo: crusadePhotos.angolaWelcome },
+/**
+ * The church's own crusade photographs, one per place, captioned by the church (sent on 7 November 2026).
+ * Cropped clear of the caption bar and any printed logo. All of them are in the gallery.
+ */
+export const crusadePlaces: { key: string; src: StaticImageData; place: string; country: string }[] = [
+  { key: 'bicolandiaPhilippines', src: place_bicolandiaPhilippines, place: 'Bicolandia', country: 'Philippines' },
+  { key: 'manilaPhilippines', src: place_manilaPhilippines, place: 'Manila', country: 'Philippines' },
+  { key: 'bayelsaNigeria', src: place_bayelsaNigeria, place: 'Bayelsa', country: 'Nigeria' },
+  { key: 'onitshaNigeria', src: place_onitshaNigeria, place: 'Onitsha', country: 'Nigeria' },
+  { key: 'beninNigeria', src: place_beninNigeria, place: 'Benin', country: 'Nigeria' },
+  { key: 'universityOfBeninNigeria', src: place_universityOfBeninNigeria, place: 'University of Benin', country: 'Nigeria' },
+  { key: 'damangazaNigeria', src: place_damangazaNigeria, place: 'Damangaza', country: 'Nigeria' },
+  { key: 'abaNigeria', src: place_abaNigeria, place: 'Aba', country: 'Nigeria' },
+  { key: 'umuahiaNigeria', src: place_umuahiaNigeria, place: 'Umuahia', country: 'Nigeria' },
+  { key: 'michaelOkparaUniversityNigeria', src: place_michaelOkparaUniversityNigeria, place: 'Michael Okpara University', country: 'Nigeria' },
+  { key: 'newcastleUnitedKingdom', src: place_newcastleUnitedKingdom, place: 'Newcastle', country: 'United Kingdom' },
+  { key: 'mararabaNigeria', src: place_mararabaNigeria, place: 'Mararaba', country: 'Nigeria' },
+  { key: 'gbuduwyiAndPasaliNigeria', src: place_gbuduwyiAndPasaliNigeria, place: 'Gbuduwyi and Pasali', country: 'Nigeria' },
+  { key: 'ebiralandOkeneNigeria', src: place_ebiralandOkeneNigeria, place: 'Ebiraland (Okene)', country: 'Nigeria' },
+  { key: 'jalingoNigeria', src: place_jalingoNigeria, place: 'Jalingo', country: 'Nigeria' },
+  { key: 'tarabaStateUniversityNigeria', src: place_tarabaStateUniversityNigeria, place: 'Taraba State University', country: 'Nigeria' },
+  { key: 'uyoNigeria', src: place_uyoNigeria, place: 'Uyo', country: 'Nigeria' },
+  { key: 'managuaNicaragua', src: place_managuaNicaragua, place: 'Managua', country: 'Nicaragua' },
+  { key: 'bwariNigeria', src: place_bwariNigeria, place: 'Bwari', country: 'Nigeria' },
+  { key: 'doualaCameroon', src: place_doualaCameroon, place: 'Douala', country: 'Cameroon' },
+  { key: 'jahiFctNigeria', src: place_jahiFctNigeria, place: 'Jahi, FCT', country: 'Nigeria' },
+  { key: 'gosaFctNigeria', src: place_gosaFctNigeria, place: 'Gosa, FCT', country: 'Nigeria' },
+  { key: 'laGuairaVenezuela', src: place_laGuairaVenezuela, place: 'La Guaira', country: 'Venezuela' },
+  { key: 'bassaFctNigeria', src: place_bassaFctNigeria, place: 'Bassa, FCT', country: 'Nigeria' },
+  { key: 'iddoSarkiFctNigeria', src: place_iddoSarkiFctNigeria, place: 'Iddo Sarki, FCT', country: 'Nigeria' },
+  { key: 'resistenciaArgentina', src: place_resistenciaArgentina, place: 'Resistencia', country: 'Argentina' },
+  { key: 'saoPauloBrazil', src: place_saoPauloBrazil, place: 'São Paulo', country: 'Brazil' },
+  { key: 'ontarioCanada', src: place_ontarioCanada, place: 'Ontario', country: 'Canada' },
+  { key: 'oradeaRomania', src: place_oradeaRomania, place: 'Oradea', country: 'Romania' },
+  { key: 'parisFrance', src: place_parisFrance, place: 'Paris', country: 'France' },
+  { key: 'berlinGermany', src: place_berlinGermany, place: 'Berlin', country: 'Germany' },
+  { key: 'rigaLatvia', src: place_rigaLatvia, place: 'Riga', country: 'Latvia' },
+  { key: 'lugbeBergerFctNigeria', src: place_lugbeBergerFctNigeria, place: 'Lugbe-Berger, FCT', country: 'Nigeria' },
+  { key: 'pragueCzechRepublic', src: place_pragueCzechRepublic, place: 'Prague', country: 'Czech Republic' },
+  { key: 'marylandUnitedStates', src: place_marylandUnitedStates, place: 'Maryland', country: 'United States' },
+  { key: 'lugbeBergerFctNigeria2', src: place_lugbeBergerFctNigeria2, place: 'Lugbe-Berger, FCT', country: 'Nigeria' },
+  { key: 'karshiFctNigeria', src: place_karshiFctNigeria, place: 'Karshi, FCT', country: 'Nigeria' },
+  { key: 'luandaAngola', src: place_luandaAngola, place: 'Luanda', country: 'Angola' },
+  { key: 'kampalaUganda', src: place_kampalaUganda, place: 'Kampala', country: 'Uganda' },
+  { key: 'wuseFctNigeria', src: place_wuseFctNigeria, place: 'Wuse, FCT', country: 'Nigeria' },
+  { key: 'madallaNigeria', src: place_madallaNigeria, place: 'Madalla', country: 'Nigeria' },
+  { key: 'miamiFloridaUnitedStates', src: place_miamiFloridaUnitedStates, place: 'Miami, Florida', country: 'United States' },
+  { key: 'lagosNigeria', src: place_lagosNigeria, place: 'Lagos', country: 'Nigeria' },
+  { key: 'enuguNigeria', src: place_enuguNigeria, place: 'Enugu', country: 'Nigeria' },
+  { key: 'rayongThailand', src: place_rayongThailand, place: 'Rayong', country: 'Thailand' },
+  { key: 'siemReapCambodia', src: place_siemReapCambodia, place: 'Siem Reap', country: 'Cambodia' },
+  { key: 'ambonIndonesia', src: place_ambonIndonesia, place: 'Ambon', country: 'Indonesia' },
+  { key: 'maseruLesotho', src: place_maseruLesotho, place: 'Maseru', country: 'Lesotho' },
+  { key: 'lusakaZambia', src: place_lusakaZambia, place: 'Lusaka', country: 'Zambia' },
+]
+
+const placePhoto = (key: string): CrusadePhoto => {
+  const p = crusadePlaces.find((c) => c.key === key)
+  if (!p) throw new Error(`No crusade photo called ${key}`)
+  return { src: p.src, place: p.country, title: `${p.place}, ${p.country}`, alt: `The crowd at the crusade in ${p.place}, ${p.country}` }
+}
+
+/**
+ * The crusades abroad on the home page, with the church's photograph of each place. Event names and dates
+ * appear only where the church's own posts give them for that same place.
+ */
+export const crusadeNations: { name: string; event?: string; when?: string; photo: CrusadePhoto }[] = [
+  { name: 'Romania', event: 'Revival Fire Crusade', when: 'Oradea, 3 to 4 July 2026', photo: placePhoto('oradeaRomania') },
+  { name: 'Philippines', event: 'Healing and Deliverance Crusade', when: 'Manila', photo: placePhoto('manilaPhilippines') },
+  { name: 'Venezuela', event: 'Revival Fire Crusade', when: 'La Guaira, 4 to 5 June 2026', photo: placePhoto('laGuairaVenezuela') },
+  { name: 'United Kingdom', when: 'Newcastle', photo: placePhoto('newcastleUnitedKingdom') },
+  { name: 'Lesotho', event: 'Healing and Deliverance Crusade', when: 'Maseru, 2 to 3 November 2026', photo: placePhoto('maseruLesotho') },
+  { name: 'France', event: 'Revival Fire Crusade', when: 'Paris', photo: placePhoto('parisFrance') },
+  { name: 'Argentina', event: 'Revival Crusade', when: 'Resistencia', photo: placePhoto('resistenciaArgentina') },
+  { name: 'Cameroon', event: 'Healing and Deliverance Crusade', when: 'Douala', photo: placePhoto('doualaCameroon') },
+  { name: 'Germany', event: 'Revival Fire Crusade', when: 'Berlin', photo: placePhoto('berlinGermany') },
+  { name: 'Thailand', event: 'Night of Revival and Miracles', when: 'Rayong, October 2026', photo: placePhoto('rayongThailand') },
+  { name: 'United States', when: 'Miami, Florida', photo: placePhoto('miamiFloridaUnitedStates') },
+  { name: 'Uganda', when: 'Kampala', photo: placePhoto('kampalaUganda') },
+  { name: 'Latvia', event: 'Revival Fire Crusade', when: 'Riga, 16 to 17 July 2026', photo: placePhoto('rigaLatvia') },
+  { name: 'Brazil', when: 'São Paulo', photo: placePhoto('saoPauloBrazil') },
+  { name: 'Zambia', event: 'Healing and Deliverance Crusade', when: 'Lusaka, 4 to 5 November 2026', photo: placePhoto('lusakaZambia') },
+  { name: 'Czech Republic', when: 'Prague', photo: placePhoto('pragueCzechRepublic') },
+  { name: 'Canada', event: 'Revival Crusade', when: 'Ontario', photo: placePhoto('ontarioCanada') },
+  { name: 'Nicaragua', event: 'Revival Fire Crusade', when: 'Managua', photo: placePhoto('managuaNicaragua') },
+  { name: 'Cambodia', event: 'The Love and Mercy of God', when: 'Siem Reap, 21 October 2026', photo: placePhoto('siemReapCambodia') },
+  { name: 'Philippines', when: 'Bicolandia', photo: placePhoto('bicolandiaPhilippines') },
+  { name: 'Angola', event: 'Healing and Deliverance Crusade', when: 'Luanda', photo: placePhoto('luandaAngola') },
+  { name: 'United States', when: 'Maryland', photo: placePhoto('marylandUnitedStates') },
+  { name: 'Indonesia', when: 'Ambon, October 2026', photo: placePhoto('ambonIndonesia') },
 ]
 
 /** The strip above the footer. None of these appear anywhere else, so it can sit on every page. */
@@ -236,7 +371,7 @@ export const crusadeStrip = [
 /** Milestones refer to their photographs by asset file name. */
 export const photoByFile: Record<string, StaticImageData> = {
   'hands-raised': handsRaised,
-  'worship-eyes-closed': worshipEyesClosed,
+  'congregation-praise': congregationPraise,
   'worship-tears': worshipTears,
   'dome-grounds': domeGrounds,
   'nations-celebration': nationsCelebration,
@@ -247,7 +382,8 @@ export const photoByFile: Record<string, StaticImageData> = {
   'lesotho-prayer': lesothoPrayer,
 }
 
-export type GalleryEntry = { key: string; src: StaticImageData; title: string; category: string; event: string; year?: number }
+/** `titled`: the photo carries its own printed title, so the gallery doesn't lay a caption over it. */
+export type GalleryEntry = { key: string; src: StaticImageData; title: string; category: string; event: string; year?: number; titled?: boolean }
 
 /**
  * Launch gallery, sharpest photographs first. Scene captions only: the communications team can add
@@ -257,7 +393,6 @@ export const defaultGallery: GalleryEntry[] = [
   { key: 'exterior', src: domeExterior, title: 'The Glory Dome', category: 'expansion', event: 'The Glory Dome' },
   { key: 'wide', src: domeInteriorWide, title: 'Inside the Glory Dome', category: 'conventions', event: 'The Glory Dome' },
   { key: 'crowd', src: nationsCrowd, title: 'Carrying the flag in worship', category: 'international', event: 'Nations at Dunamis' },
-  { key: 'eyes', src: worshipEyesClosed, title: 'Lost in worship', category: 'events', event: 'Glory Dome services' },
   { key: 'cameroon', src: nationsCameroon, title: 'The flag of Cameroon at the altar', category: 'international', event: 'Nations at Dunamis' },
   { key: 'tears', src: worshipTears, title: 'Tears in the presence of God', category: 'events', event: 'Glory Dome services' },
   { key: 'pastors', src: seniorPastors, title: 'Our Senior Pastors', category: 'pastor', event: 'Our Senior Pastors' },
@@ -266,6 +401,8 @@ export const defaultGallery: GalleryEntry[] = [
   { key: 'becky-portrait', src: pastorBeckyPortrait, title: 'Dr. Becky Paul-Enenche', category: 'pastor', event: 'Our Senior Pastors' },
   { key: 'paul-red', src: pastorPaulRed, title: 'Dr. Paul Enenche ministering', category: 'pastor', event: 'Our Senior Pastors' },
   { key: 'becky-red', src: pastorBeckyRed, title: 'Dr. Becky Paul-Enenche ministering', category: 'pastor', event: 'Our Senior Pastors' },
+  ...crusadePlaces.map((p) => ({ key: `place-${p.key}`, src: p.src, title: `${p.place}, ${p.country}`, category: 'crusades', event: `${p.country} crusade`, titled: true })),
+  { key: 'becky-microphone', src: pastorBeckyMicrophone, title: 'Dr. Becky Paul-Enenche at the Argentina Revival Crusade', category: 'pastor', event: 'Our Senior Pastors' },
   ...Object.entries(crusadePhotos).map(([key, photo]) => ({ key: `crusade-${key}`, src: photo.src, title: photo.title, category: 'crusades', event: `${photo.place} ${('label' in photo ? photo.label : 'crusade').toLowerCase()}` })),
   { key: 'celebration', src: nationsCelebration, title: 'Dancing with the nations', category: 'international', event: 'Nations at Dunamis' },
   { key: 'prayer', src: prayerBlackWhite, title: 'In prayer', category: 'events', event: 'Glory Dome services' },

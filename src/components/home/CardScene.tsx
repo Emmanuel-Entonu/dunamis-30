@@ -8,7 +8,7 @@ import { useEffect, useRef } from 'react'
 import crownGlass from '@/assets/glass/crown.webp'
 import nations from '@/assets/gallery/nations-crowd.webp'
 import destinies from '@/assets/photos/destinies-raised.webp'
-import beckyMicrophone from '@/assets/photos/pastor-becky-microphone.webp'
+import beckyBurgundy from '@/assets/photos/pastor-becky-burgundy.webp'
 import welfare from '@/assets/photos/welfare.webp'
 import glassTubeRender from '@/assets/renders/glass-tube.webp'
 import glassFlameRender from '@/assets/renders/glass-flame.webp'
@@ -32,10 +32,10 @@ const stories: Story[] = [
     place: 'left-[3.6%] top-[56.25%] lg:left-[5.65%] lg:top-[29.5%]',
   },
   {
-    image: beckyMicrophone,
-    alt: 'Dr. Becky Paul-Enenche in red, smiling as she holds up a microphone at the Argentina Revival Crusade',
+    image: beckyBurgundy,
+    alt: 'Dr. Becky Paul-Enenche in burgundy with a red feather headpiece, smiling as she ministers with a microphone',
     title: 'Ministering the Word',
-    text: 'Dr. Becky Paul-Enenche ministering at the Argentina Revival Crusade.',
+    text: 'Dr. Becky Paul-Enenche, ministering the Word with joy.',
     place: 'left-[51.3%] top-[56.25%] lg:left-[72.6%] lg:top-[29.5%]',
   },
   {
@@ -314,7 +314,8 @@ export function CardScene() {
                     alt={s.alt}
                     fill
                     placeholder="blur"
-                    sizes="(min-width: 1024px) 270px, 46vw"
+                    // Twice the size the card is drawn at, so the photos stay crisp on sharp screens.
+                    sizes="(min-width: 1024px) 540px, 92vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <span
