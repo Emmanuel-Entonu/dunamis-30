@@ -5,7 +5,7 @@ import { cache } from 'react'
 
 import type { Gallery, Homepage, ImpactPage, Media, Milestone, PastorPage, Site, SonsStory, StoryPage, Testimony } from '@/payload-types'
 import { defaults, defaultSocials } from './site'
-import { mixTestimonies } from './testimonyMix'
+import { mixTestimonies, type MixEntry } from './testimonyMix'
 import { findYouTubeLink, withoutYouTubeLinks } from '@/lib/video'
 
 // After a failed connection, wait before trying again. Otherwise every section of every page
@@ -115,14 +115,17 @@ export type TestimonyQuery = {
   year?: number
   /** Only testimonies with a video. */
   videos?: boolean
-  /** "mix" shuffles written and video testimonies together. Newest and oldest are plain date order. */
+  /** "mix" gives each visit its own order, with everyone taking turns at the top (see testimonyMix.ts). Newest and oldest are plain date order. */
   sort?: 'mix' | 'newest' | 'oldest'
-  /** The shuffle to use, so one visitor's pages stay consistent. */
-  seed?: number
+  /** The visit the mix is for, so one visitor's pages stay consistent. */
+  visit?: number
   page?: number
 }
 
+type LibraryFilters = Pick<TestimonyQuery, 'q' | 'category' | 'year' | 'videos'>
+
 const PAGE_SIZE = 12
+const NO_TESTIMONIES: TestimonyPage = { docs: [], page: 1, totalPages: 0, total: 0 }
 
 /**
  * What a public search matches. This step needs to look at names, which visitors can't filter on, so it
@@ -145,57 +148,66 @@ async function searchTestimonies(payload: Payload, q: string) {
   return docs.map((t) => t.id)
 }
 
-/**
- * Public testimony library. overrideAccess: false makes Payload apply the collection's access
- * rules as an anonymous visitor: only approved testimonies, and never the submitter's contacts.
- */
-async function findTestimonies({ q, category, year, videos, sort = 'mix', seed = 0, page = 1 }: TestimonyQuery): Promise<TestimonyPage> {
-  const payload = await getPayloadClient()
+/** What the filters ask for, or null when a search matches nothing. */
+async function libraryWhere(payload: Payload, { q, category, year, videos }: LibraryFilters): Promise<Where | null> {
   const and: Where[] = [{ status: { equals: 'approved' } }]
   if (category) and.push({ category: { equals: category } })
   if (videos) and.push({ hasVideo: { equals: true } })
   if (year) and.push({ publishedAt: { greater_than_equal: `${year}-01-01T00:00:00.000Z`, less_than: `${year + 1}-01-01T00:00:00.000Z` } })
   if (q) {
     const matches = await searchTestimonies(payload, q)
-    if (!matches.length) return { docs: [], page: 1, totalPages: 0, total: 0 }
+    if (!matches.length) return null
     and.push({ id: { in: matches } })
   }
+  return { and }
+}
 
-  if (sort !== 'mix') {
-    const res = await payload.find({
-      collection: 'testimonies',
-      where: { and },
-      sort: sort === 'oldest' ? 'publishedAt' : '-publishedAt',
-      limit: PAGE_SIZE,
-      page,
-      depth: 1,
-      overrideAccess: false,
-    })
-    return { docs: await withThumbnails(res.docs.map(toCard)), page: res.page ?? 1, totalPages: res.totalPages, total: res.totalDocs }
-  }
+// The public library below reads with overrideAccess: false, so Payload applies the collection's access
+// rules as an anonymous visitor: only approved testimonies, and never the submitter's contacts.
 
-  // The shuffle needs to see the whole library, but only a few fields of it.
-  const { docs: rows } = await payload.find({
+/** Every testimony the filters match, with just the few fields the mix needs. */
+async function libraryIndex(filters: LibraryFilters): Promise<MixEntry[]> {
+  const payload = await getPayloadClient()
+  const where = await libraryWhere(payload, filters)
+  if (!where) return []
+  const { docs } = await payload.find({
     collection: 'testimonies',
-    where: { and },
+    where,
     pagination: false,
     depth: 0,
-    select: { hasVideo: true, category: true, name: true, showName: true, publishedAt: true },
+    select: { hasVideo: true, category: true, name: true, showName: true },
     overrideAccess: false,
   })
-  const order = mixTestimonies(
-    rows.map((t) => ({ id: t.id, hasVideo: t.hasVideo, category: t.category, person: publicName(t)?.toLowerCase(), publishedAt: t.publishedAt })),
-    seed,
-  )
+  return docs.map((t) => ({ id: t.id, hasVideo: t.hasVideo, category: t.category, person: publicName(t)?.toLowerCase() }))
+}
+
+/** One page of the library in date order. */
+async function datePage(filters: LibraryFilters, sort: 'newest' | 'oldest', page: number): Promise<TestimonyPage> {
+  const payload = await getPayloadClient()
+  const where = await libraryWhere(payload, filters)
+  if (!where) return NO_TESTIMONIES
+  const res = await payload.find({ collection: 'testimonies', where, sort: sort === 'oldest' ? 'publishedAt' : '-publishedAt', limit: PAGE_SIZE, page, depth: 1, overrideAccess: false })
+  return { docs: await withThumbnails(res.docs.map(toCard)), page: res.page ?? 1, totalPages: res.totalPages, total: res.totalDocs }
+}
+
+// Every visitor shares these for a minute, which keeps the database calm at busy moments. Approving or
+// changing a testimony clears them straight away. Searches skip them, because each one is different.
+const cachedIndex = unstable_cache(libraryIndex, ['testimony-index'], { revalidate: 60, tags: ['testimonies'] })
+const cachedDatePage = unstable_cache(datePage, ['testimony-date-page'], { revalidate: 60, tags: ['testimonies'] })
+
+/** One page of the mix: the visit's own order, then that page's testimonies in full. */
+async function mixPage(filters: LibraryFilters, visit: number, page: number): Promise<TestimonyPage> {
+  const order = mixTestimonies(filters.q ? await libraryIndex(filters) : await cachedIndex(filters), visit, PAGE_SIZE)
   const totalPages = Math.ceil(order.length / PAGE_SIZE)
   const current = Math.min(page, Math.max(totalPages, 1))
-  const pageIds = order.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE).map((t) => t.id)
-  if (!pageIds.length) return { docs: [], page: 1, totalPages: 0, total: 0 }
-  const { docs } = await payload.find({ collection: 'testimonies', where: { id: { in: pageIds } }, limit: PAGE_SIZE, depth: 1, overrideAccess: false })
+  const ids = order.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE).map((t) => t.id)
+  if (!ids.length) return NO_TESTIMONIES
+  const payload = await getPayloadClient()
+  const { docs } = await payload.find({ collection: 'testimonies', where: { id: { in: ids } }, limit: PAGE_SIZE, depth: 1, overrideAccess: false })
   const byId = new Map(docs.map((t) => [t.id, t]))
   return {
     docs: await withThumbnails(
-      pageIds.flatMap((id) => {
+      ids.flatMap((id) => {
         const doc = byId.get(id as number)
         return doc ? [toCard(doc)] : []
       }),
@@ -206,14 +218,36 @@ async function findTestimonies({ q, category, year, videos, sort = 'mix', seed =
   }
 }
 
-// Holding each page of results for a minute keeps the database calm at busy moments. Approving a
-// testimony clears this straight away. Searches skip it, because each one is different.
-const cachedTestimonies = unstable_cache(findTestimonies, ['testimony-library'], { revalidate: 60, tags: ['testimonies'] })
-
 export const getTestimonies = cache(
-  async (query: TestimonyQuery): Promise<TestimonyPage> =>
-    safely('testimonies', () => (query.q ? findTestimonies(query) : cachedTestimonies(query)), { docs: [], page: 1, totalPages: 0, total: 0 }),
+  async ({ q, category, year, videos, sort = 'mix', visit = 0, page = 1 }: TestimonyQuery): Promise<TestimonyPage> =>
+    safely(
+      'testimonies',
+      () => {
+        const filters: LibraryFilters = { q, category, year, videos }
+        if (sort === 'mix') return mixPage(filters, visit, page)
+        return q ? datePage(filters, sort, page) : cachedDatePage(filters, sort, page)
+      },
+      NO_TESTIMONIES,
+    ),
 )
+
+type CountingPool = { query: (text: string) => Promise<{ rows: { n?: string | number | null }[] }> }
+
+/**
+ * A new visit to the testimonies page. The database counts them, so the mix hands out turns at the top
+ * in order and every testimony gets its share. If counting fails, a random turn is still fair on average.
+ */
+export async function startVisit() {
+  try {
+    const payload = await getPayloadClient()
+    const { rows } = await (payload.db as unknown as { pool: CountingPool }).pool.query(`select nextval('payload.testimony_rotation') as n`)
+    const n = Number(rows[0]?.n)
+    if (Number.isSafeInteger(n) && n >= 0) return n % 2 ** 32
+  } catch (error) {
+    console.warn(`[testimonies] Couldn't count the visit, so it gets a random turn: ${(error as Error).message}`)
+  }
+  return Math.floor(Math.random() * 2 ** 32)
+}
 
 export const getTestimonyBySlug = cache(async (slug: string) =>
   safely(

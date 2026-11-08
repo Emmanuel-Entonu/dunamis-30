@@ -10,8 +10,8 @@ import { PageHero } from '@/components/PageHero'
 import { ResultsLoading } from '@/components/PageSkeleton'
 import { TestimonyCard } from '@/components/TestimonyCard'
 import { categoryLabels } from '@/lib/categories'
-import { getTestimonies, testimonyFormOpen } from '@/lib/content'
-import { readMixSeed } from '@/lib/testimonyMix'
+import { getTestimonies, startVisit, testimonyFormOpen } from '@/lib/content'
+import { readVisit, visitToken } from '@/lib/testimonyMix'
 import { TestimonyForm } from './TestimonyForm'
 
 export const metadata: Metadata = {
@@ -38,9 +38,10 @@ export default async function TestimoniesPage({ searchParams }: { searchParams: 
   const year = years.includes(Number(sp.year)) ? Number(sp.year) : undefined
   const sort = sp.sort === 'oldest' ? 'oldest' : sp.sort === 'newest' ? 'newest' : 'mix'
   const videos = sp.type === 'video'
-  // Pages of one visit share a shuffle, so nothing repeats or goes missing between them.
-  const seed = readMixSeed(sp.mix)
-  const [result, formOpen] = await Promise.all([getTestimonies({ q, category, year, videos, sort, seed, page }), testimonyFormOpen()])
+  // Each visit gets its own order and its own turn at the top. Its pages share them, so nothing repeats
+  // or goes missing between them.
+  const visit = sort === 'mix' ? (readVisit(sp.mix) ?? (await startVisit())) : 0
+  const [result, formOpen] = await Promise.all([getTestimonies({ q, category, year, videos, sort, visit, page }), testimonyFormOpen()])
 
   const href = (next: { category?: string; page?: number; videos?: boolean }) => {
     const p = new URLSearchParams()
@@ -51,10 +52,9 @@ export default async function TestimoniesPage({ searchParams }: { searchParams: 
     if (nv) p.set('type', 'video')
     if (year) p.set('year', String(year))
     if (sort !== 'mix') p.set('sort', sort)
-    if (next.page && next.page > 1) {
-      p.set('page', String(next.page))
-      if (sort === 'mix') p.set('mix', String(seed))
-    }
+    if (next.page && next.page > 1) p.set('page', String(next.page))
+    // Page numbers stay within this visit, page 1 included. A new filter is a new visit, with a new turn.
+    if (sort === 'mix' && next.category === undefined && next.videos === undefined) p.set('mix', String(visitToken(visit)))
     const s = p.toString()
     return `/testimonies${s ? `?${s}` : ''}#library`
   }
