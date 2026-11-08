@@ -20,6 +20,8 @@ export const metadata: Metadata = {
 function StoryCard({ story }: { story: CardSonsStory }) {
   const before = mediaUrl(story.beforePhoto, 'card')
   const after = mediaUrl(story.afterPhoto ?? story.videoPoster, 'card')
+  // With no photo at all, the YouTube video's own thumbnail fills the frame.
+  const thumb = before || after ? null : story.videoThumb
   const href = `/sons-of-the-prophet/${story.slug}`
   const title = story.headline || story.name
 
@@ -33,6 +35,15 @@ function StoryCard({ story }: { story: CardSonsStory }) {
           </div>
         ) : after || before ? (
           <LoadingImage src={(after || before)!} alt={story.name} fill sizes="(min-width: 1024px) 400px, 96vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+        ) : thumb ? (
+          <>
+            {/* The thumbnail whole, titles and all, on a blurred copy of itself. The widescreen frame also trims the
+                black bands YouTube's smaller thumbnail carries, and the enlarged backdrop pushes them out of sight. */}
+            <LoadingImage src={thumb} alt="" fill sizes="(min-width: 1024px) 400px, 96vw" className="scale-150 object-cover opacity-60 blur-2xl" />
+            <div className="absolute inset-x-0 top-1/2 aspect-video -translate-y-1/2 overflow-hidden">
+              <LoadingImage src={thumb} alt={story.name} fill sizes="(min-width: 1024px) 400px, 96vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+            </div>
+          </>
         ) : (
           <div className="grid h-full place-items-center">
             <GlassArt art={glass.crown} className="w-[130px]" />

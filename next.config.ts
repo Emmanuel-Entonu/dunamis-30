@@ -16,6 +16,8 @@ const nextConfig: NextConfig = {
         pathname: '/api/media/file/**',
       },
     ],
+    // YouTube's thumbnails, for cards of testimonies and stories that are YouTube videos.
+    remotePatterns: [{ protocol: 'https', hostname: 'i.ytimg.com', pathname: '/vi/**' }],
     formats: ['image/webp'],
     // Every photo is served at quality 90: Next uses the closest allowed value, so this one entry covers them all.
     qualities: [90],

@@ -75,6 +75,10 @@ export type CardTestimony = Pick<Testimony, 'id' | 'title' | 'category' | 'summa
   hasVideo: boolean
   photo?: Media | null
   videoPoster?: Media | null
+  /** A video link it plays, set or pasted into the words. */
+  videoLink?: string | null
+  /** That video's thumbnail, for a card with no photo of its own. */
+  videoThumb?: string | null
 }
 
 const publicName = (t: { name?: string | null; showName?: boolean | null }) => (t.showName === false ? null : (t.name ?? null))
@@ -98,6 +102,7 @@ const toCard = (t: Testimony): CardTestimony => ({
   videoUrl: t.videoUrl,
   name: publicName(t),
   hasVideo: Boolean(t.hasVideo || findYouTubeLink(t.summary, t.body)),
+  videoLink: t.videoUrl || (t.videoFile?.sizeBytes || t.videoFile?.durationSec ? null : findYouTubeLink(t.summary, t.body)),
   photo: populated(t.photo),
   videoPoster: populated(t.videoPoster),
 })
@@ -166,7 +171,7 @@ async function findTestimonies({ q, category, year, videos, sort = 'mix', seed =
       depth: 1,
       overrideAccess: false,
     })
-    return { docs: res.docs.map(toCard), page: res.page ?? 1, totalPages: res.totalPages, total: res.totalDocs }
+    return { docs: await withThumbnails(res.docs.map(toCard)), page: res.page ?? 1, totalPages: res.totalPages, total: res.totalDocs }
   }
 
   // The shuffle needs to see the whole library, but only a few fields of it.
@@ -189,10 +194,12 @@ async function findTestimonies({ q, category, year, videos, sort = 'mix', seed =
   const { docs } = await payload.find({ collection: 'testimonies', where: { id: { in: pageIds } }, limit: PAGE_SIZE, depth: 1, overrideAccess: false })
   const byId = new Map(docs.map((t) => [t.id, t]))
   return {
-    docs: pageIds.flatMap((id) => {
-      const doc = byId.get(id as number)
-      return doc ? [toCard(doc)] : []
-    }),
+    docs: await withThumbnails(
+      pageIds.flatMap((id) => {
+        const doc = byId.get(id as number)
+        return doc ? [toCard(doc)] : []
+      }),
+    ),
     page: current,
     totalPages,
     total: order.length,
@@ -226,8 +233,16 @@ export const getTestimonyBySlug = cache(async (slug: string) =>
   ),
 )
 
+/** Cards with a video link carry that video's thumbnail, for when they have no photo of their own. Each is looked up once and kept. */
+async function withThumbnails<T extends { videoLink?: string | null; videoThumb?: string | null }>(cards: T[]) {
+  const { videoThumbnail } = await import('./youtube')
+  return Promise.all(cards.map(async (card) => (card.videoLink ? { ...card, videoThumb: await videoThumbnail(card.videoLink).catch(() => null) } : card)))
+}
+
 export type CardSonsStory = Pick<SonsStory, 'id' | 'headline' | 'location' | 'currentRole' | 'slug'> & {
   name: string
+  videoLink?: string | null
+  videoThumb?: string | null
   before?: string | null
   beforePhoto?: Media | null
   afterPhoto?: Media | null
@@ -243,6 +258,7 @@ const toSonsCard = (s: SonsStory): CardSonsStory => ({
   afterPhoto: typeof s.afterPhoto === 'object' ? s.afterPhoto : null,
   videoPoster: populated(s.videoPoster),
   hasVideo: Boolean(s.hasVideo || findYouTubeLink(s.story?.before, s.story?.encounter, s.story?.transformation, s.story?.today, s.story?.meaning, s.appreciation)),
+  videoLink: s.videoUrl || (s.videoFile?.sizeBytes || s.videoFile?.durationSec ? null : findYouTubeLink(s.story?.before, s.story?.encounter, s.story?.transformation, s.story?.today, s.story?.meaning, s.appreciation)),
 })
 
 /** Public Sons of the Prophet list: approved stories only, never the submitter's contacts. */
@@ -258,7 +274,7 @@ export const getSonsStories = cache(async (): Promise<CardSonsStory[]> =>
         depth: 1,
         overrideAccess: false,
       })
-      return docs.map(toSonsCard)
+      return withThumbnails(docs.map(toSonsCard))
     },
     [],
   ),

@@ -266,6 +266,41 @@ function Words({ label, text }: { label: string; text: string }) {
   )
 }
 
+/** The testimony's type, changed right here. It decides which group the testimony is in on the website. */
+function TypePicker({ value, change }: { value: string; change: Change }) {
+  const [saving, setSaving] = useState<string | null>(null)
+  const shown = saving ?? (categoryLabels[value] ? value : 'other')
+  return (
+    <div>
+      <dt>
+        <label htmlFor="field-type" className="text-[13.5px] text-soft">
+          Type
+        </label>
+      </dt>
+      <dd className="mt-1">
+        <select
+          id="field-type"
+          value={shown}
+          disabled={saving !== null}
+          onChange={async (event) => {
+            const next = event.target.value
+            setSaving(next)
+            await change({ category: next }, `Moved to ${categoryLabels[next]}`)
+            setSaving(null)
+          }}
+          className="h-12 w-full rounded-2xl bg-canvas px-4 text-[15.5px] font-medium disabled:opacity-70"
+        >
+          {Object.entries(categoryLabels).map(([key, label]) => (
+            <option key={key} value={key}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </dd>
+    </div>
+  )
+}
+
 const Fact = ({ label, children }: { label: string; children: ReactNode }) =>
   children ? (
     <div>
@@ -488,7 +523,7 @@ function Review({ section: key, doc, url, you, canDelete }: { section: 'testimon
               <dl className="grid gap-3">
                 <Fact label="From">{doc.name || 'No name given'}</Fact>
                 <Fact label="Where">{doc.location}</Fact>
-                {story ? <Fact label="Today">{textOf(doc, 'currentRole')}</Fact> : <Fact label="Type">{categoryLabels[textOf(doc, 'category')]}</Fact>}
+                {story ? <Fact label="Today">{textOf(doc, 'currentRole')}</Fact> : <TypePicker value={textOf(doc, 'category')} change={change} />}
               </dl>
               {doc.showName === false && <p className="mt-3 rounded-2xl bg-butter p-3 text-sm font-medium">They asked for their name not to be shown on the website.</p>}
             </Tile>

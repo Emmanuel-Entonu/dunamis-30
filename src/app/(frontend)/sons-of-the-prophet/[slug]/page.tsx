@@ -11,7 +11,7 @@ import { ShareButtons } from '@/components/ShareButtons'
 import { getSonsStoryBySlug, mediaUrl } from '@/lib/content'
 import { shareImage } from '@/lib/site'
 import { findYouTubeLink, withoutYouTubeLinks } from '@/lib/video'
-import { playableVideo } from '@/lib/youtube'
+import { playableVideo, videoThumbnail } from '@/lib/youtube'
 import { TestimonyVideo } from '@/components/TestimonyVideo'
 
 export const revalidate = 60
@@ -24,10 +24,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const title = s.headline ? `${s.headline}: ${s.name}` : s.name
   const description = s.before?.slice(0, 180) || `The story of ${s.name}, a son of the ministry at Dunamis International Gospel Centre.`
   const og = mediaUrl(s.afterPhoto ?? s.beforePhoto ?? s.videoPoster ?? null, 'og')
+  // With no photo, a shared link shows the YouTube video's own thumbnail.
+  const thumb = og ? null : await videoThumbnail(s.videoLink).catch(() => null)
   return {
     title,
     description,
-    openGraph: { type: 'article', title, description, images: og ? [{ url: og, width: 1200, height: 630 }] : [shareImage] },
+    openGraph: { type: 'article', title, description, images: og ? [{ url: og, width: 1200, height: 630 }] : thumb ? [{ url: thumb }] : [shareImage] },
   }
 }
 

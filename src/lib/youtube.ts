@@ -83,6 +83,27 @@ const clipPlayer = unstable_cache(
   { revalidate: 60 * 60 * 24 * 30 },
 )
 
+/**
+ * A YouTube video's own thumbnail, for cards: the sharp 1280px one when YouTube has made it, otherwise the
+ * 480px one every video has. That one carries black bands, which a widescreen frame crops off exactly.
+ */
+const bestThumbnail = unstable_cache(
+  async (id: string) => {
+    const sharp = `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`
+    const res = await fetch(sharp, { method: 'HEAD', signal: AbortSignal.timeout(5000), cache: 'no-store' }).catch(() => null)
+    return res?.ok ? sharp : `https://i.ytimg.com/vi/${id}/hqdefault.jpg`
+  },
+  ['youtube-thumbnail'],
+  { revalidate: 60 * 60 * 24 * 30 },
+)
+
+/** The thumbnail of the YouTube video a link plays (clips included), or null for anything else. */
+export async function videoThumbnail(url?: string | null) {
+  const player = await playableVideo(url)
+  const id = player?.match(/youtube(?:-nocookie)?\.com\/embed\/([\w-]{11})/)?.[1]
+  return id ? bestThumbnail(id) : null
+}
+
 /** An embeddable player for a YouTube or Vimeo link, clips included. Null when it can't be played here. */
 export async function playableVideo(url?: string | null) {
   if (!url) return null

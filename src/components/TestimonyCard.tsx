@@ -8,7 +8,7 @@ import { Play } from './icons'
 
 /** Testimony: an identity bar above a quote card, or a photo card when there is a picture. */
 export function TestimonyCard({ testimony }: { testimony: CardTestimony }) {
-  const { title, name, category, teaser, slug, hasVideo, photo, videoPoster } = testimony
+  const { title, name, category, teaser, slug, hasVideo, photo, videoPoster, videoThumb } = testimony
   const [tintA, tintB] = categoryTints[category] ?? categoryTints.other
   const href = slug ? `/testimonies/${slug}` : '/testimonies'
   // A person's own photo goes first. A video's cover stands in when there isn't one.
@@ -27,8 +27,27 @@ export function TestimonyCard({ testimony }: { testimony: CardTestimony }) {
         <span className="truncate rounded-lg bg-hair px-[15px] py-3 text-sm text-fg">{label}</span>
       </div>
 
-      <div className={`relative flex ${image || teaser ? 'min-h-[400px]' : 'min-h-[240px]'} flex-1 flex-col overflow-hidden rounded-2xl border border-hair bg-surface p-6 sm:p-8`}>
-        {image ? (
+      <div className={`relative flex ${image || teaser || videoThumb ? 'min-h-[400px]' : 'min-h-[240px]'} flex-1 flex-col overflow-hidden rounded-2xl border border-hair bg-surface p-6 sm:p-8`}>
+        {!image && videoThumb ? (
+          <>
+            {/* A YouTube video with no photo: its own thumbnail across the top, the words below. */}
+            <div className="relative -mx-6 -mt-6 aspect-video overflow-hidden border-b border-hair bg-black sm:-mx-8 sm:-mt-8">
+              <LoadingImage src={videoThumb} alt="" fill sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 96vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+              <span className="absolute top-1/2 left-1/2 grid size-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-xl bg-black/50 text-white shadow-[inset_0_0_6px_rgba(255,255,255,0.6)] backdrop-blur-md transition-shadow group-hover:shadow-[inset_0_0_20px_rgba(255,255,255,0.7)]">
+                <Play width={22} height={22} />
+              </span>
+            </div>
+            <h3 className="relative mt-6 text-xl leading-[1.3] font-medium text-fg sm:text-2xl">{title}</h3>
+            {teaser && <p className="relative mt-3 line-clamp-2 text-base">{teaser}</p>}
+            {/* The same footing as a written card, so names line up across a row. */}
+            <div className="relative mt-auto pt-6">
+              <div className="border-l border-muted pl-5">
+                <p className="text-lg text-fg">{who}</p>
+                <p className="mt-1 text-base">{label}</p>
+              </div>
+            </div>
+          </>
+        ) : image ? (
           <>
             <LoadingImage src={image} alt={cover?.alt || title} fill sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 96vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
             <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />

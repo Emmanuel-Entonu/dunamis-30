@@ -11,7 +11,7 @@ import { categoryLabels } from '@/lib/categories'
 import { getTestimonyBySlug, mediaUrl, testimonyFormOpen } from '@/lib/content'
 import { shareImage } from '@/lib/site'
 import { findYouTubeLink, withoutYouTubeLinks } from '@/lib/video'
-import { playableVideo } from '@/lib/youtube'
+import { playableVideo, videoThumbnail } from '@/lib/youtube'
 
 export const revalidate = 60
 
@@ -21,10 +21,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const t = await getTestimonyBySlug((await params).slug)
   if (!t) return { title: 'Testimony not found' }
   const og = mediaUrl(t.photo ?? t.videoPoster ?? null, 'og')
+  // With no photo, a shared link shows the YouTube video's own thumbnail.
+  const thumb = og ? null : await videoThumbnail(t.videoLink).catch(() => null)
   return {
     title: t.title,
     description: t.teaser || undefined,
-    openGraph: { type: 'article', title: t.title, description: t.teaser || undefined, images: og ? [{ url: og, width: 1200, height: 630 }] : [shareImage] },
+    openGraph: { type: 'article', title: t.title, description: t.teaser || undefined, images: og ? [{ url: og, width: 1200, height: 630 }] : thumb ? [{ url: thumb }] : [shareImage] },
   }
 }
 
