@@ -11,15 +11,22 @@ export type NewVideo = {
 
 /** Reads, shrinks and uploads a video. The heavy libraries load only now, when someone actually picks one. */
 export async function sendVideo(file: File, collection: string, onProgress: (words: string, share?: number) => void): Promise<NewVideo> {
-  const { inspectVideo, MAX_VIDEO_SECONDS, prepareVideo, uploadVideo } = await import('@/lib/videoPipeline')
+  const { inspectVideo, MAX_DASHBOARD_VIDEO_SECONDS, prepareVideo, uploadVideo } = await import('@/lib/videoPipeline')
   const controller = new AbortController()
   onProgress('Reading the video…')
   const details = await inspectVideo(file)
-  if (details.durationSec > MAX_VIDEO_SECONDS) throw new Error(`That video is too long. Please use one under ${MAX_VIDEO_SECONDS / 60} minutes.`)
+  if (details.durationSec > MAX_DASHBOARD_VIDEO_SECONDS) throw new Error(`That video is too long. Please use one under ${MAX_DASHBOARD_VIDEO_SECONDS / 60} minutes.`)
 
   const ticket = await api<VideoTicket>(`/api/${collection}/video-ticket`, { method: 'POST' })
   const prepared = await prepareVideo(file, details, ticket.maxBytes, (share) => onProgress('Getting it ready…', share), controller.signal)
-  await uploadVideo(prepared, ticket, (share) => onProgress('Uploading…', share), controller.signal, {})
+  try {
+    await uploadVideo(prepared, ticket, (share) => onProgress('Uploading…', share), controller.signal, {})
+  } catch (error) {
+    // Storage says why in a status code. Turn the ones people can act on into plain words.
+    const status = (error as { originalResponse?: { getStatus(): number } | null })?.originalResponse?.getStatus() ?? 0
+    if (status === 413) throw new Error('That video is bigger than storage allows. Please ask the web team to raise the upload limit in Supabase.')
+    throw new Error('The upload didn’t finish. Please check your connection and try again.')
+  }
 
   let videoPoster: number | null = null
   if (details.poster) {

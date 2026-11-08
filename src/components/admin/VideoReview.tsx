@@ -3,7 +3,7 @@
 import { Button, useDocumentInfo, useField } from '@payloadcms/ui'
 import { useEffect, useRef, useState } from 'react'
 
-import { inspectVideo, MAX_VIDEO_SECONDS, prepareVideo, uploadVideo } from '@/lib/videoPipeline'
+import { inspectVideo, MAX_DASHBOARD_VIDEO_SECONDS, prepareVideo, uploadVideo } from '@/lib/videoPipeline'
 import type { VideoTicket } from '@/lib/videoStorage'
 
 const length = (seconds?: number | null) =>
@@ -71,9 +71,9 @@ export function VideoReview({
     try {
       setStatus('Reading the video…')
       const details = await inspectVideo(file)
-      if (details.durationSec > MAX_VIDEO_SECONDS)
+      if (details.durationSec > MAX_DASHBOARD_VIDEO_SECONDS)
         throw new Error(
-          `That video is too long. Please use one under ${MAX_VIDEO_SECONDS / 60} minutes.`,
+          `That video is too long. Please use one under ${MAX_DASHBOARD_VIDEO_SECONDS / 60} minutes.`,
         )
 
       const res = await fetch(`/api/${collectionSlug}/video-ticket`, {

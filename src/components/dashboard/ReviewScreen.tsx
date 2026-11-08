@@ -436,7 +436,7 @@ function Review({ section: key, doc, url, you, canDelete }: { section: 'testimon
               </div>
             ) : hasWords ? (
               words
-            ) : (
+            ) : doc.hasVideo ? null : (
               <p className="text-[15px] text-soft">There’s no write-up, so the website won’t show one.</p>
             )}
             {!draft && (

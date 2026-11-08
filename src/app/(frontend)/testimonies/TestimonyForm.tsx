@@ -108,7 +108,7 @@ export function TestimonyForm() {
         <Field name="title" label="Title" required error={e.title} hint="A short headline, e.g. “Healed after twelve years”.">
           <input id="title" name="title" maxLength={90} className={inputClass} aria-invalid={!!e.title} />
         </Field>
-        <Field name="summary" label="Short description" required error={e.summary} hint={`${summaryLength}/320. This shows on your testimony card.`}>
+        <Field name="summary" label={video.file ? 'Short description (optional with a video)' : 'Short description'} required={!video.file} error={e.summary} hint={`${summaryLength}/320. This shows on your testimony card.`}>
           <textarea
             id="summary"
             name="summary"

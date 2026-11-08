@@ -7,8 +7,15 @@ import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto'
  * server: the service key never reaches a browser.
  */
 
+/** Videos sent with the public forms. The bucket itself refuses anything over 50 MB. */
 export const VIDEO_BUCKET = 'testimony-videos'
 export const MAX_VIDEO_BYTES = 50 * 1024 * 1024
+/**
+ * Videos the team adds in the dashboard. Only signed-in editors get tickets for this bucket, and it has
+ * no cap of its own: it follows the project's upload limit in Supabase. The browser aims to stay under this.
+ */
+export const DASHBOARD_VIDEO_BUCKET = 'dashboard-videos'
+export const MAX_DASHBOARD_VIDEO_BYTES = 2 * 1024 * 1024 * 1024
 const ALLOWED_TYPES = ['video/mp4', 'video/webm', 'video/quicktime']
 
 export type VideoTicket = {
@@ -30,6 +37,9 @@ const serviceHeaders = () => {
 
 export const videoStorageReady = () => Boolean(projectUrl() && process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
+/** Dashboard videos are kept under their own folder name, so every path says which bucket it's in. */
+const bucketFor = (path: string) => (path.startsWith('dashboard/') ? DASHBOARD_VIDEO_BUCKET : VIDEO_BUCKET)
+
 const proofOf = (path: string) => createHmac('sha256', process.env.PAYLOAD_SECRET ?? '').update(`video:${path}`).digest('hex')
 
 /** True only for a path this server issued, so a form can't claim someone else's video. */
@@ -39,9 +49,11 @@ export function isIssuedVideoPath(path: string, proof: string) {
 }
 
 /** A signed ticket for one new file. The token is good for one upload, for two hours. */
-export async function issueVideoTicket(): Promise<VideoTicket> {
-  const path = `videos/${randomUUID()}`
-  const res = await fetch(`${storageApi()}/object/upload/sign/${VIDEO_BUCKET}/${path}`, {
+export async function issueVideoTicket(from: 'form' | 'dashboard' = 'form'): Promise<VideoTicket> {
+  const dashboard = from === 'dashboard'
+  const path = `${dashboard ? 'dashboard' : 'videos'}/${randomUUID()}`
+  const bucket = bucketFor(path)
+  const res = await fetch(`${storageApi()}/object/upload/sign/${bucket}/${path}`, {
     method: 'POST',
     headers: { ...serviceHeaders(), 'content-type': 'application/json' },
     body: '{}',
@@ -56,17 +68,17 @@ export async function issueVideoTicket(): Promise<VideoTicket> {
   return {
     endpoint: `https://${host}/storage/v1/upload/resumable/sign`,
     apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
-    bucket: VIDEO_BUCKET,
+    bucket,
     path,
     token,
     proof: proofOf(path),
-    maxBytes: MAX_VIDEO_BYTES,
+    maxBytes: dashboard ? MAX_DASHBOARD_VIDEO_BYTES : MAX_VIDEO_BYTES,
   }
 }
 
 /** The stored file's size, or null when no acceptable video is there. */
 export async function readVideoSize(path: string) {
-  const res = await fetch(`${storageApi()}/object/info/${VIDEO_BUCKET}/${path}`, { headers: serviceHeaders(), cache: 'no-store' })
+  const res = await fetch(`${storageApi()}/object/info/${bucketFor(path)}/${path}`, { headers: serviceHeaders(), cache: 'no-store' })
   if (!res.ok) return null
   const info = (await res.json()) as { size?: number; content_type?: string }
   if (!info.size || !ALLOWED_TYPES.includes(info.content_type ?? '')) return null
@@ -75,7 +87,7 @@ export async function readVideoSize(path: string) {
 
 /** A temporary link to the private file. */
 export async function signedVideoUrl(path: string, seconds: number) {
-  const res = await fetch(`${storageApi()}/object/sign/${VIDEO_BUCKET}/${path}`, {
+  const res = await fetch(`${storageApi()}/object/sign/${bucketFor(path)}/${path}`, {
     method: 'POST',
     headers: { ...serviceHeaders(), 'content-type': 'application/json' },
     body: JSON.stringify({ expiresIn: seconds }),
@@ -87,7 +99,7 @@ export async function signedVideoUrl(path: string, seconds: number) {
 }
 
 export async function removeVideo(path: string) {
-  const res = await fetch(`${storageApi()}/object/${VIDEO_BUCKET}`, {
+  const res = await fetch(`${storageApi()}/object/${bucketFor(path)}`, {
     method: 'DELETE',
     headers: { ...serviceHeaders(), 'content-type': 'application/json' },
     body: JSON.stringify({ prefixes: [path] }),

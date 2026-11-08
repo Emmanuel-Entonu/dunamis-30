@@ -9,13 +9,18 @@ import type { VideoTicket } from './videoStorage'
  * as it is. The two libraries are large, so they load only once someone actually picks a video.
  */
 
+/** The public forms take phone videos up to 5 minutes. The team can add longer ones in the dashboard. */
 export const MAX_VIDEO_SECONDS = 5 * 60
+export const MAX_DASHBOARD_VIDEO_SECONDS = 30 * 60
 const LONG_SIDE = 1280
 const MAX_VIDEO_BITRATE = 2_500_000
 const MIN_VIDEO_BITRATE = 500_000
 const AUDIO_BITRATE = 96_000
-/** Leaves room under the 50 MB limit for the file's own overhead. */
-const TARGET_BYTES = 44 * 1024 * 1024
+/**
+ * The size to aim for: just under the ticket's limit, leaving room for the file's own overhead (44 MB on
+ * the public forms). The shrunk video is held in memory before it's sent, so it never aims above 700 MB.
+ */
+const targetBytes = (maxBytes: number) => Math.min(Math.floor(maxBytes * 0.88), 700 * 1024 * 1024)
 /** Already-small H.264 clips are left alone. */
 const LEAVE_ALONE_BYTES = 15 * 1024 * 1024
 const CHUNK_BYTES = 6 * 1024 * 1024 // Supabase requires exactly this size for resumable uploads.
@@ -159,7 +164,7 @@ export async function prepareVideo(file: File, details: VideoDetails, maxBytes: 
     const even = (n: number) => Math.max(2, Math.round(n / 2) * 2)
     const width = even(track.displayWidth * scale)
     const height = even(track.displayHeight * scale)
-    const bitrate = Math.round(Math.max(MIN_VIDEO_BITRATE, Math.min(MAX_VIDEO_BITRATE, (TARGET_BYTES * 8) / Math.max(durationSec, 1) - AUDIO_BITRATE)))
+    const bitrate = Math.round(Math.max(MIN_VIDEO_BITRATE, Math.min(MAX_VIDEO_BITRATE, (targetBytes(maxBytes) * 8) / Math.max(durationSec, 1) - AUDIO_BITRATE)))
 
     if (!(await canEncodeVideo('avc', { width, height, bitrate }))) return fallback()
     const canEncodeAac = await canEncodeAudio('aac', { bitrate: AUDIO_BITRATE })
@@ -194,7 +199,7 @@ export async function prepareVideo(file: File, details: VideoDetails, maxBytes: 
 
     const buffer = target.buffer
     if (!buffer?.byteLength) return fallback()
-    if (buffer.byteLength > maxBytes) throw new VideoProblem('Your video is still too large after compressing it. Please choose one under 5 minutes.')
+    if (buffer.byteLength > maxBytes) throw new VideoProblem('Your video is still too large after compressing it. Please choose a shorter one.')
     return { blob: new Blob([buffer], { type: 'video/mp4' }), contentType: 'video/mp4', width, height, durationSec }
   } catch (error) {
     if (error instanceof VideoProblem) throw error

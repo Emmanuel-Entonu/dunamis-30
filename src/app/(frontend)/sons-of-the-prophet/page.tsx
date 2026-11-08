@@ -4,7 +4,7 @@ import Link from '@/components/SiteLink'
 
 import { glass } from '@/assets/glass'
 import { ClosingBand, FeatureTile, FormStage, GlassArt, ShowcaseCard } from '@/components/blocks'
-import { ArrowRight } from '@/components/icons'
+import { ArrowRight, Play } from '@/components/icons'
 import { PageHero } from '@/components/PageHero'
 import { Reveal } from '@/components/Reveal'
 import { getSonsStories, mediaUrl, type CardSonsStory } from '@/lib/content'
@@ -38,6 +38,11 @@ function StoryCard({ story }: { story: CardSonsStory }) {
             <GlassArt art={glass.crown} className="w-[130px]" />
           </div>
         )}
+        {story.hasVideo && (
+          <span aria-hidden className="absolute top-4 right-4 grid size-11 place-items-center rounded-xl bg-black/35 text-white shadow-[inset_0_0_6px_rgba(255,255,255,0.6)] backdrop-blur-[5px]">
+            <Play width={18} height={18} />
+          </span>
+        )}
       </div>
       <div className="flex flex-1 flex-col p-5 sm:p-7">
         <h3 className="h-card transition-colors group-hover:text-gold">{title}</h3>
@@ -52,7 +57,7 @@ function StoryCard({ story }: { story: CardSonsStory }) {
           </span>
         </div>
       </div>
-      <Link href={href} className="absolute inset-0" aria-label={`Read the story of ${story.name}`} />
+      <Link href={href} className="absolute inset-0" aria-label={`${story.hasVideo ? 'Watch' : 'Read'} the story of ${story.name}`} />
     </article>
   )
 }

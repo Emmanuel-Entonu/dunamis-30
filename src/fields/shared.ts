@@ -210,14 +210,14 @@ export const afterSubmissionDelete =
     return doc
   }
 
-/** Lets an editor upload a video from the admin, straight to storage. */
+/** Lets an editor upload a video from the dashboard, straight to the dashboard's own bucket. */
 export const videoTicketEndpoint: Endpoint = {
   path: '/video-ticket',
   method: 'post',
   handler: async (req) => {
     if (!hasRole(req.user as never, 'admin', 'editor')) return Response.json({ error: 'Not allowed' }, { status: 403 })
     const { issueVideoTicket } = await import('@/lib/videoStorage')
-    return Response.json(await issueVideoTicket())
+    return Response.json(await issueVideoTicket('dashboard'))
   },
 }
 

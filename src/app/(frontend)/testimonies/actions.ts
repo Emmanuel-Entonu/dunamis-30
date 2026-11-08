@@ -29,7 +29,7 @@ function validate(data: ReturnType<typeof read>, formData: FormData, hasVideo: b
   if (data.phone.replace(/\D/g, '').length < 7) fieldErrors.phone = 'Please enter a phone number we can reach you on.'
   if (!categoryLabels[data.category]) fieldErrors.category = 'Please choose a category.'
   if (data.title.length < 4) fieldErrors.title = 'Please give your testimony a short title.'
-  if (data.summary.length < 20) fieldErrors.summary = 'Please write a sentence or two about what God did.'
+  if (!hasVideo && data.summary.length < 20) fieldErrors.summary = 'Please write a sentence or two about what God did, or add a video.'
   if (data.summary.length > 320) fieldErrors.summary = 'Please keep the short description under 320 characters.'
   if (!hasVideo && data.body.length < 40) fieldErrors.body = 'Please tell us the full testimony, or add a video of it.'
   if (formData.get('consent') !== 'on') fieldErrors.consent = 'Please confirm we may publish your testimony.'
@@ -91,7 +91,7 @@ export async function submitTestimony(formData: FormData): Promise<SubmissionSta
         title: data.title,
         name: data.name,
         category: data.category as 'healing',
-        summary: data.summary,
+        summary: data.summary || undefined,
         body: data.body || undefined,
         photo,
         videoPoster,
