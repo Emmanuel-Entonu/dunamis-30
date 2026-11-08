@@ -47,9 +47,35 @@ export class ApiProblem extends Error {
   constructor(
     message: string,
     readonly status: number,
+    /** The server's own words for why it refused, when it gave any. */
+    readonly reason = '',
   ) {
     super(message)
   }
+}
+
+/** Payload explains a refused save in its reply: the field and what's wrong with it. */
+async function reasonFrom(res: Response) {
+  try {
+    const body = (await res.json()) as { errors?: { message?: string; data?: { errors?: { message?: string; label?: string }[] } }[] }
+    const first = body.errors?.[0]
+    const field = first?.data?.errors?.[0]
+    if (field?.message) {
+      const label = field.label?.split('>').pop()?.trim()
+      return label ? `${label}: ${field.message}` : field.message
+    }
+    return first?.message ?? ''
+  } catch {
+    return ''
+  }
+}
+
+/** Plain words for why a save failed, for the line under "That didn’t save". Only a real network failure blames the connection. */
+export function whyItFailed(error: unknown) {
+  if (!(error instanceof ApiProblem)) return 'Please check your connection and try again.'
+  if (error.status === 401 || error.status === 403) return 'You’ve been signed out, or this login can’t do that. Please sign in again.'
+  if (error.status >= 500) return 'Something went wrong on the server. Please try again in a minute, and tell the web team if it keeps happening.'
+  return error.reason || 'The website refused this change. Please check what you entered and try again.'
 }
 
 export async function api<T>(url: string, init?: RequestInit & { json?: unknown }): Promise<T> {
@@ -60,7 +86,7 @@ export async function api<T>(url: string, init?: RequestInit & { json?: unknown 
     ...rest,
     ...(json === undefined ? {} : { body: JSON.stringify(json), headers: { 'content-type': 'application/json' } }),
   })
-  if (!res.ok) throw new ApiProblem(`Request failed (${res.status})`, res.status)
+  if (!res.ok) throw new ApiProblem(`Request failed (${res.status})`, res.status, await reasonFrom(res))
   return (res.status === 204 ? undefined : await res.json()) as T
 }
 

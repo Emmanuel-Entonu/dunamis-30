@@ -11,7 +11,7 @@ import { A, Glyph, Header, longDate, Tile } from './bits'
 import { backIcon, letterIcon, phoneIcon, planeIcon, userIcon } from './icons'
 import { detailUrl, sections } from './Lists'
 import { buttonSize } from './ReviewScreen'
-import { api, refreshWhere, setData, useData } from './store'
+import { api, refreshWhere, setData, useData, whyItFailed } from './store'
 
 type Guest = {
   id: number
@@ -88,9 +88,9 @@ export function GuestScreen({ id, you }: { id: string; you: string }) {
       await api(url, { method: 'PATCH', json: { logisticsStatus: value } })
       toast.success('Status updated')
       everywhere()
-    } catch {
+    } catch (error) {
       setData<Guest>(url, (current) => current && { ...current, logisticsStatus: before })
-      toast.error('That didn’t save', { description: 'Please check your connection and try again.' })
+      toast.error('That didn’t save', { description: whyItFailed(error) })
     }
   }
 
@@ -100,8 +100,8 @@ export function GuestScreen({ id, you }: { id: string; you: string }) {
       setData<Guest>(url, (current) => current && { ...current, logisticsNotes: notes })
       setNotes(null)
       toast.success('Notes saved')
-    } catch {
-      toast.error('That didn’t save', { description: 'Please check your connection and try again.' })
+    } catch (error) {
+      toast.error('That didn’t save', { description: whyItFailed(error) })
     }
   }
 

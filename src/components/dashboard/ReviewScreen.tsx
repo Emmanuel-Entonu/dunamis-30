@@ -25,7 +25,7 @@ import { A, Glyph, Header, longDate, Tile } from './bits'
 import { backIcon, letterIcon, penIcon, phoneIcon, photoIcon, trashIcon, videoIcon } from './icons'
 import { detailUrl, sections } from './Lists'
 import { sendPhoto, sendVideo } from './media'
-import { api, go, refreshWhere, setData, useData } from './store'
+import { api, go, refreshWhere, setData, useData, whyItFailed } from './store'
 
 type MediaDoc = { id: number; url?: string | null; sizes?: { hero?: { url?: string | null }; card?: { url?: string | null } } }
 
@@ -327,8 +327,8 @@ function Review({ section: key, doc, url, you, canDelete }: { section: 'testimon
     try {
       await save(patch)
       toast.success(words)
-    } catch {
-      toast.error('That didn’t save', { description: 'Please check your connection and try again.' })
+    } catch (error) {
+      toast.error('That didn’t save', { description: whyItFailed(error) })
     }
   }
 
@@ -343,8 +343,8 @@ function Review({ section: key, doc, url, you, canDelete }: { section: 'testimon
       await save({ status })
       if (status === 'approved') toast.success('Approved', { description: 'It’s on the website now.' })
       else toast('Rejected', { description: 'It isn’t on the website.' })
-    } catch {
-      toast.error('That didn’t save', { description: 'Please check your connection and try again.' })
+    } catch (error) {
+      toast.error('That didn’t save', { description: whyItFailed(error) })
     } finally {
       setBusy(null)
     }
@@ -361,8 +361,8 @@ function Review({ section: key, doc, url, you, canDelete }: { section: 'testimon
       await save(nested(draft))
       setDraft(null)
       toast.success('Changes saved')
-    } catch {
-      toast.error('That didn’t save', { description: 'Please check your connection and try again.' })
+    } catch (error) {
+      toast.error('That didn’t save', { description: whyItFailed(error) })
     } finally {
       setSaving(false)
     }

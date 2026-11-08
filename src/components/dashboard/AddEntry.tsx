@@ -12,7 +12,7 @@ import { backIcon, photoIcon, videoIcon } from './icons'
 import { sections } from './Lists'
 import { removePhoto, sendPhoto, sendVideo, type NewVideo } from './media'
 import { Box, buttonSize, storyFields, testimonyFields } from './ReviewScreen'
-import { api, go, refreshWhere } from './store'
+import { api, go, refreshWhere, whyItFailed } from './store'
 
 type Picked = { id: number; preview: string }
 
@@ -108,8 +108,8 @@ export function AddEntry({ section: key, you }: { section: 'testimonies' | 'stor
       toast.success('Saved', { description: 'It’s waiting for your approval.' })
       refreshWhere((other) => other === '/dashboard/data' || other.startsWith(`/api/${section.collection}?`))
       go(`/dashboard/${key}/${doc.id}`)
-    } catch {
-      toast.error('That didn’t save', { description: 'Please check your connection and try again.' })
+    } catch (error) {
+      toast.error('That didn’t save', { description: whyItFailed(error) })
       setSaving(false)
     }
   }

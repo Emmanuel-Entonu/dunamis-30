@@ -38,7 +38,7 @@ import {
   usersIcon,
 } from './icons'
 import { listUrl, sections } from './Lists'
-import { api, setData, useData } from './store'
+import { api, setData, useData, whyItFailed } from './store'
 
 const number = (value: number) => value.toLocaleString('en-GB')
 
@@ -427,14 +427,12 @@ export function FormSwitch({ open }: { open: boolean | null }) {
           ? 'People can send testimonies from the website.'
           : 'It’s hidden from the website.',
       })
-    } catch {
+    } catch (error) {
       setData<DashboardData>(
         '/dashboard/data',
         (current) => current && { ...current, formOpen: !next },
       )
-      toast.error('That didn’t save', {
-        description: 'Please check your connection and try again.',
-      })
+      toast.error('That didn’t save', { description: whyItFailed(error) })
     }
   }
   return (

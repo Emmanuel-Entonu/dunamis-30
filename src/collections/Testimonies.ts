@@ -73,7 +73,8 @@ export const Testimonies: CollectionConfig = {
         {
           name: 'summary',
           type: 'textarea',
-          maxLength: 320,
+          // No length limit here: the team pastes in whatever they have, and the card shows only the first lines.
+          // The public form keeps its own 320-character limit.
           label: 'In short',
           admin: { description: 'Shown on the testimony’s card on the website.' },
         },
