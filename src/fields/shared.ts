@@ -25,10 +25,12 @@ export const slugField = (from: string): Field => ({
   hooks: {
     beforeValidate: [
       ({ value, data }) => {
-        if (value) return slugify(value)
+        // An address that already exists is kept exactly as it is. Cutting it to length on a later save used to
+        // drop its random ending, so two long titles that start the same ended up with the same address.
+        if (typeof value === 'string' && value) return value
         const source = data?.[from]
-        if (typeof source !== 'string') return value
-        return `${slugify(source)}-${Math.random().toString(36).slice(2, 6)}`
+        if (typeof source !== 'string' || !source.trim()) return value
+        return `${slugify(source).slice(0, 70)}-${Math.random().toString(36).slice(2, 8)}`
       },
     ],
   },
