@@ -11,12 +11,23 @@ import { ChevronLeft, ChevronRight } from '../icons'
 export function Carousel({ children, label, header }: { children: ReactNode; label: string; header: ReactNode }) {
   const track = useRef<HTMLDivElement>(null)
   const [edge, setEdge] = useState({ start: true, end: false })
+  const [active, setActive] = useState(0)
+  const count = Children.count(children)
+
+  const step = () => {
+    const first = track.current?.firstElementChild as HTMLElement | null
+    return first ? first.offsetWidth + 24 : 1
+  }
 
   const update = useCallback(() => {
     const el = track.current
     if (!el) return
-    setEdge({ start: el.scrollLeft < 8, end: el.scrollLeft + el.clientWidth > el.scrollWidth - 8 })
-  }, [])
+    const end = el.scrollLeft + el.clientWidth > el.scrollWidth - 8
+    setEdge({ start: el.scrollLeft < 8, end })
+    const first = el.firstElementChild as HTMLElement | null
+    const at = first ? Math.round(el.scrollLeft / (first.offsetWidth + 24)) : 0
+    setActive(end ? count - 1 : Math.min(count - 1, Math.max(0, at)))
+  }, [count])
 
   useEffect(() => {
     update()
@@ -24,12 +35,8 @@ export function Carousel({ children, label, header }: { children: ReactNode; lab
     return () => window.removeEventListener('resize', update)
   }, [update])
 
-  const go = (dir: 1 | -1) => {
-    const el = track.current
-    const first = el?.firstElementChild as HTMLElement | null
-    if (!el || !first) return
-    el.scrollBy({ left: dir * (first.offsetWidth + 24), behavior: 'smooth' })
-  }
+  const go = (dir: 1 | -1) => track.current?.scrollBy({ left: dir * step(), behavior: 'smooth' })
+  const goTo = (i: number) => track.current?.scrollTo({ left: i * step(), behavior: 'smooth' })
 
   const arrow =
     'grid size-12 place-items-center rounded-full border border-line bg-surface text-gold transition-colors hover:border-gold disabled:opacity-35 disabled:hover:border-line'
@@ -59,6 +66,27 @@ export function Carousel({ children, label, header }: { children: ReactNode; lab
             {child}
           </div>
         ))}
+      </div>
+      {/* Shows there's more to see: a swipe hint on phones, and a dot for each slide that can be tapped. */}
+      <div className="container-site mt-4 flex flex-col items-center gap-3">
+        <p className={`flex items-center gap-1.5 text-sm text-soft transition-opacity sm:hidden ${edge.start ? 'opacity-100' : 'opacity-0'}`} aria-hidden>
+          Swipe to see more <ChevronRight width={16} height={16} />
+        </p>
+        <div className="flex flex-wrap justify-center gap-1.5" role="tablist" aria-label={`${label}: choose a slide`}>
+          {Array.from({ length: count }, (_, i) => (
+            <button
+              key={i}
+              type="button"
+              role="tab"
+              aria-selected={i === active}
+              aria-label={`Slide ${i + 1} of ${count}`}
+              onClick={() => goTo(i)}
+              className="grid size-5 place-items-center"
+            >
+              <span className={`block rounded-full transition-all ${i === active ? 'size-2.5 bg-gold' : 'size-1.5 bg-white/30'}`} />
+            </button>
+          ))}
+        </div>
       </div>
     </section>
   )
