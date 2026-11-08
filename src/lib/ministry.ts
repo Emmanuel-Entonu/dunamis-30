@@ -200,7 +200,7 @@ export const officialAccounts = [
   { name: 'Dunamis Worldwide', links: [
     { platform: 'youtube', url: 'https://www.youtube.com/@dunamistvworldwide' },
     { platform: 'facebook', url: 'https://www.facebook.com/DunamisGospelHqtrs' },
-    { platform: 'instagram', url: 'https://www.instagram.com/dunamisgospel/' },
+    { platform: 'instagram', url: 'https://www.instagram.com/dunamisworldwide/' },
     { platform: 'x', url: 'https://x.com/dunamiswrldwide' },
     { platform: 'tiktok', url: 'https://www.tiktok.com/@dunamisintlgospelcentre' },
   ] },

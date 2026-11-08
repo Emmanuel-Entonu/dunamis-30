@@ -2,6 +2,7 @@ import type { CollectionAfterChangeHook, CollectionAfterDeleteHook, CollectionBe
 import { text } from 'payload/shared'
 
 import { editorFieldOnly, hasRole } from '@/access/roles'
+import { findYouTubeLink } from '@/lib/video'
 
 export const slugify = (value: string) =>
   value
@@ -146,7 +147,11 @@ export const prepareSubmission: CollectionBeforeChangeHook = ({ data, originalDo
   }
   const file = data.videoFile !== undefined ? data.videoFile : before.videoFile
   const link = data.videoUrl !== undefined ? data.videoUrl : before.videoUrl
-  data.hasVideo = Boolean(file?.path || link)
+  // A YouTube link pasted into the words plays on the page too, so it counts as a video.
+  const now = (key: string) => (data[key] !== undefined ? data[key] : before[key])
+  const story = (now('story') ?? {}) as Record<string, string | null | undefined>
+  const pasted = findYouTubeLink(now('summary') as string, now('body') as string, now('appreciation') as string, story.before, story.encounter, story.transformation, story.today, story.meaning)
+  data.hasVideo = Boolean(file?.path || link || pasted)
   return data
 }
 

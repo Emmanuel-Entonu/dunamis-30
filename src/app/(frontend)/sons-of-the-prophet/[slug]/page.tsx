@@ -10,7 +10,8 @@ import { ArrowRight, ChevronLeft } from '@/components/icons'
 import { ShareButtons } from '@/components/ShareButtons'
 import { getSonsStoryBySlug, mediaUrl } from '@/lib/content'
 import { shareImage } from '@/lib/site'
-import { embedUrl } from '@/lib/video'
+import { findYouTubeLink, withoutYouTubeLinks } from '@/lib/video'
+import { playableVideo } from '@/lib/youtube'
 import { TestimonyVideo } from '@/components/TestimonyVideo'
 
 export const revalidate = 60
@@ -38,17 +39,24 @@ export default async function SonsStoryPage({ params }: Params) {
   const before = mediaUrl(s.beforePhoto ?? null, 'hero')
   const after = mediaUrl(s.afterPhoto ?? null, 'hero')
   const single = after || before
-  const video = embedUrl(s.videoUrl)
+  const story = s.story ?? {}
+  // A video link, or a YouTube link pasted into the story (clips included), plays right on the page.
+  // An uploaded file shows its size and length; its storage address is private and never reaches this page.
+  const uploaded = Boolean(s.videoFile?.sizeBytes || s.videoFile?.durationSec)
+  const link = s.videoUrl || (uploaded ? null : findYouTubeLink(story.before, story.encounter, story.transformation, story.today, story.meaning, s.appreciation))
+  const video = await playableVideo(link)
+  const appreciation = withoutYouTubeLinks(s.appreciation)
   const posterUrl = mediaUrl(s.videoPoster ?? s.afterPhoto ?? s.beforePhoto ?? null, 'hero')
   const poster = posterUrl ? getImageProps({ src: posterUrl, alt: '', width: 860, height: 484 }).props.src : null
-  const story = s.story ?? {}
   const chapters = [
     { title: 'Who I was', text: story.before },
     { title: 'My journey and encounter', text: story.encounter },
     { title: 'What changed', text: story.transformation },
     { title: 'Where I am today', text: story.today },
     { title: 'What Dunamis means to me', text: story.meaning },
-  ].filter((c) => c.text)
+  ]
+    .map((c) => ({ ...c, text: withoutYouTubeLinks(c.text) }))
+    .filter((c) => c.text)
 
   return (
     <article className="pt-[120px] pb-24 sm:pt-[150px]">
@@ -67,7 +75,7 @@ export default async function SonsStoryPage({ params }: Params) {
           </div>
         ) : null}
 
-        {s.hasVideo && !s.videoUrl && (
+        {uploaded && !s.videoUrl && (
           <TestimonyVideo src={`/watch/story/${s.id}`} poster={poster} title={`Video: ${s.name}`} width={s.videoFile?.width} height={s.videoFile?.height} className="mt-6" />
         )}
         {video && (
@@ -75,8 +83,8 @@ export default async function SonsStoryPage({ params }: Params) {
             <iframe src={video} title={`Video interview: ${s.name}`} loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="h-full w-full" />
           </div>
         )}
-        {s.videoUrl && !video && (
-          <a href={s.videoUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline mt-6">
+        {link && !video && (
+          <a href={link} target="_blank" rel="noopener noreferrer" className="btn btn-outline mt-6">
             Watch the video
           </a>
         )}
@@ -86,7 +94,7 @@ export default async function SonsStoryPage({ params }: Params) {
             {chapters.map((c) => (
               <section key={c.title}>
                 <h2 className="h-section">{c.title}</h2>
-                <div className="mt-4 grid gap-4 text-lg leading-relaxed">
+                <div className="mt-4 grid gap-4 text-lg leading-relaxed [overflow-wrap:anywhere]">
                   {c.text!.split(/\n{2,}|\r\n\r\n/).map((p, i) => (
                     <p key={i}>{p}</p>
                   ))}
@@ -105,10 +113,10 @@ export default async function SonsStoryPage({ params }: Params) {
           </div>
         )}
 
-        {s.appreciation && (
+        {appreciation && (
           <div className="relative isolate mt-6 overflow-hidden rounded-2xl border-2 border-white/[0.11] bg-surface p-6 sm:p-10">
             <div aria-hidden className="flare absolute inset-x-0 bottom-0 -z-10 h-full opacity-40" />
-            <p className="text-xl leading-relaxed text-fg sm:text-2xl">“{s.appreciation}”</p>
+            <p className="text-xl leading-relaxed text-fg [overflow-wrap:anywhere] sm:text-2xl">“{appreciation}”</p>
             <p className="mt-4 text-base">{s.name}</p>
           </div>
         )}

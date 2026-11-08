@@ -6,6 +6,7 @@ import { cache } from 'react'
 import type { Gallery, Homepage, ImpactPage, Media, Milestone, PastorPage, Site, SonsStory, StoryPage, Testimony } from '@/payload-types'
 import { defaults, defaultSocials } from './site'
 import { mixTestimonies } from './testimonyMix'
+import { findYouTubeLink, withoutYouTubeLinks } from '@/lib/video'
 
 // After a failed connection, wait before trying again. Otherwise every section of every page
 // makes its own attempt, and an outage makes the whole site crawl while it waits on the database.
@@ -91,11 +92,12 @@ const toCard = (t: Testimony): CardTestimony => ({
   title: t.title,
   category: t.category,
   summary: t.summary,
-  teaser: t.summary || excerpt(t.body),
+  // A pasted YouTube link plays on the page, so the card shows the words without it, and says Watch.
+  teaser: withoutYouTubeLinks(t.summary) || excerpt(withoutYouTubeLinks(t.body)),
   slug: t.slug,
   videoUrl: t.videoUrl,
   name: publicName(t),
-  hasVideo: Boolean(t.hasVideo),
+  hasVideo: Boolean(t.hasVideo || findYouTubeLink(t.summary, t.body)),
   photo: populated(t.photo),
   videoPoster: populated(t.videoPoster),
 })
@@ -236,11 +238,11 @@ export type CardSonsStory = Pick<SonsStory, 'id' | 'headline' | 'location' | 'cu
 const toSonsCard = (s: SonsStory): CardSonsStory => ({
   ...s,
   name: s.showName === false || !s.name ? 'A son of the ministry' : s.name,
-  before: s.story?.before,
+  before: withoutYouTubeLinks(s.story?.before) || undefined,
   beforePhoto: typeof s.beforePhoto === 'object' ? s.beforePhoto : null,
   afterPhoto: typeof s.afterPhoto === 'object' ? s.afterPhoto : null,
   videoPoster: populated(s.videoPoster),
-  hasVideo: Boolean(s.hasVideo),
+  hasVideo: Boolean(s.hasVideo || findYouTubeLink(s.story?.before, s.story?.encounter, s.story?.transformation, s.story?.today, s.story?.meaning, s.appreciation)),
 })
 
 /** Public Sons of the Prophet list: approved stories only, never the submitter's contacts. */

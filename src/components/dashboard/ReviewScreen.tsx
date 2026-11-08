@@ -21,6 +21,7 @@ import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { categoryLabels } from '@/lib/categories'
+import { embedUrl, findYouTubeLink } from '@/lib/video'
 import { A, Glyph, Header, longDate, Tile } from './bits'
 import { backIcon, letterIcon, penIcon, phoneIcon, photoIcon, trashIcon, videoIcon } from './icons'
 import { detailUrl, sections } from './Lists'
@@ -108,6 +109,25 @@ export function Box({ spec, value, onChange, problem }: { spec: FieldSpec; value
   )
 }
 
+/** A video link, such as a YouTube clip pasted into a testimony, playing right here. Clips are looked up by the server. */
+function LinkPlayer({ url }: { url: string }) {
+  const direct = embedUrl(url)
+  const { data, failed } = useData<{ embed: string | null }>(direct ? null : `/dashboard/video-link?url=${encodeURIComponent(url)}`)
+  const src = direct ?? data?.embed
+  if (src)
+    return (
+      <div className="aspect-video w-full overflow-hidden rounded-[22px] bg-ink">
+        <iframe src={src} title="Their video" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="h-full w-full" />
+      </div>
+    )
+  if (!failed && data === undefined) return <Skeleton className="aspect-video w-full rounded-[22px]" />
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" className="text-[15px] font-medium underline">
+      Watch their video on YouTube
+    </a>
+  )
+}
+
 /** The video to watch, and a way to add one if there isn't one. Once saved, a video can't be taken off or swapped. */
 function useVideo(section: 'testimonies' | 'stories', doc: Doc, change: Change) {
   const kind = section === 'testimonies' ? 'testimony' : 'story'
@@ -118,6 +138,8 @@ function useVideo(section: 'testimonies' | 'stories', doc: Doc, change: Change) 
   const [work, setWork] = useState<{ words: string; share?: number } | null>(null)
   const source = playing || link?.url
   const shown = hasFile || Boolean(playing)
+  // A video link, or a YouTube link pasted into their words, plays here too.
+  const pasted = doc.videoUrl || findYouTubeLink(...['summary', 'body', 'story.before', 'story.encounter', 'story.transformation', 'story.today', 'story.meaning', 'appreciation'].map((path) => textOf(doc, path)))
 
   const pick = async (file?: File) => {
     if (!file) return
@@ -143,10 +165,8 @@ function useVideo(section: 'testimonies' | 'stories', doc: Doc, change: Change) 
         ) : (
           <Skeleton className="h-[280px] rounded-[22px]" />
         )
-      ) : doc.videoUrl ? (
-        <a href={doc.videoUrl} target="_blank" rel="noopener noreferrer" className="text-[15px] font-medium underline">
-          Watch their video
-        </a>
+      ) : pasted ? (
+        <LinkPlayer url={pasted} />
       ) : null}
       {work && (
         <div>
@@ -237,7 +257,7 @@ function Words({ label, text }: { label: string; text: string }) {
   return (
     <section>
       <h3 className="text-sm font-semibold">{label}</h3>
-      <div className="mt-2 grid gap-3 text-[17px] leading-[1.65]">
+      <div className="mt-2 grid gap-3 text-[17px] leading-[1.65] [overflow-wrap:anywhere]">
         {text.split(/\n{2,}|\r\n\r\n/).map((paragraph, i) => (
           <p key={i}>{paragraph}</p>
         ))}
@@ -250,7 +270,7 @@ const Fact = ({ label, children }: { label: string; children: ReactNode }) =>
   children ? (
     <div>
       <dt className="text-[13.5px] text-soft">{label}</dt>
-      <dd className="text-[15.5px] font-medium">{children}</dd>
+      <dd className="text-[15.5px] font-medium [overflow-wrap:anywhere]">{children}</dd>
     </div>
   ) : null
 
@@ -493,7 +513,8 @@ function Review({ section: key, doc, url, you, canDelete }: { section: 'testimon
               </Tile>
             </div>
           )}
-          {canDelete && !doc.hasVideo && (
+          {/* An uploaded video can never be deleted. A pasted YouTube link isn't one. */}
+          {canDelete && !doc.videoFile?.path && (
             <div className="order-5 xl:order-none">
               <AlertDialog>
                 <AlertDialogTrigger asChild>

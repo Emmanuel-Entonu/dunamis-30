@@ -10,7 +10,8 @@ import { TestimonyVideo } from '@/components/TestimonyVideo'
 import { categoryLabels } from '@/lib/categories'
 import { getTestimonyBySlug, mediaUrl, testimonyFormOpen } from '@/lib/content'
 import { shareImage } from '@/lib/site'
-import { embedUrl } from '@/lib/video'
+import { findYouTubeLink, withoutYouTubeLinks } from '@/lib/video'
+import { playableVideo } from '@/lib/youtube'
 
 export const revalidate = 60
 
@@ -35,9 +36,14 @@ export default async function TestimonyPage({ params }: Params) {
   const image = mediaUrl(t.photo ?? null, 'hero')
   const posterUrl = mediaUrl(t.videoPoster ?? t.photo ?? null, 'hero')
   const poster = posterUrl ? getImageProps({ src: posterUrl, alt: '', width: 860, height: 484 }).props.src : null
-  const video = embedUrl(t.videoUrl)
+  // A video link, or a YouTube link pasted into the testimony (clips included), plays right on the page.
+  // An uploaded file shows its size and length; its storage address is private and never reaches this page.
+  const uploaded = Boolean(t.videoFile?.sizeBytes || t.videoFile?.durationSec)
+  const link = t.videoUrl || (uploaded ? null : findYouTubeLink(t.summary, t.body))
+  const video = await playableVideo(link)
+  const summary = withoutYouTubeLinks(t.summary)
   const date = t.publishedAt ? new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(t.publishedAt)) : null
-  const paragraphs = (t.body ?? '').split(/\n{2,}|\r\n\r\n/).map((p) => p.trim()).filter(Boolean)
+  const paragraphs = withoutYouTubeLinks(t.body).split(/\n{2,}|\r\n\r\n/).map((p) => p.trim()).filter(Boolean)
 
   return (
     <article className="pt-[120px] pb-24 sm:pt-[150px]">
@@ -53,7 +59,7 @@ export default async function TestimonyPage({ params }: Params) {
           {[t.name, t.location, date].filter(Boolean).join(' · ')}
         </p>
 
-        {t.hasVideo && !t.videoUrl ? (
+        {uploaded && !t.videoUrl ? (
           <TestimonyVideo src={`/watch/testimony/${t.id}`} poster={poster} title={t.title} width={t.videoFile?.width} height={t.videoFile?.height} className="mt-10" />
         ) : video ? (
           <div className="card mt-10 aspect-video overflow-hidden">
@@ -65,16 +71,16 @@ export default async function TestimonyPage({ params }: Params) {
           </div>
         ) : null}
 
-        {t.summary && <p className="mt-10 text-xl leading-relaxed text-fg sm:text-2xl">{t.summary}</p>}
+        {summary && <p className="mt-10 text-xl leading-relaxed text-fg [overflow-wrap:anywhere] sm:text-2xl">{summary}</p>}
         {paragraphs.length > 0 && (
-          <div className={`${t.summary ? 'mt-8' : 'mt-10'} grid gap-5 text-lg leading-relaxed`}>
+          <div className={`${summary ? 'mt-8' : 'mt-10'} grid gap-5 text-lg leading-relaxed [overflow-wrap:anywhere]`}>
             {paragraphs.map((p, i) => (
               <p key={i}>{p}</p>
             ))}
           </div>
         )}
-        {t.videoUrl && !video && (
-          <a href={t.videoUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline mt-8">
+        {link && !video && (
+          <a href={link} target="_blank" rel="noopener noreferrer" className="btn btn-outline mt-8">
             Watch the video
           </a>
         )}
