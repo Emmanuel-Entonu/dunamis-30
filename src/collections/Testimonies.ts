@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { approvedOrEditor, isEditor, nameIfShown } from '@/access/roles'
-import { afterSubmissionChange, afterSubmissionDelete, moderationFields, prepareSubmission, showNameField, slugField, submitterFields, uploadedVideoFields, videoTicketEndpoint, needsTitle } from '@/fields/shared'
+import { afterSubmissionChange, afterSubmissionDelete, moderationFields, prepareSubmission, removeVideoEndpoint, showNameField, slugField, submitterFields, uploadedVideoFields, videoTicketEndpoint, needsTitle } from '@/fields/shared'
 
 const mediaFields = ['photo', 'videoPoster']
 
@@ -46,7 +46,7 @@ export const Testimonies: CollectionConfig = {
     afterChange: [afterSubmissionChange({ mediaFields, basePath: '/testimonies', tag: 'testimonies' })],
     afterDelete: [afterSubmissionDelete(mediaFields)],
   },
-  endpoints: [videoTicketEndpoint],
+  endpoints: [videoTicketEndpoint, removeVideoEndpoint('testimonies', ['summary', 'body'])],
   fields: [
     {
       name: 'reviewPanel',

@@ -13,7 +13,15 @@ export const CARD = { w: 1080, h: 1920 }
 // The card says 23rd and 29th, at the church's request (7 Nov 2026). The rest of the site says 23 to 29 November.
 export const EVENT = { title: 'Kingdom Power & Glory World Conference', date: '23rd to 29th November 2026', venue: 'The Glory Dome, Abuja' }
 
-export type CardAssets = { crest: HTMLImageElement; emblem: HTMLImageElement; crowd: HTMLImageElement; dome: HTMLImageElement | null; nations: HTMLImageElement | null }
+export type CardAssets = {
+  crest: HTMLImageElement
+  emblem: HTMLImageElement
+  crowd: HTMLImageElement
+  dome: HTMLImageElement | null
+  nations: HTMLImageElement | null
+  /** The guest ministers with Dr Paul and Dr Becky, from the conference poster, across the foot of the card. */
+  ministers?: HTMLImageElement | null
+}
 
 export type CardInput = {
   name: string
@@ -301,9 +309,12 @@ const DARK_INK = { text: '#eee0bf', strong: '#ffffff', soft: 'rgba(238,224,191,0
 const M = 64 // side margin
 // Where the crowd layer starts, hidden behind the photo. It's made by scripts/render-card-crowd.mjs.
 const CROWD_TOP = 1240
-// The white card's photo is a little shorter, to leave room for the crowd.
-const LIGHT_LAYOUT = { photo: 1040, statement: 1304, rule: 1524, date: 1612, venue: 1672, tag: 1722 }
-const DARK_LAYOUT = { photo: 1120, statement: 1394, rule: 1640, date: 1742, venue: 1808, tag: 1862 }
+// The photo leaves room at the foot for the guest ministers (Dr Paul's request, 8 Nov 2026).
+const LIGHT_LAYOUT = { photo: 690, statement: 954, rule: 1174, date: 1262, venue: 1320, tag: 1368 }
+const DARK_LAYOUT = LIGHT_LAYOUT
+// The ministers stand from under the hashtag down to the frame's inner edge, where they fade out.
+const MINISTERS_TOP = 1378
+const MINISTERS_BOTTOM = 1892
 
 export function drawCard(ctx: CanvasRenderingContext2D, input: CardInput, assets: CardAssets, t = 1) {
   const { w, h } = CARD
@@ -388,7 +399,8 @@ export function drawCard(ctx: CanvasRenderingContext2D, input: CardInput, assets
   ctx.save()
   ctx.clip()
   if (input.photo) {
-    cover(ctx, input.photo, PHOTO.x, PHOTO.y, PHOTO.w, PHOTO.h, input.zoom, 0.42)
+    // The frame is wider than a portrait now, so keep the top of the picture, where the face usually is.
+    cover(ctx, input.photo, PHOTO.x, PHOTO.y, PHOTO.w, PHOTO.h, input.zoom, 0.2)
   } else {
     ctx.fillStyle = INK.figure
     ctx.beginPath()
@@ -460,6 +472,24 @@ export function drawCard(ctx: CanvasRenderingContext2D, input: CardInput, assets
   ctx.fillText('#Dunamis@30', w / 2, LINE.tag)
   spaced(ctx, 0)
   ctx.restore()
+
+  // The guest ministers and our pastors, cut out of the conference poster with their names, rising in last.
+  // A soft shadow keeps them, and the white names, clear on light and dark designs alike.
+  const mn = easeOut(seg(t, 0.7, 0.96))
+  if (assets.ministers && mn > 0) {
+    const img = assets.ministers
+    const ih = MINISTERS_BOTTOM - MINISTERS_TOP
+    const iw = ih * (img.naturalWidth / img.naturalHeight)
+    ctx.save()
+    roundRect(ctx, 30, 30, w - 60, h - 60, 18)
+    ctx.clip()
+    ctx.globalAlpha = mn
+    ctx.shadowColor = light ? 'rgba(40,24,4,0.32)' : 'rgba(0,0,0,0.75)'
+    ctx.shadowBlur = light ? 10 : 14
+    ctx.shadowOffsetY = 3
+    ctx.drawImage(img, w / 2 - iw / 2, MINISTERS_TOP + (1 - mn) * 40, iw, ih)
+    ctx.restore()
+  }
 
   // A light sweep finishes the reveal.
   const sweep = seg(t, 0.74, 1)

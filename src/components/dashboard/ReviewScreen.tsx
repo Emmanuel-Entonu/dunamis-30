@@ -128,14 +128,18 @@ function LinkPlayer({ url }: { url: string }) {
   )
 }
 
-/** The video to watch, and a way to add one if there isn't one. Once saved, a video can't be taken off or swapped. */
-function useVideo(section: 'testimonies' | 'stories', doc: Doc, change: Change) {
+/**
+ * The video to watch, and a way to add one if there isn't one. An ordinary save never takes a video off or
+ * swaps it. Only an admin can remove one (removeVideo), and an uploaded video is then deleted for good.
+ */
+function useVideo(section: 'testimonies' | 'stories', doc: Doc, change: Change, removeVideo: (() => Promise<boolean>) | null) {
   const kind = section === 'testimonies' ? 'testimony' : 'story'
   const hasFile = Boolean(doc.videoFile?.path)
   const { data: link, failed } = useData<{ url: string }>(hasFile ? `/watch/${kind}/${doc.id}?link=1` : null)
   const input = useRef<HTMLInputElement>(null)
   const [playing, setPlaying] = useState('')
   const [work, setWork] = useState<{ words: string; share?: number } | null>(null)
+  const [removing, setRemoving] = useState(false)
   const source = playing || link?.url
   const shown = hasFile || Boolean(playing)
   // A video link, or a YouTube link pasted into their words, plays here too.
@@ -177,8 +181,43 @@ function useVideo(section: 'testimonies' | 'stories', doc: Doc, change: Change) 
     </>
   )
 
-  const tools = shown ? null : (
+  const remover =
+    removeVideo && (shown || pasted) ? (
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button type="button" variant="secondary" disabled={removing || Boolean(work)} className={buttonSize}>
+            <Glyph icon={trashIcon} /> {removing ? 'Removing…' : 'Remove video'}
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent className="rounded-[28px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this video?</AlertDialogTitle>
+            <AlertDialogDescription>
+              It comes off the website. An uploaded video is deleted for good and can’t be brought back. Their words and photos stay.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-2xl">Keep it</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-2xl"
+              onClick={async () => {
+                setRemoving(true)
+                if (await removeVideo()) setPlaying('')
+                setRemoving(false)
+              }}
+            >
+              Remove video
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    ) : null
+
+  const tools = shown ? (
+    remover
+  ) : (
     <>
+      {remover}
       <Button type="button" variant="secondary" disabled={Boolean(work)} className={buttonSize} onClick={() => input.current?.click()}>
         <Glyph icon={videoIcon} /> Add a video
       </Button>
@@ -387,7 +426,21 @@ function Review({ section: key, doc, url, you, canDelete }: { section: 'testimon
     }
   }
 
-  const video = useVideo(key, doc, change)
+  // Only an admin can take a video off. An uploaded one is deleted from storage with its cover; the words stay.
+  const removeVideo = async () => {
+    try {
+      const { doc: saved } = await api<{ doc: Doc }>(`/api/${section.collection}/${doc.id}/remove-video`, { method: 'POST', json: {} })
+      setData<Doc>(url, () => saved)
+      everywhere()
+      toast.success('Video removed', { description: 'It’s off the website, and an uploaded video is deleted.' })
+      return true
+    } catch (error) {
+      toast.error('The video couldn’t be removed', { description: whyItFailed(error) })
+      return false
+    }
+  }
+
+  const video = useVideo(key, doc, change, canDelete ? removeVideo : null)
   const photo = usePhoto('Their photo', 'a photo', doc.photo, 'photo', change)
   const beforePhoto = usePhoto('Their photo from before', 'the before photo', doc.beforePhoto, 'beforePhoto', change)
   const afterPhoto = usePhoto('Their photo today', 'today’s photo', doc.afterPhoto, 'afterPhoto', change)
@@ -548,7 +601,7 @@ function Review({ section: key, doc, url, you, canDelete }: { section: 'testimon
               </Tile>
             </div>
           )}
-          {/* An uploaded video can never be deleted. A pasted YouTube link isn't one. */}
+          {/* An entry with an uploaded video can't be deleted outright: an admin removes the video first. */}
           {canDelete && !doc.videoFile?.path && (
             <div className="order-5 xl:order-none">
               <AlertDialog>

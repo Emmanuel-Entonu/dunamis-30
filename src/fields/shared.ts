@@ -136,12 +136,14 @@ const mediaIds = (doc: SubmissionDoc, fields: string[]) =>
     .filter((id): id is number => typeof id === 'number')
 
 /** Stamps publishedAt the first time something is approved, and keeps hasVideo accurate. */
-export const prepareSubmission: CollectionBeforeChangeHook = ({ data, originalDoc }) => {
+export const prepareSubmission: CollectionBeforeChangeHook = ({ data, originalDoc, context, req }) => {
   const before = (originalDoc ?? {}) as SubmissionDoc
   const status = data.status ?? before.status
   if (status === 'approved' && !data.publishedAt && !before.publishedAt) data.publishedAt = new Date().toISOString()
-  // A video stays with its submission once saved: it can't be taken away or swapped, by anyone.
-  if (before.videoFile?.path) {
+  // A video stays with its submission once saved, so no ordinary save takes it off or swaps it by accident.
+  // The one way off is an admin's Remove video (removeVideoEndpoint below).
+  const removing = context?.removeVideo === true && hasRole(req.user as never, 'admin')
+  if (before.videoFile?.path && !removing) {
     data.videoFile = before.videoFile
     data.videoPoster = before.videoPoster
   }
@@ -216,6 +218,49 @@ export const afterSubmissionDelete =
     }
     return doc
   }
+
+/**
+ * Lets an admin take the video off a testimony or story: the uploaded file (the change hook above deletes it
+ * from storage, with its cover picture), a video link, and any YouTube link pasted into the words, which would
+ * otherwise still play. Their words, photos and everything else stay.
+ */
+export const removeVideoEndpoint = (collection: 'testimonies' | 'sons-stories', texts: string[]): Endpoint => ({
+  path: '/:id/remove-video',
+  method: 'post',
+  handler: async (req) => {
+    if (!hasRole(req.user as never, 'admin')) return Response.json({ error: 'Only an admin can remove a video.' }, { status: 403 })
+    const id = Number(req.routeParams?.id)
+    const found = Number.isInteger(id) ? await req.payload.findByID({ collection, id, depth: 0, overrideAccess: true, disableErrors: true, req }) : null
+    if (!found) return Response.json({ error: 'This isn’t here any more.' }, { status: 404 })
+    const doc = found as unknown as Record<string, unknown>
+    const { withoutYouTubeLinks } = await import('@/lib/video')
+    const strip = (text: unknown) => (typeof text === 'string' && findYouTubeLink(text) ? withoutYouTubeLinks(text) : undefined)
+    const data: Record<string, unknown> = {
+      videoFile: { path: null, sizeBytes: null, durationSec: null, width: null, height: null },
+      videoPoster: null,
+      videoUrl: null,
+    }
+    for (const field of texts.filter((path) => !path.includes('.'))) {
+      const clean = strip(doc[field])
+      if (clean !== undefined) data[field] = clean
+    }
+    for (const group of new Set(texts.filter((path) => path.includes('.')).map((path) => path.split('.')[0]))) {
+      const current = { ...((doc[group] as Record<string, unknown> | null) ?? {}) }
+      let changed = false
+      for (const path of texts.filter((p) => p.startsWith(`${group}.`))) {
+        const key = path.slice(group.length + 1)
+        const clean = strip(current[key])
+        if (clean !== undefined) {
+          current[key] = clean
+          changed = true
+        }
+      }
+      if (changed) data[group] = current
+    }
+    const saved = await req.payload.update({ collection, id, data, depth: 1, overrideAccess: true, context: { removeVideo: true }, req })
+    return Response.json({ doc: saved })
+  },
+})
 
 /** Lets an editor upload a video from the dashboard, straight to the dashboard's own bucket. */
 export const videoTicketEndpoint: Endpoint = {

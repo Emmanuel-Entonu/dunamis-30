@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import crestImg from '@/assets/brand/crest-official.webp'
 import emblemImg from '@/assets/brand/emblem-official.webp'
 import crowdImg from '@/assets/photos/card-crowd.webp'
+import ministersImg from '@/assets/photos/card-ministers.webp'
 import domeImg from '@/assets/photos/glory-dome-interior.webp'
 import nationsImg from '@/assets/photos/nations.webp'
 import { renders } from '@/assets/renders'
@@ -374,11 +375,11 @@ export function CardStudio() {
     let alive = true
     ;(async () => {
       try {
-        const [crest, emblem, crowd] = await Promise.all([loadArtwork(crestImg.src), loadArtwork(emblemImg.src), loadArtwork(crowdImg.src)])
+        const [crest, emblem, crowd, ministers] = await Promise.all([loadArtwork(crestImg.src), loadArtwork(emblemImg.src), loadArtwork(crowdImg.src), loadArtwork(ministersImg.src)])
         font.current = getComputedStyle(document.body).fontFamily
         await Promise.all([700, 600, 500].map((w) => document.fonts.load(`${w} 40px ${font.current}`).catch(() => undefined)))
         if (!alive) return
-        assets.current = { crest, emblem, crowd, dome: null, nations: null }
+        assets.current = { crest, emblem, crowd, dome: null, nations: null, ministers }
         setReady(true)
       } catch {
         if (alive) setFailed(true)

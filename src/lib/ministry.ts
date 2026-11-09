@@ -158,7 +158,7 @@ export type DefaultStat = { value: number; suffix?: string; label: string; note?
 
 export const defaultStats: DefaultStat[] = [
   { value: 100000, label: 'Capacity of the Glory Dome', note: 'Finished without debt' },
-  { value: 5000, suffix: '+', label: 'Home church locations', note: 'Fellowship in people’s homes' },
+  { value: 24000, suffix: '+', label: 'Home churches', note: 'Fellowship in people’s homes' },
   { value: 45, suffix: '+', label: 'Conferences and crusades a year' },
   { value: 68, suffix: '+', label: 'Nations at Flaming Fire', note: 'In 2025' },
   { value: 109, label: 'Countries our visitors came from', note: 'In 2025' },
