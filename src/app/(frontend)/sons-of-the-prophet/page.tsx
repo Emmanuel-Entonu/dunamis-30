@@ -30,11 +30,11 @@ function StoryCard({ story }: { story: CardSonsStory }) {
       <div className="relative aspect-[4/3] overflow-hidden bg-hair">
         {before && after ? (
           <div className="grid h-full grid-cols-2 gap-0.5">
-            <LoadingImage src={before} alt={`${story.name} before`} width={400} height={400} sizes="(min-width: 1024px) 200px, 48vw" className="h-full w-full object-cover" />
-            <LoadingImage src={after} alt={`${story.name} today`} width={400} height={400} sizes="(min-width: 1024px) 200px, 48vw" className="h-full w-full object-cover" />
+            <LoadingImage src={before} alt={`${story.name} before`} width={400} height={400} sizes="(min-width: 1024px) 200px, 48vw" className="h-full w-full object-cover object-[50%_15%]" />
+            <LoadingImage src={after} alt={`${story.name} today`} width={400} height={400} sizes="(min-width: 1024px) 200px, 48vw" className="h-full w-full object-cover object-[50%_15%]" />
           </div>
         ) : after || before ? (
-          <LoadingImage src={(after || before)!} alt={story.name} fill sizes="(min-width: 1024px) 400px, 96vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+          <LoadingImage src={(after || before)!} alt={story.name} fill sizes="(min-width: 1024px) 400px, 96vw" className="object-cover object-[50%_15%] transition-transform duration-500 group-hover:scale-105" />
         ) : thumb ? (
           <>
             {/* The thumbnail whole, titles and all, on a blurred copy of itself. The widescreen frame also trims the

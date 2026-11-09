@@ -1,12 +1,12 @@
 import type { Metadata } from 'next'
 import { getImageProps } from 'next/image'
-import { LoadingImage } from '@/components/LoadingImage'
 import Link from '@/components/SiteLink'
 import { notFound } from 'next/navigation'
 
 import { ArrowRight, ChevronLeft } from '@/components/icons'
 import { ShareButtons } from '@/components/ShareButtons'
 import { TestimonyVideo } from '@/components/TestimonyVideo'
+import { WholePhoto } from '@/components/WholePhoto'
 import { categoryLabels } from '@/lib/categories'
 import { getTestimonyBySlug, mediaUrl, testimonyFormOpen } from '@/lib/content'
 import { shareImage } from '@/lib/site'
@@ -68,9 +68,7 @@ export default async function TestimonyPage({ params }: Params) {
             <iframe src={video} title={t.title} allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="h-full w-full" />
           </div>
         ) : image ? (
-          <div className="card relative mt-10 aspect-[16/10] overflow-hidden">
-            <LoadingImage src={image} alt={t.title} fill priority sizes="(min-width: 900px) 860px, 100vw" className="object-cover" />
-          </div>
+          <WholePhoto src={image} alt={t.title} width={t.photo?.width} height={t.photo?.height} className="card mt-10" />
         ) : null}
 
         {summary && <p className="mt-10 text-xl leading-relaxed text-fg [overflow-wrap:anywhere] sm:text-2xl">{summary}</p>}

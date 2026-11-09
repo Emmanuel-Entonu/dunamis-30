@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { getImageProps } from 'next/image'
-import { LoadingImage } from '@/components/LoadingImage'
 import Link from '@/components/SiteLink'
 import { notFound } from 'next/navigation'
 
@@ -13,6 +12,7 @@ import { shareImage } from '@/lib/site'
 import { findYouTubeLink, withoutYouTubeLinks } from '@/lib/video'
 import { playableVideo, videoThumbnail } from '@/lib/youtube'
 import { TestimonyVideo } from '@/components/TestimonyVideo'
+import { WholePhoto } from '@/components/WholePhoto'
 
 export const revalidate = 60
 
@@ -72,9 +72,7 @@ export default async function SonsStoryPage({ params }: Params) {
         {before && after ? (
           <BeforeAfter before={before} after={after} name={s.name} className="card mt-10 aspect-[4/3]" />
         ) : single ? (
-          <div className="card relative mt-10 aspect-[16/10] overflow-hidden">
-            <LoadingImage src={single} alt={s.name} fill priority sizes="(min-width: 900px) 860px, 100vw" className="object-cover" />
-          </div>
+          <WholePhoto src={single} alt={s.name} width={(s.afterPhoto ?? s.beforePhoto)?.width} height={(s.afterPhoto ?? s.beforePhoto)?.height} className="card mt-10" />
         ) : null}
 
         {uploaded && !s.videoUrl && (

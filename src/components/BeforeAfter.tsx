@@ -9,9 +9,11 @@ export function BeforeAfter({ before, after, name, className = '' }: { before: s
 
   return (
     <div className={`relative overflow-hidden select-none ${className}`}>
-      <Image src={after} alt={`${name} today`} fill sizes="(min-width: 900px) 860px, 96vw" className="object-cover" />
-      <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - split}% 0 0)` }}>
-        <Image src={before} alt={`${name} before`} fill sizes="(min-width: 900px) 860px, 96vw" className="object-cover" />
+      <Image src={after} alt="" aria-hidden fill sizes="(min-width: 900px) 860px, 96vw" className="scale-110 object-cover opacity-60 blur-2xl" />
+      <Image src={after} alt={`${name} today`} fill sizes="(min-width: 900px) 860px, 96vw" className="object-contain" />
+      <div className="absolute inset-0 bg-canvas" style={{ clipPath: `inset(0 ${100 - split}% 0 0)` }}>
+        <Image src={before} alt="" aria-hidden fill sizes="(min-width: 900px) 860px, 96vw" className="scale-110 object-cover opacity-60 blur-2xl" />
+        <Image src={before} alt={`${name} before`} fill sizes="(min-width: 900px) 860px, 96vw" className="object-contain" />
       </div>
       <span className="absolute top-3 left-3 rounded-lg bg-black/60 px-3 py-2 text-sm leading-none text-fg backdrop-blur-[6px]">Before</span>
       <span className="absolute top-3 right-3 rounded-lg bg-black/60 px-3 py-2 text-sm leading-none text-fg backdrop-blur-[6px]">Today</span>

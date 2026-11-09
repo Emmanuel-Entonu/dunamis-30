@@ -22,7 +22,7 @@ export function TestimonyCard({ testimony }: { testimony: CardTestimony }) {
     <article className="group relative flex h-full flex-col gap-3">
       <div className="flex h-[65px] items-center justify-between gap-3 rounded-2xl border border-hair bg-surface p-2">
         <span className="relative grid size-12 shrink-0 place-items-center overflow-hidden rounded-lg text-lg font-medium text-white" style={{ background: `linear-gradient(140deg, ${tintA}, ${tintB})` }}>
-          {thumb ? <Image src={thumb} alt="" fill sizes="48px" className="object-cover" /> : who.charAt(0)}
+          {thumb ? <Image src={thumb} alt="" fill sizes="48px" className="object-cover object-top" /> : who.charAt(0)}
         </span>
         <span className="truncate rounded-lg bg-hair px-[15px] py-3 text-sm text-fg">{label}</span>
       </div>
@@ -49,7 +49,7 @@ export function TestimonyCard({ testimony }: { testimony: CardTestimony }) {
           </>
         ) : image ? (
           <>
-            <LoadingImage src={image} alt={cover?.alt || title} fill sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 96vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+            <LoadingImage src={image} alt={cover?.alt || title} fill sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 96vw" className="object-cover object-[50%_15%] transition-transform duration-500 group-hover:scale-105" />
             <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
             {hasVideo && (
               <span className="absolute top-[38%] left-1/2 grid size-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-xl text-white shadow-[inset_0_0_6px_rgba(255,255,255,0.6)] backdrop-blur-[5px] transition-shadow group-hover:shadow-[inset_0_0_20px_rgba(255,255,255,0.7)]">
