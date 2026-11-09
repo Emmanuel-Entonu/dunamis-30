@@ -66,7 +66,7 @@ export default async function SonsStoryPage({ params }: Params) {
         <Link href="/sons-of-the-prophet" className="link-arrow text-base">
           <ChevronLeft width={20} height={20} /> All stories
         </Link>
-        <h1 className="h-hero mt-8 !text-[clamp(2rem,1.4rem+2.6vw,3.25rem)]">{s.headline || s.name}</h1>
+        <h1 className={`h-hero mt-8 [overflow-wrap:anywhere] ${(s.headline || s.name).length > 90 ? '!text-[clamp(1.25rem,1.1rem+0.8vw,1.75rem)] !leading-[1.35]' : '!text-[clamp(2rem,1.4rem+2.6vw,3.25rem)]'}`}>{s.headline || s.name}</h1>
         <p className="mt-4 text-base">{[s.headline ? s.name : null, s.currentRole, s.location].filter(Boolean).join(' · ')}</p>
 
         {before && after ? (

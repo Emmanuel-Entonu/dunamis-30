@@ -56,7 +56,7 @@ function StoryCard({ story }: { story: CardSonsStory }) {
         )}
       </div>
       <div className="flex flex-1 flex-col p-5 sm:p-7">
-        <h3 className="h-card transition-colors group-hover:text-gold">{title}</h3>
+        <h3 className="h-card line-clamp-3 transition-colors [overflow-wrap:anywhere] group-hover:text-gold">{title}</h3>
         {story.before && <p className="mt-3 line-clamp-3 text-base">{story.before}</p>}
         <div className="mt-auto flex items-center justify-between gap-4 pt-6">
           <span className="min-w-0 text-base">

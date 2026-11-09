@@ -56,7 +56,7 @@ export default async function TestimonyPage({ params }: Params) {
         <p className="mt-8">
           <span className="rounded-lg bg-hair px-4 py-2 text-sm text-fg">{categoryLabels[t.category] ?? 'Testimony'}</span>
         </p>
-        <h1 className="h-hero mt-6 !text-[clamp(2rem,1.4rem+2.6vw,3.25rem)]">{t.title}</h1>
+        <h1 className={`h-hero mt-6 [overflow-wrap:anywhere] ${t.title.length > 90 ? '!text-[clamp(1.25rem,1.1rem+0.8vw,1.75rem)] !leading-[1.35]' : '!text-[clamp(2rem,1.4rem+2.6vw,3.25rem)]'}`}>{t.title}</h1>
         <p className="mt-4 text-base">
           {[t.name, t.location, date].filter(Boolean).join(' · ')}
         </p>

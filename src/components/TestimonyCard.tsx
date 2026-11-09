@@ -37,12 +37,12 @@ export function TestimonyCard({ testimony }: { testimony: CardTestimony }) {
                 <Play width={22} height={22} />
               </span>
             </div>
-            <h3 className="relative mt-6 text-xl leading-[1.3] font-medium text-fg sm:text-2xl">{title}</h3>
-            {teaser && <p className="relative mt-3 line-clamp-2 text-base">{teaser}</p>}
+            <h3 className="relative mt-6 line-clamp-3 text-xl leading-[1.3] font-medium text-fg [overflow-wrap:anywhere] sm:text-2xl">{title}</h3>
+            {teaser && <p className="relative mt-3 line-clamp-2 text-base [overflow-wrap:anywhere]">{teaser}</p>}
             {/* The same footing as a written card, so names line up across a row. */}
             <div className="relative mt-auto pt-6">
               <div className="border-l border-muted pl-5">
-                <p className="text-lg text-fg">{who}</p>
+                <p className="text-lg text-fg [overflow-wrap:anywhere]">{who}</p>
                 <p className="mt-1 text-base">{label}</p>
               </div>
             </div>
@@ -57,9 +57,9 @@ export function TestimonyCard({ testimony }: { testimony: CardTestimony }) {
               </span>
             )}
             <div className="relative mt-auto">
-              <h3 className="h-card">{title}</h3>
-              {teaser && <p className="mt-2 line-clamp-2 text-base text-soft">{teaser}</p>}
-              <p className="mt-3 text-base text-fg">{who}</p>
+              <h3 className="h-card line-clamp-3 [overflow-wrap:anywhere]">{title}</h3>
+              {teaser && <p className="mt-2 line-clamp-2 text-base text-soft [overflow-wrap:anywhere]">{teaser}</p>}
+              <p className="mt-3 text-base text-fg [overflow-wrap:anywhere]">{who}</p>
             </div>
           </>
         ) : (
@@ -73,10 +73,10 @@ export function TestimonyCard({ testimony }: { testimony: CardTestimony }) {
                 <Play width={18} height={18} />
               </span>
             )}
-            <h3 className="relative mt-6 text-xl leading-[1.3] font-medium text-fg sm:text-2xl">{title}</h3>
-            {teaser && <p className="relative mt-4 line-clamp-4 text-base">{teaser}</p>}
+            <h3 className="relative mt-6 line-clamp-3 text-xl leading-[1.3] font-medium text-fg [overflow-wrap:anywhere] sm:text-2xl">{title}</h3>
+            {teaser && <p className="relative mt-4 line-clamp-4 text-base [overflow-wrap:anywhere]">{teaser}</p>}
             <div className="relative mt-auto border-l border-muted pt-0 pl-5">
-              <p className="text-lg text-fg">{who}</p>
+              <p className="text-lg text-fg [overflow-wrap:anywhere]">{who}</p>
               <p className="mt-1 text-base">{label}</p>
             </div>
           </>
