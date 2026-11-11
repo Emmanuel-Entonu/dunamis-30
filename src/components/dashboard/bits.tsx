@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import type { SearchHit } from '@/lib/dashboardData'
 import { arrowIcon, bookIcon, chatIcon, planeIcon, searchIcon } from './icons'
-import { go, refresh, useData } from './store'
+import { goBack, go, refresh, useData } from './store'
 
 export type Tone = 'teal' | 'pink' | 'butter' | 'lilac' | 'white'
 
@@ -16,7 +16,8 @@ const tones: Record<Tone, string> = { teal: 'bg-teal', pink: 'bg-pink', butter: 
 export const toneClass = (tone: Tone) => tones[tone]
 
 /** A link that swaps the screen in the browser. It behaves like a normal link for new tabs. */
-export function A({ href, onClick, warm, ...props }: AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; warm?: string }) {
+/** A dashboard link. With `back`, it returns to the page this one was opened from (`href` is only the fallback). */
+export function A({ href, onClick, warm, back, ...props }: AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; warm?: string; back?: boolean }) {
   return (
     <a
       {...props}
@@ -28,7 +29,8 @@ export function A({ href, onClick, warm, ...props }: AnchorHTMLAttributes<HTMLAn
         onClick?.(event)
         if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
         event.preventDefault()
-        go(href)
+        if (back) goBack(href)
+        else go(href)
       }}
     />
   )

@@ -31,6 +31,7 @@ import {
   cardIcon,
   chatIcon,
   computerIcon,
+  downloadIcon,
   forwardIcon,
   globeIcon,
   planeIcon,
@@ -38,6 +39,7 @@ import {
   usersIcon,
 } from './icons'
 import { listUrl, sections } from './Lists'
+import { downloadReport } from './report'
 import { api, setData, useData, whyItFailed } from './store'
 
 const number = (value: number) => value.toLocaleString('en-GB')
@@ -459,6 +461,18 @@ export function FormSwitch({ open }: { open: boolean | null }) {
 export function Overview({ you }: { you: string }) {
   const { data, failed } = useData<DashboardData>('/dashboard/data')
   const [tab, setTab] = useState<TrafficTab>('visitors')
+  const [exporting, setExporting] = useState(false)
+  const exportReport = async () => {
+    setExporting(true)
+    try {
+      await downloadReport()
+      toast.success('Statistics downloaded', { description: 'The PDF is in your downloads.' })
+    } catch (error) {
+      toast.error('The statistics couldn’t be downloaded', { description: whyItFailed(error) })
+    } finally {
+      setExporting(false)
+    }
+  }
   const show = (next: TrafficTab) => {
     setTab(next)
     document.getElementById('traffic')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -472,6 +486,16 @@ export function Overview({ you }: { you: string }) {
         you={you}
         title="Overview"
       />
+      <div className="mt-5">
+        <button
+          type="button"
+          onClick={() => void exportReport()}
+          disabled={exporting}
+          className="inline-flex h-12 items-center gap-2 rounded-2xl bg-ink px-6 text-[15px] font-medium text-white transition-opacity disabled:opacity-60"
+        >
+          <Glyph icon={downloadIcon} /> {exporting ? 'Making the PDF…' : 'Download statistics (PDF)'}
+        </button>
+      </div>
       <div className="mt-8 grid grid-cols-1 gap-x-10 gap-y-9 xl:grid-cols-[minmax(0,1fr)_minmax(0,410px)]">
         <div className="min-w-0">
           <SectionTitle count={data ? waiting : undefined}>Waiting for you</SectionTitle>

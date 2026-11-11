@@ -159,11 +159,20 @@ function GuestSide({ data }: { data: DashboardData }) {
   )
 }
 
+const opened = new Map<string, number>()
+
 export function SectionList({ section: key, query, you }: { section: Section['key']; query: string; you: string }) {
   const section = sections[key]
   const asked = new URLSearchParams(query).get('tab')
   const tab = asked ?? section.tabs[0][0]
-  const [limit, setLimit] = useState(24)
+  // How far each list was opened, so coming back to it shows the same rows.
+  const [limit, setShown] = useState(() => opened.get(`${key}|${tab}`) ?? 24)
+  const setLimit = (next: (n: number) => number) =>
+    setShown((n) => {
+      const value = next(n)
+      opened.set(`${key}|${tab}`, value)
+      return value
+    })
   const url = listUrl(section, tab, limit)
   const { data, failed } = useData<{ docs: Row[]; totalDocs: number; hasNextPage: boolean }>(url)
   const { data: overview } = useData<DashboardData>('/dashboard/data')

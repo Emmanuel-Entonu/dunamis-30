@@ -12,15 +12,38 @@ import { useCallback, useEffect, useSyncExternalStore } from 'react'
 const moved = new Set<() => void>()
 const tellMoved = () => moved.forEach((listener) => listener())
 
-if (typeof window !== 'undefined') window.addEventListener('popstate', tellMoved)
+// Each step in the dashboard remembers the page it came from and how far down that page was, so going back
+// lands on the same tab, in the same place.
+type Step = { from?: string; scroll?: number }
+const step = () => (window.history.state ?? {}) as Step
 
-export const go = (href: string, { keepScroll = false } = {}) => {
-  window.history.pushState(null, '', href)
+if (typeof window !== 'undefined') {
+  window.history.scrollRestoration = 'manual'
+  window.addEventListener('popstate', () => {
+    tellMoved()
+    const y = step().scroll ?? 0
+    // Let the page draw first, then put it back where it was.
+    requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, y)))
+  })
+}
+
+const readLocation = () => window.location.pathname + window.location.search
+
+export const go = (href: string, { keepScroll = false, replace = false } = {}) => {
+  if (replace) window.history.replaceState({ from: step().from }, '', href)
+  else {
+    window.history.replaceState({ ...step(), scroll: window.scrollY }, '')
+    window.history.pushState({ from: readLocation() }, '', href)
+  }
   if (!keepScroll) window.scrollTo(0, 0)
   tellMoved()
 }
 
-const readLocation = () => window.location.pathname + window.location.search
+/** Back to the page this one was opened from. Opened straight from a link or bookmark, it goes to `fallback`. */
+export const goBack = (fallback: string) => {
+  if (step().from?.startsWith('/dashboard')) window.history.back()
+  else go(fallback, { replace: true })
+}
 
 export const useLocation = () =>
   useSyncExternalStore(

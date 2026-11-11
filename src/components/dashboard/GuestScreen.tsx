@@ -57,7 +57,7 @@ export function GuestScreen({ id, you }: { id: string; you: string }) {
   const [notes, setNotes] = useState<string | null>(null)
 
   const back = (
-    <A href="/dashboard/guests" aria-label="Back to international guests" className="grid size-12 shrink-0 place-items-center rounded-full bg-white">
+    <A back href="/dashboard/guests" aria-label="Back to international guests" className="grid size-12 shrink-0 place-items-center rounded-full bg-white">
       <Glyph icon={backIcon} />
     </A>
   )

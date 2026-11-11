@@ -107,7 +107,7 @@ export function AddEntry({ section: key, you }: { section: 'testimonies' | 'stor
       const { doc } = await api<{ doc: { id: number } }>(`/api/${section.collection}`, { method: 'POST', json: data })
       toast.success('Saved', { description: 'It’s waiting for your approval.' })
       refreshWhere((other) => other === '/dashboard/data' || other.startsWith(`/api/${section.collection}?`))
-      go(`/dashboard/${key}/${doc.id}`)
+      go(`/dashboard/${key}/${doc.id}`, { replace: true })
     } catch (error) {
       toast.error('That didn’t save', { description: whyItFailed(error) })
       setSaving(false)
@@ -118,7 +118,7 @@ export function AddEntry({ section: key, you }: { section: 'testimonies' | 'stor
     <>
       <Header title={story ? 'Add a story' : 'Add a testimony'} you={you} />
       <div className="mt-4">
-        <A href={`/dashboard/${key}`} aria-label={`Back to ${section.title}`} className="grid size-12 place-items-center rounded-full bg-white">
+        <A back href={`/dashboard/${key}`} aria-label={`Back to ${section.title}`} className="grid size-12 place-items-center rounded-full bg-white">
           <Glyph icon={backIcon} />
         </A>
       </div>

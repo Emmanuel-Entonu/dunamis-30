@@ -26,7 +26,7 @@ import { A, Glyph, Header, longDate, Tile } from './bits'
 import { backIcon, letterIcon, penIcon, phoneIcon, photoIcon, trashIcon, videoIcon } from './icons'
 import { detailUrl, sections } from './Lists'
 import { sendPhoto, sendVideo } from './media'
-import { api, go, refreshWhere, setData, useData, whyItFailed } from './store'
+import { api, goBack, refreshWhere, setData, useData, whyItFailed } from './store'
 
 type MediaDoc = { id: number; url?: string | null; sizes?: { hero?: { url?: string | null }; card?: { url?: string | null } } }
 
@@ -481,7 +481,7 @@ function Review({ section: key, doc, url, you, canDelete }: { section: 'testimon
       await api(`/api/${section.collection}/${doc.id}`, { method: 'DELETE' })
       toast.success('Deleted')
       everywhere()
-      go(`/dashboard/${key}`)
+      goBack(`/dashboard/${key}`)
     } catch {
       toast.error('That couldn’t be deleted', { description: 'Please try again.' })
     }
@@ -508,7 +508,7 @@ function Review({ section: key, doc, url, you, canDelete }: { section: 'testimon
     <>
       <Header title={<span className="line-clamp-2">{textOf(doc, story ? 'headline' : 'title')}</span>} you={you} />
       <div className="mt-4 flex items-center gap-3">
-        <A href={`/dashboard/${key}`} aria-label={`Back to ${section.title}`} className="grid size-12 shrink-0 place-items-center rounded-full bg-white">
+        <A back href={`/dashboard/${key}`} aria-label={`Back to ${section.title}`} className="grid size-12 shrink-0 place-items-center rounded-full bg-white">
           <Glyph icon={backIcon} />
         </A>
         <p className="text-[15px] text-soft">Received {longDate(doc.createdAt)}</p>
@@ -641,7 +641,7 @@ export function ReviewScreen({ section: key, id, you, canDelete }: { section: 't
     return (
       <>
         <Header title="This isn’t here any more" you={you} />
-        <A href={`/dashboard/${key}`} aria-label={`Back to ${section.title}`} className="mt-6 grid size-12 place-items-center rounded-full bg-white">
+        <A back href={`/dashboard/${key}`} aria-label={`Back to ${section.title}`} className="mt-6 grid size-12 place-items-center rounded-full bg-white">
           <Glyph icon={backIcon} />
         </A>
       </>
