@@ -51,7 +51,7 @@ type Series = { label: string; color: RGB; values: number[] }
  * Bars for every day. "overlay" draws the second series inside the first (new visitors within visits);
  * "stacked" piles them up (testimonies, stories, guests).
  */
-function bars(doc: PDF, x: number, y: number, w: number, h: number, days: ReportDay[], series: Series[], mode: 'single' | 'overlay' | 'stacked') {
+function bars(doc: PDF, x: number, y: number, w: number, h: number, days: ReportDay[], series: Series[], mode: 'single' | 'overlay' | 'stacked' | 'grouped') {
   const left = x + 12
   const width = w - 12
   const totals = days.map((_, i) => (mode === 'stacked' ? series.reduce((s, item) => s + item.values[i], 0) : Math.max(...series.map((item) => item.values[i]))))
@@ -76,7 +76,10 @@ function bars(doc: PDF, x: number, y: number, w: number, h: number, days: Report
       if (!value) return
       const bh = (value / top) * h
       doc.setFillColor(...item.color)
-      if (mode === 'stacked') {
+      if (mode === 'grouped') {
+        const gw = bw / series.length
+        doc.rect(bx + k * gw, y + h - bh, gw * 0.9, bh, 'F')
+      } else if (mode === 'stacked') {
         doc.rect(bx, base - bh, bw, bh, 'F')
         base -= bh
       } else if (mode === 'overlay' && k > 0) {
@@ -118,8 +121,8 @@ export async function downloadReport() {
   }
   const heading = (text: string, note?: string) => {
     room(note ? 26 : 20)
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(14)
+    doc.setFont('times', 'bold')
+    doc.setFontSize(17)
     doc.setTextColor(...INK)
     doc.text(clean(text), M, y + 6)
     y += 9
@@ -158,84 +161,130 @@ export async function downloadReport() {
   const span = `${full(report.firstDay)} to ${full(report.lastDay)} (${days.length} ${days.length === 1 ? 'day' : 'days'})`
   const madeAt = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' }).format(new Date(report.generatedAt))
 
-  // Title band.
-  doc.setFillColor(...INK)
-  doc.rect(0, 0, PAGE_W, 38, 'F')
+  // Masthead: a gold rule, small capitals and a serif title. No boxes.
+  doc.setFillColor(...GOLD)
+  doc.rect(M, 14, PAGE_W - M * 2, 0.8, 'F')
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(22)
-  doc.setTextColor(...GOLD)
-  doc.text('Dunamis at 30', M, 17)
-  doc.setFontSize(13)
-  doc.setTextColor(255, 255, 255)
-  doc.text('Website statistics', M, 25)
+  doc.setFontSize(7.5)
+  doc.setTextColor(...SOFT)
+  doc.setCharSpace(0.6)
+  doc.text('DUNAMIS INTERNATIONAL GOSPEL CENTRE', M, 20.5)
+  // Spaced letters aren't counted by right-alignment, so place it by its real width.
+  doc.text('WEBSITE STATISTICS', PAGE_W - M - doc.getTextWidth('WEBSITE STATISTICS') - 0.6 * 17, 20.5)
+  doc.setCharSpace(0)
+  doc.setFont('times', 'bold')
+  doc.setFontSize(34)
+  doc.setTextColor(...INK)
+  doc.text('Dunamis at 30', M, 37)
   doc.setFont('helvetica', 'normal')
-  doc.setFontSize(9)
-  doc.setTextColor(220, 210, 190)
-  doc.text(clean(`Covers ${span}`), M, 32)
-  doc.text(clean(`Downloaded ${madeAt}, Lagos time`), PAGE_W - M, 32, { align: 'right' })
-  y = 48
+  doc.setFontSize(10)
+  doc.setTextColor(...SOFT)
+  doc.text(clean(span), M, 45)
+  doc.setFontSize(8.5)
+  doc.text(clean(`Downloaded ${madeAt}, Lagos time`), PAGE_W - M, 45, { align: 'right' })
+  doc.setDrawColor(...LINE)
+  doc.setLineWidth(0.3)
+  doc.line(M, 51, PAGE_W - M, 51)
+  y = 51
 
-  // The headline numbers.
-  const busiest = days.reduce((best, day) => (day.visits > best.visits ? day : best), days[0])
-  const tiles: [string, string][] = [
-    ['People who visited', num(totals.visitors)],
-    ['Visits', num(totals.visits)],
-    ['Average visits a day', num(Math.round(totals.visits / Math.max(days.length, 1)))],
-    ['Busiest day', busiest && busiest.visits ? `${short(busiest.day)}: ${num(busiest.visits)}` : '-'],
-    ['Social cards made', num(totals.cards)],
-    ['Cards downloaded', num(totals.downloads)],
-    ['Cards shared', num(totals.shares)],
-    ['Countries', num(report.countries.length)],
+  // The two numbers that matter most, large.
+  const half = (PAGE_W - M * 2) / 2
+  const lead: [string, string][] = [
+    [num(totals.visitors), 'different people visited the site'],
+    [num(totals.visits), 'visits in all, each person once a day'],
   ]
-  if (report.testimonies) tiles.push(['Testimonies received', num(report.testimonies.status.reduce((s, row) => s + row.count, 0))])
-  if (report.stories) tiles.push(['Sons of the Prophet stories', num(report.stories.status.reduce((s, row) => s + row.count, 0))])
-  if (report.guests) tiles.push(['International guests', num(report.guests.status.reduce((s, row) => s + row.count, 0))])
-  const tileW = (PAGE_W - M * 2 - 3 * 4) / 4
-  tiles.forEach(([label, value], i) => {
-    const tx = M + (i % 4) * (tileW + 4)
-    const ty = y + Math.floor(i / 4) * 24
-    doc.setDrawColor(...LINE)
-    doc.setFillColor(251, 248, 241)
-    doc.roundedRect(tx, ty, tileW, 20, 2, 2, 'FD')
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(value.length > 9 ? 11 : 16)
+  lead.forEach(([value, label], i) => {
+    const lx = M + i * (half + 8)
+    doc.setFont('times', 'bold')
+    doc.setFontSize(40)
     doc.setTextColor(...INK)
-    doc.text(clean(value), tx + 4, ty + 10)
+    doc.text(clean(value), lx, y + 22)
     doc.setFont('helvetica', 'normal')
-    doc.setFontSize(8)
+    doc.setFontSize(9.5)
     doc.setTextColor(...SOFT)
-    doc.text(clean(label), tx + 4, ty + 16)
+    doc.text(clean(label), lx, y + 29.5)
   })
-  y += Math.ceil(tiles.length / 4) * 24 + 2
+  doc.setDrawColor(...LINE)
+  doc.line(M + half + 2, y + 8, M + half + 2, y + 31)
+  y += 38
+
+  // Everything else in ruled rows: the group's name in gold capitals, then its numbers between hairlines.
+  const busiest = days.reduce((best, day) => (day.visits > best.visits ? day : best), days[0])
+  const groups: [string, [string, string][]][] = [
+    [
+      'Visitors',
+      [
+        [busiest && busiest.visits ? `Busiest day, ${short(busiest.day)}` : 'Busiest day', busiest ? num(busiest.visits) : '-'],
+        ['Average visits a day', num(Math.round(totals.visits / Math.max(days.length, 1)))],
+        ['Countries', num(report.countries.length)],
+      ],
+    ],
+    ['Social cards', [['Made', num(totals.cards)], ['Downloaded', num(totals.downloads)], ['Shared', num(totals.shares)]]],
+  ]
+  const sent: [string, string][] = []
+  if (report.testimonies) sent.push(['Testimonies', num(report.testimonies.status.reduce((s, row) => s + row.count, 0))])
+  if (report.stories) sent.push(['Sons of the Prophet stories', num(report.stories.status.reduce((s, row) => s + row.count, 0))])
+  if (report.guests) sent.push(['International guests', num(report.guests.status.reduce((s, row) => s + row.count, 0))])
+  if (sent.length) groups.push(['Sent in', sent])
+  const labelW = 32
+  const colW = (PAGE_W - M * 2 - labelW) / 3
+  for (const [name, items] of groups) {
+    doc.setDrawColor(...LINE)
+    doc.line(M, y, PAGE_W - M, y)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(7.5)
+    doc.setTextColor(...GOLD)
+    doc.setCharSpace(0.5)
+    doc.text(name.toUpperCase(), M, y + 8)
+    doc.setCharSpace(0)
+    items.forEach(([label, value], i) => {
+      const cx = M + labelW + i * colW
+      if (i) doc.line(cx - 5, y + 4, cx - 5, y + 19)
+      doc.setFont('times', 'bold')
+      doc.setFontSize(20)
+      doc.setTextColor(...INK)
+      doc.text(clean(value), cx, y + 12.5)
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(8.5)
+      doc.setTextColor(...SOFT)
+      doc.text(clean(label), cx, y + 18)
+    })
+    y += 23
+  }
+  doc.line(M, y, PAGE_W - M, y)
+  y += 6
   doc.setFontSize(8)
   doc.setTextColor(...SOFT)
   doc.text(
-    doc.splitTextToSize('"People who visited" counts each phone or computer once, the first time it opens the site. "Visits" counts each of them once a day they come.', PAGE_W - M * 2),
+    doc.splitTextToSize('People are counted once, the first time their phone or computer opens the site. Visits count each of them once for every day they come.', PAGE_W - M * 2),
     M,
     y,
   )
   y += 10
 
   // Charts.
+  room(80)
   heading('Visits per day')
   bars(doc, M, y, PAGE_W - M * 2, 52, days, [
     { label: 'Visits', color: PALE_GOLD, values: days.map((d) => d.visits) },
     { label: 'First-time visitors', color: GOLD, values: days.map((d) => d.newVisitors) },
   ], 'overlay')
   y += 66
+  room(68)
   heading('Social cards per day')
   bars(doc, M, y, PAGE_W - M * 2, 40, days, [
-    { label: 'Cards made', color: PURPLE, values: days.map((d) => d.cards) },
+    { label: 'Made', color: PURPLE, values: days.map((d) => d.cards) },
     { label: 'Downloaded', color: [181, 140, 222], values: days.map((d) => d.downloads) },
-  ], 'overlay')
+    { label: 'Shared', color: GOLD, values: days.map((d) => d.shares) },
+  ], 'grouped')
   y += 54
   const submissions: Series[] = []
   if (report.testimonies) submissions.push({ label: 'Testimonies', color: TEAL, values: days.map((d) => d.testimonies ?? 0) })
   if (report.stories) submissions.push({ label: 'Sons of the Prophet stories', color: GOLD, values: days.map((d) => d.stories ?? 0) })
   if (report.guests) submissions.push({ label: 'International guests', color: PINK, values: days.map((d) => d.guests ?? 0) })
   if (submissions.length) {
+    room(68)
     heading('What people sent in, per day')
-    room(54)
     bars(doc, M, y, PAGE_W - M * 2, 40, days, submissions, 'stacked')
     y += 54
   }
