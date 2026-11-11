@@ -1,400 +1,401 @@
 'use client'
 
-import type { jsPDF as PDF } from 'jspdf'
-
 import type { Report, ReportDay } from '@/lib/dashboardReport'
 import { api } from './store'
 
+/*
+ * The statistics report, laid out like a statistical bulletin: the site's own typeface (Onest), a plain cover,
+ * the main points in words, charts labelled directly instead of read off gridlines, and quiet tables.
+ */
+
 type RGB = [number, number, number]
-const INK: RGB = [23, 19, 12]
-const SOFT: RGB = [110, 100, 85]
-const LINE: RGB = [228, 221, 208]
-const GOLD: RGB = [192, 144, 42]
-const PALE_GOLD: RGB = [238, 216, 160]
-const PURPLE: RGB = [90, 26, 150]
+const TEXT: RGB = [20, 20, 20]
+const MUTED: RGB = [110, 110, 115]
+const FAINT: RGB = [230, 230, 230]
+const GOLD: RGB = [184, 134, 43]
+const GOLD_LIGHT: RGB = [233, 212, 168]
+const BLUE: RGB = [31, 58, 95]
+const GREY: RGB = [160, 160, 165]
 const TEAL: RGB = [29, 107, 95]
-const PINK: RGB = [168, 64, 104]
+const ROSE: RGB = [168, 64, 104]
 
 const PAGE_W = 210
 const PAGE_H = 297
-const M = 16
-const BOTTOM = PAGE_H - 18
+const M = 18
+const WIDTH = PAGE_W - M * 2
+const BOTTOM = PAGE_H - 20
 
-/** The built-in PDF fonts only know Western letters: curly quotes and dashes become plain ones, anything else goes. */
+/**
+ * Onest has Western letters and typographic punctuation, so curly quotes and dashes stay; they read better.
+ * Anything the font can't draw goes. Written as escapes so the regex survives any script encoding.
+ */
 const clean = (text: string) =>
   text
-    .replace(/[‘’]/g, "'")
-    .replace(/[“”]/g, '"')
-    .replace(/[–—]/g, '-')
-    .replace(/…/g, '...')
-    .replace(/[^\x20-\x7E\xA0-\xFF]/g, '')
+    .replace(/'/g, '\u2019')
+    .replace(/[^\x20-\x7E\xA0-\xFF\u2010-\u2027\u2030-\u205E]/g, '')
 
 const num = (value: number) => value.toLocaleString('en-GB')
 const pct = (part: number, whole: number) => (whole ? `${Math.round((part / whole) * 100)}%` : '0%')
 const noon = (day: string) => new Date(`${day}T12:00:00Z`)
-const short = (day: string) => new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(noon(day))
-const long = (day: string) => new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(noon(day))
-const full = (day: string) => new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(noon(day))
+const fmt = (day: string, options: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('en-GB', { ...options, timeZone: 'UTC' }).format(noon(day))
+const short = (day: string) => fmt(day, { day: 'numeric', month: 'short' })
+const weekday = (day: string) => fmt(day, { weekday: 'long', day: 'numeric', month: 'long' })
+const tableDay = (day: string) => fmt(day, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
 
-/** A round number a little above the highest bar, and the step between its grid lines. */
-function scale(max: number) {
-  if (max <= 4) return { top: 4, step: 1 }
-  const rough = max / 4
-  const power = 10 ** Math.floor(Math.log10(rough))
-  const step = [1, 2, 2.5, 5, 10].map((k) => k * power).find((s) => s >= rough) ?? 10 * power
-  return { top: Math.ceil(max / step) * step, step }
+async function base64(url: string) {
+  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer())
+  let text = ''
+  for (let i = 0; i < bytes.length; i += 0x8000) text += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+  return btoa(text)
 }
 
 type Series = { label: string; color: RGB; values: number[] }
 
-/**
- * Bars for every day. "overlay" draws the second series inside the first (new visitors within visits);
- * "stacked" piles them up (testimonies, stories, guests).
- */
-function bars(doc: PDF, x: number, y: number, w: number, h: number, days: ReportDay[], series: Series[], mode: 'single' | 'overlay' | 'stacked' | 'grouped') {
-  const left = x + 12
-  const width = w - 12
-  const totals = days.map((_, i) => (mode === 'stacked' ? series.reduce((s, item) => s + item.values[i], 0) : Math.max(...series.map((item) => item.values[i]))))
-  const { top, step } = scale(Math.max(...totals, 0))
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(7)
-  for (let v = 0; v <= top; v += step) {
-    const gy = y + h - (v / top) * h
-    doc.setDrawColor(...LINE)
-    doc.setLineWidth(0.2)
-    doc.line(left, gy, left + width, gy)
-    doc.setTextColor(...SOFT)
-    doc.text(num(v), left - 2, gy + 1, { align: 'right' })
-  }
-  const slot = width / Math.max(days.length, 1)
-  const bw = Math.max(0.6, Math.min(slot * 0.72, 9))
-  days.forEach((_, i) => {
-    const bx = left + i * slot + (slot - bw) / 2
-    let base = y + h
-    series.forEach((item, k) => {
-      const value = item.values[i]
-      if (!value) return
-      const bh = (value / top) * h
-      doc.setFillColor(...item.color)
-      if (mode === 'grouped') {
-        const gw = bw / series.length
-        doc.rect(bx + k * gw, y + h - bh, gw * 0.9, bh, 'F')
-      } else if (mode === 'stacked') {
-        doc.rect(bx, base - bh, bw, bh, 'F')
-        base -= bh
-      } else if (mode === 'overlay' && k > 0) {
-        doc.rect(bx + bw * 0.18, y + h - bh, bw * 0.64, bh, 'F')
-      } else {
-        doc.rect(bx, y + h - bh, bw, bh, 'F')
-      }
-    })
-  })
-  // Dates under the bars, spaced so they never run into each other.
-  const every = Math.max(1, Math.ceil(days.length / Math.floor(width / 13)))
-  doc.setTextColor(...SOFT)
-  days.forEach((day, i) => {
-    if (i % every && i !== days.length - 1) return
-    doc.text(short(day.day), left + i * slot + slot / 2, y + h + 4, { align: 'center' })
-  })
-  // Key.
-  let kx = left
-  series.forEach((item) => {
-    doc.setFillColor(...item.color)
-    doc.rect(kx, y + h + 7.5, 3, 3, 'F')
-    doc.setTextColor(...INK)
-    doc.text(clean(item.label), kx + 4.5, y + h + 10)
-    kx += doc.getTextWidth(clean(item.label)) + 12
-  })
-}
-
 export async function downloadReport() {
-  const report = await api<Report>('/dashboard/report')
-  const [{ jsPDF }, { autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')])
+  const [report, { jsPDF }, { autoTable }, regular, medium, semibold, emblem] = await Promise.all([
+    api<Report>('/dashboard/report'),
+    import('jspdf'),
+    import('jspdf-autotable'),
+    base64('/fonts/report/onest-400.ttf'),
+    base64('/fonts/report/onest-500.ttf'),
+    base64('/fonts/report/onest-600.ttf'),
+    base64('/fonts/report/emblem.jpg'),
+  ])
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
-  let y = 0
-  const tableY = () => (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY
+  doc.addFileToVFS('onest-400.ttf', regular)
+  doc.addFont('onest-400.ttf', 'Onest', 'normal')
+  // Each weight is its own family, so the tables can use them too.
+  doc.addFileToVFS('onest-500.ttf', medium)
+  doc.addFont('onest-500.ttf', 'OnestMedium', 'normal')
+  doc.addFileToVFS('onest-600.ttf', semibold)
+  doc.addFont('onest-600.ttf', 'OnestSemibold', 'normal')
+  const FAMILY = { normal: 'Onest', medium: 'OnestMedium', bold: 'OnestSemibold' } as const
+
+  const type = (style: 'normal' | 'medium' | 'bold', size: number, color: RGB = TEXT) => {
+    doc.setFont(FAMILY[style], 'normal')
+    doc.setFontSize(size)
+    doc.setTextColor(...color)
+  }
+  let y = M
   const room = (needed: number) => {
     if (y + needed > BOTTOM) {
       doc.addPage()
       y = M
     }
   }
-  const heading = (text: string, note?: string) => {
-    room(note ? 26 : 20)
-    doc.setFont('times', 'bold')
-    doc.setFontSize(17)
-    doc.setTextColor(...INK)
-    doc.text(clean(text), M, y + 6)
-    y += 9
+  /** A section: its title, a line saying what it shows, and the space it needs kept on one page. */
+  const section = (title: string, note: string | null, keep: number) => {
+    room(keep + (note ? 16 : 11))
+    y += 4
+    type('bold', 13)
+    doc.text(clean(title), M, y + 4)
+    y += 7
     if (note) {
-      doc.setFont('helvetica', 'normal')
-      doc.setFontSize(9)
-      doc.setTextColor(...SOFT)
-      const lines = doc.splitTextToSize(clean(note), PAGE_W - M * 2)
+      type('normal', 9, MUTED)
+      const lines = doc.splitTextToSize(clean(note), WIDTH)
       doc.text(lines, M, y + 3)
-      y += lines.length * 4 + 2
+      y += lines.length * 4.2 + 1.5
+    }
+    y += 2
+  }
+  const key = (items: { label: string; color: RGB }[], at: number) => {
+    let kx = M
+    type('normal', 8, MUTED)
+    for (const item of items) {
+      doc.setFillColor(...item.color)
+      doc.rect(kx, at - 2.3, 2.6, 2.6, 'F')
+      doc.text(clean(item.label), kx + 4, at)
+      kx += doc.getTextWidth(clean(item.label)) + 10
     }
   }
+
+  /**
+   * Bars for every day, labelled directly: each bar carries its number when there's room, and the scale is
+   * left implied. "overlay" puts the second series inside the first; "stacked" piles them; "grouped" sets
+   * them side by side.
+   */
+  const bars = (days: ReportDay[], series: Series[], mode: 'overlay' | 'stacked' | 'grouped', height: number) => {
+    const totals = days.map((_, i) => (mode === 'stacked' ? series.reduce((s, item) => s + item.values[i], 0) : Math.max(...series.map((item) => item.values[i]))))
+    const top = Math.max(...totals, 1) * 1.12
+    const slot = WIDTH / Math.max(days.length, 1)
+    const bw = Math.min(slot * 0.62, 14)
+    const labels = mode !== 'grouped' && slot >= 9
+    const base = y + height
+    days.forEach((_, i) => {
+      const bx = M + i * slot + (slot - bw) / 2
+      let stack = base
+      series.forEach((item, k) => {
+        const value = item.values[i]
+        if (!value) return
+        const bh = (value / top) * height
+        doc.setFillColor(...item.color)
+        if (mode === 'grouped') {
+          const gw = bw / series.length
+          doc.rect(bx + k * gw, base - bh, gw * 0.86, bh, 'F')
+        } else if (mode === 'stacked') {
+          doc.rect(bx, stack - bh, bw, bh, 'F')
+          stack -= bh
+        } else if (k > 0) {
+          doc.rect(bx + bw * 0.2, base - bh, bw * 0.6, bh, 'F')
+        } else {
+          doc.rect(bx, base - bh, bw, bh, 'F')
+        }
+      })
+      if (labels && totals[i]) {
+        type('medium', 7, TEXT)
+        doc.text(num(totals[i]), bx + bw / 2, base - (totals[i] / top) * height - 1.5, { align: 'center' })
+      }
+    })
+    doc.setDrawColor(...TEXT)
+    doc.setLineWidth(0.3)
+    doc.line(M, base, M + WIDTH, base)
+    const every = Math.max(1, Math.ceil(days.length / Math.floor(WIDTH / 13)))
+    type('normal', 7, MUTED)
+    days.forEach((day, i) => {
+      if (i % every && i !== days.length - 1) return
+      doc.text(short(day.day), M + i * slot + slot / 2, base + 4, { align: 'center' })
+    })
+    y = base + 7
+  }
+
   const table = (head: string[], body: (string | number)[][], foot?: (string | number)[]) => {
     if (!body.length) body = [['None yet', ...head.slice(1).map(() => '')]]
+    const cell = (value: string | number) => (typeof value === 'number' ? num(value) : clean(value))
     autoTable(doc, {
       startY: y,
-      margin: { left: M, right: M, bottom: 20 },
+      margin: { left: M, right: M, bottom: 22 },
       head: [head.map(clean)],
-      body: body.map((row) => row.map((cell) => (typeof cell === 'number' ? num(cell) : clean(cell)))),
-      foot: foot ? [foot.map((cell) => (typeof cell === 'number' ? num(cell) : clean(cell)))] : undefined,
-      theme: 'plain',
+      body: body.map((row) => row.map(cell)),
+      foot: foot ? [foot.map(cell)] : undefined,
       showFoot: 'lastPage',
-      styles: { font: 'helvetica', fontSize: 9, textColor: INK, cellPadding: { top: 1.8, bottom: 1.8, left: 2, right: 2 }, lineColor: LINE, lineWidth: { bottom: 0.2 } },
-      headStyles: { fontStyle: 'bold', fillColor: [245, 239, 226], textColor: INK },
-      footStyles: { fontStyle: 'bold', fillColor: [245, 239, 226], textColor: INK },
-      columnStyles: Object.fromEntries(head.map((_, i) => [i, { halign: i === 0 ? 'left' : 'right' }])),
-      // Headings and totals line up with their numbers.
-      didParseCell: (cell) => {
-        cell.cell.styles.halign = cell.column.index === 0 ? 'left' : 'right'
+      theme: 'plain',
+      styles: { font: 'Onest', fontStyle: 'normal', fontSize: 9, textColor: TEXT, cellPadding: { top: 2.2, bottom: 2.2, left: 0, right: 0 }, lineColor: FAINT, lineWidth: { bottom: 0.2 } },
+      headStyles: { font: FAMILY.medium, fontSize: 8, textColor: MUTED, lineColor: TEXT, lineWidth: { bottom: 0.3 } },
+      footStyles: { font: FAMILY.bold, textColor: TEXT, lineColor: TEXT, lineWidth: { top: 0.3 } },
+      didParseCell: (data) => {
+        data.cell.styles.halign = data.column.index === 0 ? 'left' : 'right'
+        if (data.column.index > 0) data.cell.styles.cellPadding = { top: 2.2, bottom: 2.2, left: 4, right: 0 }
       },
     })
-    y = tableY() + 8
+    y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 6
   }
 
   const { totals, days } = report
-  const span = `${full(report.firstDay)} to ${full(report.lastDay)} (${days.length} ${days.length === 1 ? 'day' : 'days'})`
-  const madeAt = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' }).format(new Date(report.generatedAt))
-
-  // Masthead: a gold rule, small capitals and a serif title. No boxes.
-  doc.setFillColor(...GOLD)
-  doc.rect(M, 14, PAGE_W - M * 2, 0.8, 'F')
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(7.5)
-  doc.setTextColor(...SOFT)
-  doc.setCharSpace(0.6)
-  doc.text('DUNAMIS INTERNATIONAL GOSPEL CENTRE', M, 20.5)
-  // Spaced letters aren't counted by right-alignment, so place it by its real width.
-  doc.text('WEBSITE STATISTICS', PAGE_W - M - doc.getTextWidth('WEBSITE STATISTICS') - 0.6 * 17, 20.5)
-  doc.setCharSpace(0)
-  doc.setFont('times', 'bold')
-  doc.setFontSize(34)
-  doc.setTextColor(...INK)
-  doc.text('Dunamis at 30', M, 37)
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(10)
-  doc.setTextColor(...SOFT)
-  doc.text(clean(span), M, 45)
-  doc.setFontSize(8.5)
-  doc.text(clean(`Downloaded ${madeAt}, Lagos time`), PAGE_W - M, 45, { align: 'right' })
-  doc.setDrawColor(...LINE)
-  doc.setLineWidth(0.3)
-  doc.line(M, 51, PAGE_W - M, 51)
-  y = 51
-
-  // The two numbers that matter most, large.
-  const half = (PAGE_W - M * 2) / 2
-  const lead: [string, string][] = [
-    [num(totals.visitors), 'different people visited the site'],
-    [num(totals.visits), 'visits in all, each person once a day'],
-  ]
-  lead.forEach(([value, label], i) => {
-    const lx = M + i * (half + 8)
-    doc.setFont('times', 'bold')
-    doc.setFontSize(40)
-    doc.setTextColor(...INK)
-    doc.text(clean(value), lx, y + 22)
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(9.5)
-    doc.setTextColor(...SOFT)
-    doc.text(clean(label), lx, y + 29.5)
-  })
-  doc.setDrawColor(...LINE)
-  doc.line(M + half + 2, y + 8, M + half + 2, y + 31)
-  y += 38
-
-  // Everything else in ruled rows: the group's name in gold capitals, then its numbers between hairlines.
   const busiest = days.reduce((best, day) => (day.visits > best.visits ? day : best), days[0])
-  const groups: [string, [string, string][]][] = [
-    [
-      'Visitors',
-      [
-        [busiest && busiest.visits ? `Busiest day, ${short(busiest.day)}` : 'Busiest day', busiest ? num(busiest.visits) : '-'],
-        ['Average visits a day', num(Math.round(totals.visits / Math.max(days.length, 1)))],
-        ['Countries', num(report.countries.length)],
-      ],
-    ],
-    ['Social cards', [['Made', num(totals.cards)], ['Downloaded', num(totals.downloads)], ['Shared', num(totals.shares)]]],
-  ]
-  const sent: [string, string][] = []
-  if (report.testimonies) sent.push(['Testimonies', num(report.testimonies.status.reduce((s, row) => s + row.count, 0))])
-  if (report.stories) sent.push(['Sons of the Prophet stories', num(report.stories.status.reduce((s, row) => s + row.count, 0))])
-  if (report.guests) sent.push(['International guests', num(report.guests.status.reduce((s, row) => s + row.count, 0))])
-  if (sent.length) groups.push(['Sent in', sent])
-  const labelW = 32
-  const colW = (PAGE_W - M * 2 - labelW) / 3
-  for (const [name, items] of groups) {
-    doc.setDrawColor(...LINE)
-    doc.line(M, y, PAGE_W - M, y)
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(7.5)
-    doc.setTextColor(...GOLD)
-    doc.setCharSpace(0.5)
-    doc.text(name.toUpperCase(), M, y + 8)
-    doc.setCharSpace(0)
-    items.forEach(([label, value], i) => {
-      const cx = M + labelW + i * colW
-      if (i) doc.line(cx - 5, y + 4, cx - 5, y + 19)
-      doc.setFont('times', 'bold')
-      doc.setFontSize(20)
-      doc.setTextColor(...INK)
-      doc.text(clean(value), cx, y + 12.5)
-      doc.setFont('helvetica', 'normal')
-      doc.setFontSize(8.5)
-      doc.setTextColor(...SOFT)
-      doc.text(clean(label), cx, y + 18)
-    })
-    y += 23
+  const countryVisits = report.countries.reduce((s, c) => s + c.visits, 0)
+  const devices = totals.phones + totals.computers
+  const sent = (rows: { count: number }[]) => rows.reduce((s, r) => s + r.count, 0)
+  const period =
+    report.firstDay === report.lastDay
+      ? fmt(report.lastDay, { day: 'numeric', month: 'long', year: 'numeric' })
+      : `${fmt(report.firstDay, { day: 'numeric', month: 'long' })} to ${fmt(report.lastDay, { day: 'numeric', month: 'long', year: 'numeric' })}`
+  const prepared = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' }).format(new Date(report.generatedAt))
+
+  // Cover: the church, the title, the period. Nothing else.
+  const ew = 11 * (211 / 160)
+  doc.addImage(emblem, 'JPEG', M, y, ew, 11)
+  type('medium', 9)
+  doc.text('Dunamis International Gospel Centre', M + ew + 4, y + 4.5)
+  type('normal', 9, MUTED)
+  doc.text('Glory Dome, Abuja', M + ew + 4, y + 9)
+  type('normal', 8, MUTED)
+  doc.text('Report period', PAGE_W - M, y + 4.5, { align: 'right' })
+  type('medium', 9)
+  doc.text(clean(period), PAGE_W - M, y + 9, { align: 'right' })
+  y += 26
+  type('bold', 26)
+  doc.text('Dunamis at 30 website', M, y)
+  y += 8
+  type('normal', 11, MUTED)
+  doc.text(clean(`How the anniversary website has been used over ${days.length} ${days.length === 1 ? 'day' : 'days'}.`), M, y)
+  y += 5
+  type('normal', 8, MUTED)
+  doc.text(clean(`Prepared ${prepared}, Lagos time.`), M, y + 1)
+  y += 9
+
+  // Main points, in words.
+  section('Main points', null, 30)
+  const points = [
+    `${num(totals.visitors)} people visited the site, ${num(totals.visits)} times in all: ${num(Math.round(totals.visits / Math.max(days.length, 1)))} visits a day on average.`,
+    busiest?.visits ? `The busiest day was ${weekday(busiest.day)}, with ${num(busiest.visits)} visits.` : '',
+    report.countries.length ? `Visitors came from ${num(report.countries.length)} countries. ${report.countries[0].name} accounted for ${pct(report.countries[0].visits, countryVisits)} of visits.` : '',
+    devices ? `${pct(totals.phones, devices)} of visits were on a phone.` : '',
+    `${num(totals.cards)} social cards were made. They were downloaded ${num(totals.downloads)} times and shared ${num(totals.shares)} times.`,
+    report.testimonies
+      ? `${num(sent(report.testimonies.status))} testimonies were sent in${report.stories ? `, with ${num(sent(report.stories.status))} Sons of the Prophet stories` : ''}${report.guests ? ` and ${num(sent(report.guests.status))} international guest registrations` : ''}.`
+      : '',
+  ].filter(Boolean)
+  for (const point of points) {
+    type('normal', 10)
+    const lines = doc.splitTextToSize(clean(point), WIDTH - 6)
+    room(lines.length * 5 + 2)
+    doc.setFillColor(...GOLD)
+    doc.circle(M + 1.2, y + 1.6, 0.9, 'F')
+    type('normal', 10)
+    doc.text(lines, M + 6, y + 2.6)
+    y += lines.length * 5 + 2
   }
-  doc.line(M, y, PAGE_W - M, y)
-  y += 6
-  doc.setFontSize(8)
-  doc.setTextColor(...SOFT)
-  doc.text(
-    doc.splitTextToSize('People are counted once, the first time their phone or computer opens the site. Visits count each of them once for every day they come.', PAGE_W - M * 2),
-    M,
-    y,
-  )
-  y += 10
+
+  // The figures, in a plain grid.
+  section('Totals', null, 60)
+  const figures: [string, string][] = [
+    ['People who visited', num(totals.visitors)],
+    ['Visits', num(totals.visits)],
+    ['Visits a day, on average', num(Math.round(totals.visits / Math.max(days.length, 1)))],
+    ['Countries', num(report.countries.length)],
+    ['Social cards made', num(totals.cards)],
+    ['Cards downloaded', num(totals.downloads)],
+    ['Cards shared', num(totals.shares)],
+    ['Visits on a phone', pct(totals.phones, devices)],
+  ]
+  if (report.testimonies) figures.push(['Testimonies', num(sent(report.testimonies.status))])
+  if (report.stories) figures.push(['Sons of the Prophet stories', num(sent(report.stories.status))])
+  if (report.guests) figures.push(['International guests', num(sent(report.guests.status))])
+  const colW = WIDTH / 4
+  figures.forEach(([label, value], i) => {
+    const fx = M + (i % 4) * colW
+    const fy = y + Math.floor(i / 4) * 17
+    type('bold', 17)
+    doc.text(clean(value), fx, fy + 7)
+    type('normal', 8, MUTED)
+    doc.text(clean(label), fx, fy + 12)
+  })
+  y += Math.ceil(figures.length / 4) * 17
+  type('normal', 7.5, MUTED)
+  doc.text(doc.splitTextToSize(clean('A person is a phone or computer, counted once, the first time it opens the site. A visit is a person on a day: someone who comes on three days makes three visits.'), WIDTH), M, y + 1)
+  y += 8
 
   // Charts.
-  room(80)
-  heading('Visits per day')
-  bars(doc, M, y, PAGE_W - M * 2, 52, days, [
-    { label: 'Visits', color: PALE_GOLD, values: days.map((d) => d.visits) },
-    { label: 'First-time visitors', color: GOLD, values: days.map((d) => d.newVisitors) },
-  ], 'overlay')
-  y += 66
-  room(68)
-  heading('Social cards per day')
-  bars(doc, M, y, PAGE_W - M * 2, 40, days, [
-    { label: 'Made', color: PURPLE, values: days.map((d) => d.cards) },
-    { label: 'Downloaded', color: [181, 140, 222], values: days.map((d) => d.downloads) },
-    { label: 'Shared', color: GOLD, values: days.map((d) => d.shares) },
-  ], 'grouped')
-  y += 54
-  const submissions: Series[] = []
-  if (report.testimonies) submissions.push({ label: 'Testimonies', color: TEAL, values: days.map((d) => d.testimonies ?? 0) })
-  if (report.stories) submissions.push({ label: 'Sons of the Prophet stories', color: GOLD, values: days.map((d) => d.stories ?? 0) })
-  if (report.guests) submissions.push({ label: 'International guests', color: PINK, values: days.map((d) => d.guests ?? 0) })
-  if (submissions.length) {
-    room(68)
-    heading('What people sent in, per day')
-    bars(doc, M, y, PAGE_W - M * 2, 40, days, submissions, 'stacked')
-    y += 54
+  section('Visits each day', 'Lagos time. The darker part of each bar is people visiting for the first time.', 70)
+  key([{ label: 'Visits', color: GOLD_LIGHT }, { label: 'First-time visitors', color: GOLD }], y)
+  y += 5
+  bars(days, [{ label: 'Visits', color: GOLD_LIGHT, values: days.map((d) => d.visits) }, { label: 'First-time visitors', color: GOLD, values: days.map((d) => d.newVisitors) }], 'overlay', 52)
+
+  section('Social cards each day', 'A card can be downloaded or shared more than once, so those can outnumber the cards made.', 60)
+  key([{ label: 'Made', color: GOLD }, { label: 'Downloaded', color: BLUE }, { label: 'Shared', color: GREY }], y)
+  y += 5
+  bars(days, [{ label: 'Made', color: GOLD, values: days.map((d) => d.cards) }, { label: 'Downloaded', color: BLUE, values: days.map((d) => d.downloads) }, { label: 'Shared', color: GREY, values: days.map((d) => d.shares) }], 'grouped', 42)
+
+  const sentIn: Series[] = []
+  if (report.testimonies) sentIn.push({ label: 'Testimonies', color: TEAL, values: days.map((d) => d.testimonies ?? 0) })
+  if (report.stories) sentIn.push({ label: 'Sons of the Prophet stories', color: GOLD, values: days.map((d) => d.stories ?? 0) })
+  if (report.guests) sentIn.push({ label: 'International guests', color: ROSE, values: days.map((d) => d.guests ?? 0) })
+  if (sentIn.length) {
+    section('Sent in each day', null, 55)
+    key(sentIn, y)
+    y += 5
+    bars(days, sentIn, 'stacked', 38)
   }
 
-  // Countries.
-  heading(
-    'Where visitors came from',
-    `${num(report.countries.length)} countries.${totals.unknownCountry ? ` ${num(totals.unknownCountry)} visits had no country recorded.` : ''}`,
-  )
-  const top = report.countries.slice(0, 12)
-  const most = Math.max(...top.map((c) => c.visits), 1)
-  const countryVisits = report.countries.reduce((s, c) => s + c.visits, 0)
-  top.forEach((country) => {
-    room(7)
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(9)
-    doc.setTextColor(...INK)
-    doc.text(clean(country.name).slice(0, 34), M, y + 3.5)
-    doc.setFillColor(...GOLD)
-    doc.rect(M + 58, y, Math.max(0.8, (country.visits / most) * 92), 4.5, 'F')
-    doc.setTextColor(...SOFT)
-    doc.text(`${num(country.visits)}  (${pct(country.visits, countryVisits)})`, PAGE_W - M, y + 3.5, { align: 'right' })
-    y += 6.5
+  // Countries: a ranked list with bars, then the rest compactly.
+  section('Where visitors came from', `${num(report.countries.length)} countries.${totals.unknownCountry ? ` ${num(totals.unknownCountry)} visits could not be placed.` : ''}`, 40)
+  const ranked = report.countries.slice(0, 15)
+  const most = Math.max(...ranked.map((c) => c.visits), 1)
+  ranked.forEach((country, i) => {
+    room(6.5)
+    type('normal', 7.5, MUTED)
+    doc.text(String(i + 1), M + 4, y + 3.4, { align: 'right' })
+    type('normal', 9)
+    doc.text(clean(country.name).slice(0, 32), M + 7, y + 3.4)
+    doc.setFillColor(...(i === 0 ? GOLD : GOLD_LIGHT))
+    doc.rect(M + 62, y + 0.9, Math.max(0.6, (country.visits / most) * (WIDTH - 62 - 34)), 3.2, 'F')
+    type('medium', 9)
+    doc.text(num(country.visits), PAGE_W - M - 12, y + 3.4, { align: 'right' })
+    type('normal', 8, MUTED)
+    doc.text(pct(country.visits, countryVisits), PAGE_W - M, y + 3.4, { align: 'right' })
+    y += 6.2
   })
-  y += 4
-  if (report.countries.length) {
-    room(30)
-    table(
-      ['Country', 'Visits', 'People', 'Share of visits'],
-      report.countries.map((c) => [c.name, c.visits, c.visitors, pct(c.visits, countryVisits)]),
-      ['All countries', countryVisits, report.countries.reduce((s, c) => s + c.visitors, 0), '100%'],
-    )
-  }
-
-  // Devices.
-  const devices = totals.phones + totals.computers
-  heading('Phones and computers')
-  room(20)
-  doc.setFillColor(...GOLD)
-  doc.rect(M, y, ((PAGE_W - M * 2) * totals.phones) / Math.max(devices, 1), 7, 'F')
-  doc.setFillColor(...INK)
-  doc.rect(M + ((PAGE_W - M * 2) * totals.phones) / Math.max(devices, 1), y, ((PAGE_W - M * 2) * totals.computers) / Math.max(devices, 1), 7, 'F')
-  doc.setFontSize(9)
-  doc.setTextColor(...INK)
-  doc.text(`Phones: ${num(totals.phones)} visits (${pct(totals.phones, devices)})`, M, y + 12)
-  doc.text(`Computers: ${num(totals.computers)} visits (${pct(totals.computers, devices)})`, PAGE_W - M, y + 12, { align: 'right' })
-  y += 22
-
-  // Social cards by design.
-  if (report.cardDesigns.length) {
-    heading('Social cards by design', 'Which designs people downloaded and shared.')
-    table(
-      ['Design', 'Downloaded', 'Shared', 'Total'],
-      report.cardDesigns.map((d) => [d.name, d.downloads, d.shares, d.downloads + d.shares]),
-    )
-  }
-
-  // Submissions.
-  if (report.testimonies) {
-    heading('Testimonies', `${num(report.testimonies.videos)} of them have a video.`)
-    table(['Where they stand', 'Testimonies'], report.testimonies.status.map((row) => [row.name, row.count]))
-    room(30)
-    table(['Type', 'Testimonies'], report.testimonies.categories.map((row) => [row.name, row.count]))
-  }
-  if (report.stories) {
-    heading('Sons of the Prophet stories', `${num(report.stories.videos)} of them have a video.`)
-    table(['Where they stand', 'Stories'], report.stories.status.map((row) => [row.name, row.count]))
-  }
-  if (report.guests) {
-    heading(
-      'International guests',
-      `Not counting anyone we can't accommodate: ${num(report.guests.pickup)} need an airport pickup, ${num(report.guests.accommodation)} need accommodation, and ${num(report.guests.travelling)} people are travelling in all, companions included.`,
-    )
-    table(['Where things stand', 'Guests'], report.guests.status.map((row) => [row.name, row.count]))
-    if (report.guests.countries.length) {
-      room(30)
-      table(['Comes from', 'Guests'], report.guests.countries.map((row) => [row.name, row.count]))
+  const rest = report.countries.slice(15)
+  if (rest.length) {
+    y += 3
+    room(10)
+    type('medium', 8, MUTED)
+    doc.text('The other countries, by visits', M, y + 3)
+    y += 6
+    const cols = 3
+    const cw = WIDTH / cols
+    const rows = Math.ceil(rest.length / cols)
+    for (let r = 0; r < rows; r++) {
+      room(5)
+      for (let c = 0; c < cols; c++) {
+        const country = rest[c * rows + r]
+        if (!country) continue
+        type('normal', 8)
+        doc.text(clean(country.name).slice(0, 26), M + c * cw, y + 3)
+        type('normal', 8, MUTED)
+        doc.text(num(country.visits), M + c * cw + cw - 5, y + 3, { align: 'right' })
+      }
+      y += 4.8
     }
   }
 
-  // Every day.
-  heading('Day by day', 'Every day since the first visit, newest first.')
+  // Devices.
+  if (devices) {
+    section('Phones and computers', null, 16)
+    doc.setFillColor(...GOLD)
+    doc.rect(M, y, (WIDTH * totals.phones) / devices, 4, 'F')
+    doc.setFillColor(...BLUE)
+    doc.rect(M + (WIDTH * totals.phones) / devices, y, (WIDTH * totals.computers) / devices, 4, 'F')
+    type('normal', 9)
+    doc.text(`Phones ${pct(totals.phones, devices)}  (${num(totals.phones)} visits)`, M, y + 9)
+    doc.text(`Computers ${pct(totals.computers, devices)}  (${num(totals.computers)} visits)`, PAGE_W - M, y + 9, { align: 'right' })
+    y += 14
+  }
+
+  // Tables.
+  if (report.cardDesigns.length) {
+    section('Social cards by design', null, 30)
+    table(['Design', 'Downloaded', 'Shared'], report.cardDesigns.map((d) => [d.name, d.downloads, d.shares]))
+  }
+  if (report.testimonies) {
+    section('Testimonies', `${num(report.testimonies.videos)} include a video.`, 30)
+    table(['Status', 'Testimonies'], report.testimonies.status.map((r) => [r.name, r.count]))
+    table(['Type', 'Testimonies'], report.testimonies.categories.map((r) => [r.name, r.count]))
+  }
+  if (report.stories) {
+    section('Sons of the Prophet stories', `${num(report.stories.videos)} include a video.`, 24)
+    table(['Status', 'Stories'], report.stories.status.map((r) => [r.name, r.count]))
+  }
+  if (report.guests) {
+    section(
+      'International guests',
+      `Leaving out anyone we can't accommodate: ${num(report.guests.pickup)} need an airport pickup and ${num(report.guests.accommodation)} need accommodation. ${num(report.guests.travelling)} people are travelling, companions included.`,
+      30,
+    )
+    table(['Status', 'Guests'], report.guests.status.map((r) => [r.name, r.count]))
+    table(['Coming from', 'Guests'], report.guests.countries.map((r) => [r.name, r.count]))
+  }
+
+  section('Every day', 'Newest first.', 30)
   const head = ['Day', 'Visits', 'First-time', 'Cards made', 'Downloaded', 'Shared']
   if (report.testimonies) head.push('Testimonies')
   if (report.stories) head.push('Stories')
   if (report.guests) head.push('Guests')
   const row = (d: ReportDay) => {
-    const cells: (string | number)[] = [long(d.day), d.visits, d.newVisitors, d.cards, d.downloads, d.shares]
+    const cells: (string | number)[] = [tableDay(d.day), d.visits, d.newVisitors, d.cards, d.downloads, d.shares]
     if (report.testimonies) cells.push(d.testimonies ?? 0)
     if (report.stories) cells.push(d.stories ?? 0)
     if (report.guests) cells.push(d.guests ?? 0)
     return cells
   }
   const all = (pick: (d: ReportDay) => number | null) => days.reduce((s, d) => s + (pick(d) ?? 0), 0)
-  const foot: (string | number)[] = ['All days', totals.visits, totals.visitors, totals.cards, totals.downloads, totals.shares]
+  const foot: (string | number)[] = ['Total', totals.visits, totals.visitors, totals.cards, totals.downloads, totals.shares]
   if (report.testimonies) foot.push(all((d) => d.testimonies))
   if (report.stories) foot.push(all((d) => d.stories))
   if (report.guests) foot.push(all((d) => d.guests))
   table(head, [...days].reverse().map(row), foot)
 
-  // Page numbers.
+  // Running footer.
   const pages = doc.getNumberOfPages()
   for (let page = 1; page <= pages; page++) {
     doc.setPage(page)
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(8)
-    doc.setTextColor(...SOFT)
-    doc.text('Dunamis at 30 website statistics', M, PAGE_H - 9)
-    doc.text(`Page ${page} of ${pages}`, PAGE_W - M, PAGE_H - 9, { align: 'right' })
+    doc.setDrawColor(...FAINT)
+    doc.setLineWidth(0.2)
+    doc.line(M, PAGE_H - 14, PAGE_W - M, PAGE_H - 14)
+    type('normal', 7.5, MUTED)
+    doc.text(clean(`Dunamis at 30 website  -  ${period}`), M, PAGE_H - 9.5)
+    doc.text(`${page} / ${pages}`, PAGE_W - M, PAGE_H - 9.5, { align: 'right' })
   }
 
-  doc.save(`Dunamis-at-30-statistics-${report.lastDay}.pdf`)
+  doc.save(`Dunamis-at-30-website-report-${report.lastDay}.pdf`)
 }
