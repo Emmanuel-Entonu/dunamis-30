@@ -16,7 +16,7 @@ export default function InvitePage() {
         <PageHero
           eyebrow="Invite someone"
           title="Invite someone to Dunamis at 30"
-          intro="Write your name on the envelope and open it. Inside is a personal invitation from you, ready to send on WhatsApp, Instagram or Facebook."
+          intro="Write your name on the envelope, add who it’s for, and open it. Inside is a personal invitation addressed to them, ready to send on WhatsApp, Instagram or Facebook."
         />
       </div>
       <h1 className="sr-only lg:hidden">Invite someone to Dunamis at 30</h1>

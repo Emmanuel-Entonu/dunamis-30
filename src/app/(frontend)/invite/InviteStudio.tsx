@@ -89,11 +89,14 @@ export function InviteStudio() {
   const openedAt = useRef(0)
   const caret = useRef({ visible: false, at: 0 })
   const nameRef = useRef('')
+  /** Who the invitation is for: the letter inside is addressed to them. */
+  const toRef = useRef('')
 
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
   const [has3d, setHas3d] = useState(true)
   const [name, setName] = useState('')
+  const [recipient, setRecipient] = useState('')
   const [focused, setFocused] = useState(false)
   const [mode, setModeState] = useState<Mode>('edit')
   const [missing, setMissing] = useState(false)
@@ -111,7 +114,7 @@ export function InviteStudio() {
   /** The flat drawings, painted the first time they're needed, with the current name on the letter. */
   const flatScene = () => {
     if (!flat.current && art.current) flat.current = prepareInvite({ ...art.current, button: paintButton(art.current.emblem) }, font.current)
-    if (flat.current && nameRef.current.trim() && flat.current.name !== nameRef.current.trim().replace(/\s+/g, ' ')) setInviteName(flat.current, nameRef.current)
+    if (flat.current && nameRef.current.trim()) setInviteName(flat.current, nameRef.current, toRef.current)
     return flat.current
   }
 
@@ -299,7 +302,7 @@ export function InviteStudio() {
     let cancelled = false
     // Painted in the background, a piece at a time, once the buttons have settled, so the last moments stay smooth.
     const timer = window.setTimeout(async () => {
-      if (!flat.current && art.current) flat.current = await prepareInviteSlowly({ ...art.current, button: paintButton(art.current.emblem) }, font.current, nameRef.current)
+      if (!flat.current && art.current) flat.current = await prepareInviteSlowly({ ...art.current, button: paintButton(art.current.emblem) }, font.current, nameRef.current, toRef.current)
       const scene = flatScene()
       if (scene && !cancelled) renderInviteImage(scene).toBlob((blob) => (image.current = blob), 'image/jpeg', 0.92)
     }, 800)
@@ -323,8 +326,18 @@ export function InviteStudio() {
     if (three.current) {
       requestAnimationFrame(engrave)
       window.clearTimeout(letterTimer.current)
-      letterTimer.current = window.setTimeout(() => void three.current?.prepareLetter(next), 650)
-    } else if (flat.current) setInviteName(flat.current, next || ' ')
+      letterTimer.current = window.setTimeout(() => void three.current?.prepareLetter(next, toRef.current), 650)
+    } else if (flat.current) setInviteName(flat.current, next || ' ', toRef.current)
+  }
+
+  const changeRecipient = (value: string) => {
+    const next = value.slice(0, 36)
+    setRecipient(next)
+    toRef.current = next
+    if (three.current) {
+      window.clearTimeout(letterTimer.current)
+      letterTimer.current = window.setTimeout(() => void three.current?.prepareLetter(nameRef.current, next), 650)
+    } else if (flat.current && nameRef.current.trim()) setInviteName(flat.current, nameRef.current, next)
   }
 
   const open = () => {
@@ -336,8 +349,8 @@ export function InviteStudio() {
       return
     }
     window.clearTimeout(letterTimer.current)
-    if (three.current) three.current.setName(clean)
-    else if (flat.current) setInviteName(flat.current, clean)
+    if (three.current) three.current.setName(clean, recipient.trim())
+    else if (flat.current) setInviteName(flat.current, clean, recipient.trim())
     image.current = null
     setVideo(null)
     setNote('')
@@ -371,7 +384,7 @@ export function InviteStudio() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- edit only changes state
   }, [mode])
 
-  const fileName = (ext: string) => `dunamis-at-30-invitation-${(name.trim() || 'from-me').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.${ext}`
+  const fileName = (ext: string) => `dunamis-at-30-invitation-${(recipient.trim() ? `for ${recipient.trim()}` : name.trim() || 'from-me').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.${ext}`
 
   const save = (blob: Blob, ext: string) => {
     const url = URL.createObjectURL(blob)
@@ -433,7 +446,7 @@ export function InviteStudio() {
         const { createInviteStage, recordInvite } = await import('@/lib/invite3d')
         const recorder = await createInviteStage(art3d.current, font.current, { preserve: true, backdrop: true, light: light.current, detail: 1.1, letterDetail: 1 })
         try {
-          recorder.setName(name.trim())
+          recorder.setName(name.trim(), recipient.trim())
           made = await recordInvite(recorder, setProgress)
         } finally {
           recorder.dispose()
@@ -465,6 +478,7 @@ export function InviteStudio() {
   }
 
   const firstName = name.trim().split(/\s+/)[0] ?? ''
+  const guestName = recipient.trim().split(/\s+/)[0] ?? ''
 
   return (
     <>
@@ -525,7 +539,7 @@ export function InviteStudio() {
         {/* What to do */}
         <div className="lg:order-1 lg:rounded-3xl lg:border lg:border-hair lg:bg-surface lg:p-10">
           <h2 className="h-card hidden lg:block">Write your name on the envelope</h2>
-          <p className="hidden lg:mt-3 lg:mb-8 lg:block">Then open it. Inside is an invitation from you, with the dates, the venue and this year’s guest ministers, to send as a picture or a short video.</p>
+          <p className="hidden lg:mt-3 lg:mb-8 lg:block">The envelope carries your name. Add who it’s for, and the letter inside is written to them, with the dates, the venue and this year’s guest ministers, to send as a picture or a short video.</p>
           {!has3d && (
             <input
               value={name}
@@ -537,10 +551,27 @@ export function InviteStudio() {
               }}
               autoComplete="name"
               placeholder="Your name"
-              aria-label="Your name"
+              aria-label="Your name, for the envelope"
               className="mb-3 min-h-[50px] w-full rounded-lg border border-line bg-hair px-4 text-base text-fg placeholder:text-[#999] focus:border-white focus:outline-none"
             />
           )}
+          <label className="mb-3 block">
+            <span className="mb-1.5 block text-sm font-medium text-fg">Who is this invitation for?</span>
+            <input
+              value={recipient}
+              onChange={(e) => changeRecipient(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key !== 'Enter') return
+                e.preventDefault()
+                open()
+              }}
+              autoComplete="off"
+              enterKeyHint="go"
+              placeholder="Their name"
+              disabled={mode !== 'edit'}
+              className="min-h-[50px] w-full rounded-lg border border-line bg-hair px-4 text-base text-fg placeholder:text-[#999] focus:border-gold focus:outline-none"
+            />
+          </label>
           {missing && (
             <p role="alert" className="mb-3 text-center text-sm text-[#ffb3a8] lg:text-left">
               Please write your name on the envelope first.
@@ -549,7 +580,7 @@ export function InviteStudio() {
           <button type="button" onClick={open} disabled={!ready || mode !== 'edit'} className="btn btn-primary w-full disabled:opacity-60">
             Open my invitation
           </button>
-          <p className="mt-3 text-center text-sm lg:text-left">{has3d ? 'Tap the envelope to write your name. It stays on your device and is never uploaded.' : 'Your name stays on your device. It’s never uploaded.'}</p>
+          <p className="mt-3 text-center text-sm lg:text-left">{has3d ? 'Tap the envelope to write your name. Both names stay on your device and are never uploaded.' : 'Both names stay on your device. They’re never uploaded.'}</p>
         </div>
       </div>
 
@@ -563,7 +594,7 @@ export function InviteStudio() {
           <button
             type="button"
             onClick={edit}
-            aria-label="Close and change the name"
+            aria-label="Close and change the names"
             className="absolute top-4 right-4 z-10 grid size-11 place-items-center rounded-full border border-white/15 bg-surface/80 text-fg backdrop-blur transition-colors hover:border-gold"
           >
             <Close width={20} height={20} />
@@ -574,7 +605,7 @@ export function InviteStudio() {
             className={`relative z-10 px-4 pt-2 pb-[max(14px,env(safe-area-inset-bottom))] transition-[opacity,transform] duration-700 ${mode === 'open' ? '' : 'pointer-events-none translate-y-3 opacity-0'}`}
           >
             <p className="mx-auto mb-3 max-w-[560px] text-center text-[15px] text-fg sm:text-base [@media(max-height:500px)]:hidden">
-              {mode === 'open' ? `Your invitation is ready${firstName ? `, ${firstName}` : ''}. Send it to someone you’d love to see at the Glory Dome.` : ' '}
+              {mode === 'open' ? (guestName ? `Your invitation for ${guestName} is ready, ${firstName}. Send it to them and we’ll see them at the Glory Dome.` : `Your invitation is ready${firstName ? `, ${firstName}` : ''}. Send it to someone you’d love to see at the Glory Dome.`) : ' '}
             </p>
             <div className="mx-auto grid max-w-[680px] grid-cols-2 gap-2.5 sm:grid-cols-4">
               <button type="button" onClick={sharePicture} disabled={busy === 'share'} className="btn btn-primary disabled:opacity-60">
@@ -593,7 +624,7 @@ export function InviteStudio() {
                 </button>
               )}
               <button type="button" onClick={edit} className="btn btn-outline">
-                Change name
+                Change names
               </button>
             </div>
             {video?.canShare && (

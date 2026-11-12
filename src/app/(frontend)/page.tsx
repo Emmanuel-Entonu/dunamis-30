@@ -274,7 +274,7 @@ export default async function HomePage() {
             <div className="p-5 sm:p-10 lg:py-[90px] lg:pl-[90px]">
               <h2 className="h-section">Invite someone</h2>
               <p className="mt-4">
-                Is there someone you’d love to see at the Glory Dome? Write your name on the envelope and open it. Inside is a personal invitation from you, with the dates, the venue and this year’s guest ministers.
+                Is there someone you’d love to see at the Glory Dome? Write your name on the envelope, add who it’s for, and open it. Inside is a personal invitation addressed to them, with the dates, the venue and this year’s guest ministers.
               </p>
               <p className="mt-4">Send it on WhatsApp as a picture or a short video.</p>
               <Link href="/invite" className="btn btn-primary mt-8">

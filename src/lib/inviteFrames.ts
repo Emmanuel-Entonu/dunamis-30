@@ -340,7 +340,12 @@ function ornament(ctx: CanvasRenderingContext2D, cx: number, y: number, half: nu
 type Box = { x: number; y: number; w: number; h: number }
 
 /** The invitation itself. The ministers are drawn over it later, when they rise in. */
-function paintLetter(name: string, font: string, art: Pick<InviteArt, 'emblem' | 'ministers'>, grain: HTMLCanvasElement, scale = 1): { canvas: HTMLCanvasElement; ministers: Box } {
+/**
+ * The invitation itself. `name` is who it's from; `to` is who it's for, and when there is one the letter is
+ * addressed to them. The ministers are drawn over it later, when they rise in.
+ */
+function paintLetter(name: string, font: string, art: Pick<InviteArt, 'emblem' | 'ministers'>, grain: HTMLCanvasElement, scale = 1, to = ''): { canvas: HTMLCanvasElement; ministers: Box } {
+  const big = to || name
   const c = makeCanvas(LW * scale, LH * scale)
   const ctx = context(c)
   ctx.scale(scale, scale)
@@ -360,19 +365,19 @@ function paintLetter(name: string, font: string, art: Pick<InviteArt, 'emblem' |
 
   ctx.font = `700 24px ${font}`
   ctx.fillStyle = foil(ctx, cx - 170, 0, cx + 170, 0, GOLD)
-  centred(ctx, 'YOU ARE INVITED', cx, 292, 7)
+  centred(ctx, to ? 'A PERSONAL INVITATION FOR' : 'YOU ARE INVITED', cx, 292, to ? 5 : 7)
 
-  // The name, as large as it will go, on up to two lines.
-  let size = fit(ctx, name, 700, font, 84, 56, wide)
-  let nameLines = [name]
-  if (ctx.measureText(name).width > wide) {
+  // The name, as large as it will go, on up to two lines: the guest's when there is one, else the sender's.
+  let size = fit(ctx, big, 700, font, 84, 56, wide)
+  let nameLines = [big]
+  if (ctx.measureText(big).width > wide) {
     size = 64
     ctx.font = `700 ${size}px ${font}`
-    nameLines = lines(ctx, name, wide)
+    nameLines = lines(ctx, big, wide)
     while (size > 36 && nameLines.some((l) => ctx.measureText(l).width > wide)) {
       size -= 2
       ctx.font = `700 ${size}px ${font}`
-      nameLines = lines(ctx, name, wide)
+      nameLines = lines(ctx, big, wide)
     }
   }
   let y = 292 + 30 + size * 0.76
@@ -390,7 +395,15 @@ function paintLetter(name: string, font: string, art: Pick<InviteArt, 'emblem' |
   y += 62
   ctx.fillStyle = INK.text
   ctx.font = `500 36px ${font}`
-  centred(ctx, 'is inviting you to the', cx, y)
+  if (to) {
+    // Who it's from, on one line if it fits, else two.
+    const from = `You are invited by ${name} to the`
+    fit(ctx, from, 500, font, 36, 30, wide)
+    lines(ctx, from, wide).forEach((line, i) => {
+      if (i) y += 46
+      centred(ctx, line, cx, y)
+    })
+  } else centred(ctx, 'is inviting you to the', cx, y)
 
   ctx.font = `700 50px ${font}`
   ctx.fillStyle = INK.strong
@@ -474,7 +487,10 @@ function paintPlain(grain: HTMLCanvasElement, scale = 1) {
 // ---------- the scene ----------
 export type InviteScene = {
   font: string
+  /** Who the invitation is from: engraved on the envelope. */
   name: string
+  /** Who it's for: the letter is addressed to them. */
+  to?: string
   art: InviteArt
   grain: HTMLCanvasElement
   /** Painted the first time it's needed: the home page never shows it. */
@@ -698,7 +714,7 @@ export function prepareInvite(art: InviteArt, font: string, name = ''): InviteSc
  * The same as prepareInvite, painted a piece at a time with a breath between, so a slow phone never stalls:
  * used to make the picture to share in the background, once the opening is over.
  */
-export async function prepareInviteSlowly(art: InviteArt, font: string, name: string): Promise<InviteScene> {
+export async function prepareInviteSlowly(art: InviteArt, font: string, name: string, to = ''): Promise<InviteScene> {
   const breathe = () => new Promise<void>((resolve) => setTimeout(resolve, 16))
   const grain = noise(256, 3)
   const burst = sunburst()
@@ -718,18 +734,20 @@ export async function prepareInviteSlowly(art: InviteArt, font: string, name: st
     ;(scene as unknown as Record<string, unknown>)[key] = paint()
     await breathe()
   }
-  if (name) setInviteName(scene, name)
+  if (name) setInviteName(scene, name, to)
   return scene
 }
 
 /** Writes the letter for this name. */
-export function setInviteName(scene: InviteScene, name: string) {
+export function setInviteName(scene: InviteScene, name: string, to = '') {
   const clean = name.trim().replace(/\s+/g, ' ')
-  if (scene.letter && scene.name === clean) return
-  const { canvas, ministers } = paintLetter(clean, scene.font, scene.art, noise(256, 5))
+  const guest = to.trim().replace(/\s+/g, ' ')
+  if (scene.letter && scene.name === clean && (scene.to ?? '') === guest) return
+  const { canvas, ministers } = paintLetter(clean, scene.font, scene.art, noise(256, 5), 1, guest)
   scene.letter = canvas
   scene.ministers = ministers
   scene.name = clean
+  scene.to = guest
 }
 
 // ---------- the timeline, in seconds ----------
@@ -1164,9 +1182,9 @@ export const FLAT = {
 }
 
 /** The letter, its outside and its plain back, painted larger than the picture needs so they stay sharp in 3D. */
-export function paintLetterParts(art: Pick<InviteArt, 'emblem' | 'ministers'>, font: string, name: string, scale = 1.4) {
+export function paintLetterParts(art: Pick<InviteArt, 'emblem' | 'ministers'>, font: string, name: string, scale = 1.4, to = '') {
   const grain = noise(256, 5)
-  const { canvas, ministers } = paintLetter(name.trim().replace(/s+/g, ' '), font, art, grain, scale)
+  const { canvas, ministers } = paintLetter(name.trim().replace(/\s+/g, ' '), font, art, grain, scale, to.trim().replace(/\s+/g, ' '))
   return {
     letter: canvas,
     /** As shares of the letter's width and height. */

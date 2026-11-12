@@ -279,11 +279,11 @@ export type InviteStage = {
   /** Switches to the lighter envelope while running, for a phone that turns out slower than it looked. */
   lighten(): void
   /** Paints the letter for this name ahead of time, so opening doesn't have to. */
-  prepareLetter(name: string): Promise<void>
+  prepareLetter(name: string, to?: string): Promise<void>
   /** The envelope's engraving while the name is typed: the caret is where it's typed, or null. */
   engrave(name: string, caret: number | null): void
   /** Writes the letter for this name, and engraves it on the envelope. */
-  setName(name: string): void
+  setName(name: string, to?: string): void
   resize(width: number, height: number, pixelRatio: number): void
   setLayout(layout: Layout): void
   /** Where the envelope was on screen, in the canvas's pixels, so the opening can start from there. */
@@ -569,10 +569,10 @@ export async function createInviteStage(
   }
   engrave('', null)
 
-  const writeLetter = (clean: string) => {
-    if (letterReady && clean === written) return
-    written = clean
-    const parts = paintLetterParts(art, font, clean, letterDetail)
+  const writeLetter = (clean: string, to: string) => {
+    if (letterReady && `${clean}|${to}` === written) return
+    written = `${clean}|${to}`
+    const parts = paintLetterParts(art, font, clean, letterDetail, to)
     const front = texture(parts.letter)
     fronts.forEach((m) => (m.map = front))
     coverMaterial.map = texture(parts.cover)
@@ -585,14 +585,14 @@ export async function createInviteStage(
     letterReady = true
   }
   const clean = (name: string) => name.trim().replace(/\s+/g, ' ')
-  const setName = (name: string) => {
+  const setName = (name: string, to = '') => {
     engrave(clean(name), null)
-    writeLetter(clean(name))
+    writeLetter(clean(name), clean(to))
   }
-  const prepareLetter = async (name: string) => {
+  const prepareLetter = async (name: string, to = '') => {
     if (!clean(name)) return
     await breathe()
-    writeLetter(clean(name))
+    writeLetter(clean(name), clean(to))
   }
 
   const project = (points: THREE.Vector3[]): Rect => {
