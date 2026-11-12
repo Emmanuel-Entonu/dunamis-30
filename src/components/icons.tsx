@@ -35,6 +35,14 @@ export const Close = (p: IconProps) => (
     <path d="M6 6l12 12M18 6 6 18" />
   </svg>
 )
+/** An envelope with its flap closed by a round button. */
+export const Envelope = (p: IconProps) => (
+  <svg {...base(p)}>
+    <rect x="3" y="5.5" width="18" height="13" rx="2" />
+    <path d="m3.6 6.4 8.4 6.1 8.4-6.1" />
+    <circle cx="12" cy="12.5" r="1.9" fill="currentColor" stroke="none" />
+  </svg>
+)
 export const Share = (p: IconProps) => (
   <svg {...base(p)}>
     <circle cx="18" cy="5" r="2.5" />

@@ -19,7 +19,16 @@ export const withoutYouTubeLinks = (text?: string | null) =>
     .trim()
 
 /** A clip is a part of a longer video. Its link alone doesn't say which video, so the server looks it up. */
-export const isYouTubeClip = (url?: string | null) => Boolean(url && /youtube\.com\/clip\//i.test(url))
+export const isYouTubeClip = (url?: string | null) => {
+  if (!url) return false
+  try {
+    // Checked as an address, not as text: "youtube.com/clip/" inside some other site's address must not pass.
+    const u = new URL(url)
+    return /^https?:$/.test(u.protocol) && /^(?:www\.|m\.)?youtube\.com$/i.test(u.hostname) && /^\/clip\/[\w-]+\/?$/.test(u.pathname)
+  } catch {
+    return false
+  }
+}
 
 /** Seconds from a YouTube start time: 90, 90s or 1m30s. */
 function startSeconds(value: string | null) {

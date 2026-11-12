@@ -28,6 +28,7 @@ export const navItems: NavItem[] = [
   { href: '/sons-of-the-prophet', label: 'Sons of the Prophet' },
   { href: '/gallery', label: 'Media Gallery' },
   { href: '/social-card', label: 'I Am Attending' },
+  { href: '/invite', label: 'Invite Someone' },
   { href: '/international', label: 'International Guests' },
   { href: '/contact', label: 'Contact Us' },
 ]
@@ -36,6 +37,7 @@ export const navItems: NavItem[] = [
 export const headerLinks = ['/our-story', '/senior-pastor', '/testimonies', '/sons-of-the-prophet', '/gallery']
 
 export const moreLinks: NavItem[] = [
+  { href: '/invite', label: 'Invite Someone' },
   { href: '/impact', label: '30 Years of Impact' },
   { href: '/international', label: 'International Guests' },
   { href: '/contact', label: 'Contact Us' },

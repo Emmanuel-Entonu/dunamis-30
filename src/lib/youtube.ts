@@ -60,14 +60,15 @@ async function clipFromResolver(clipId: string) {
  */
 const clipPlayer = unstable_cache(
   async (clipUrl: string) => {
-    const clipId = clipUrl.match(/\/clip\/([\w-]+)/)?.[1]
+    const clipId = clipUrl.match(/\/clip\/([\w-]{1,64})\/?$/)?.[1]
     if (!clipId) throw new Error('Not a clip link')
     try {
       return await clipFromResolver(clipId)
     } catch (error) {
       console.warn('[youtube] the resolver didn’t answer, trying the clip page', error)
     }
-    const res = await fetch(clipUrl, {
+    // Built from the clip's id, never taken from what was typed, so this only ever asks YouTube.
+    const res = await fetch(`https://www.youtube.com/clip/${clipId}`, {
       headers: { 'user-agent': UA, 'accept-language': 'en-GB,en;q=0.9', cookie: 'CONSENT=YES+1; SOCS=CAI' },
       signal: AbortSignal.timeout(8000),
       cache: 'no-store',

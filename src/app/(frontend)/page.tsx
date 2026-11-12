@@ -14,6 +14,7 @@ import { CardScene } from '@/components/home/CardScene'
 import { Carousel } from '@/components/home/Carousel'
 import CircularCarousel from '@/components/home/CircularCarousel'
 import { HeroRing } from '@/components/home/HeroRing'
+import { InvitePreview } from '@/components/home/InvitePreview'
 import { SleeveCard } from '@/components/home/SleeveCard'
 import { YearStack } from '@/components/home/YearStack'
 import { ArrowRight, BookOpen, Calendar, CrossIcon, Crown, Flame, Globe, Heart, MapPin, Share, Sparkle } from '@/components/icons'
@@ -102,7 +103,7 @@ export default async function HomePage() {
 
         <HeroRing />
 
-        <div data-hero-words className="hero-action relative z-10 flex items-center justify-center px-5">
+        <div data-hero-words className="hero-action relative z-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 px-5">
           <Link href="/social-card" className="group inline-flex items-center gap-2.5 text-left max-[300px]:flex-col sm:gap-3.5">
             <span className="relative shrink-0">
               <span aria-hidden className="hero-button-pulse" />
@@ -113,6 +114,15 @@ export default async function HomePage() {
                 <path d="M22 3C17 2 9 4 3.5 14.5M3 8.5l.2 6.6 6.2-2.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <span className="max-w-[92px] sm:max-w-[120px]">Get your social card here</span>
+            </span>
+          </Link>
+          <Link href="/invite" className="group inline-flex items-center gap-2.5 text-left max-[300px]:flex-col sm:gap-3.5">
+            <span className="btn btn-outline relative shrink-0 bg-black/30 backdrop-blur-sm">Invite Someone</span>
+            <span className="flex items-center gap-1.5 text-[13px] leading-[1.25] text-fg [text-shadow:0_1px_12px_rgb(0_0_0/0.9)] sm:gap-2 sm:text-[15px]">
+              <svg aria-hidden width="24" height="22" viewBox="0 0 24 22" fill="none" className="hero-note-arrow shrink-0 text-gold">
+                <path d="M22 3C17 2 9 4 3.5 14.5M3 8.5l.2 6.6 6.2-2.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className="max-w-[92px] sm:max-w-[120px]">Get your invitation here</span>
             </span>
           </Link>
         </div>
@@ -262,6 +272,28 @@ export default async function HomePage() {
               </Reveal>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Invite someone: the envelope opens as the section comes up the screen */}
+      <section className="section">
+        <div className="container-site">
+          <Reveal className="card relative isolate grid overflow-hidden lg:grid-cols-[1fr_1fr] lg:items-center">
+            <div aria-hidden className="flare absolute inset-x-0 bottom-0 -z-10 h-[55%] opacity-60" />
+            <div className="p-5 sm:p-10 lg:py-[90px] lg:pl-[90px]">
+              <h2 className="h-section">Invite someone</h2>
+              <p className="mt-4">
+                Is there someone you’d love to see at the Glory Dome? Write your name on the envelope and open it. Inside is a personal invitation from you, with the dates, the venue and this year’s guest ministers.
+              </p>
+              <p className="mt-4">Send it on WhatsApp as a picture or a short video.</p>
+              <Link href="/invite" className="btn btn-primary mt-8">
+                Invite someone
+              </Link>
+            </div>
+            <div className="flex justify-center px-5 pb-6 sm:px-10 lg:py-12">
+              <InvitePreview className="w-full max-w-[380px]" />
+            </div>
+          </Reveal>
         </div>
       </section>
 

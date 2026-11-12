@@ -44,7 +44,7 @@ const easeOut = (v: number) => 1 - (1 - v) ** 3
 const easeOutBack = (v: number) => 1 + 2.5 * (v - 1) ** 3 + 1.5 * (v - 1) ** 2
 const dims = (p: PhotoSource) => ('naturalWidth' in p ? { w: p.naturalWidth, h: p.naturalHeight } : { w: p.width, h: p.height })
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+export function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath()
   ctx.moveTo(x + r, y)
   ctx.arcTo(x + w, y, x + w, y + h, r)
@@ -63,14 +63,14 @@ function cover(ctx: CanvasRenderingContext2D, img: PhotoSource, x: number, y: nu
   ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) * focusY, dw, dh)
 }
 
-const GOLD = ['#8a5f10', '#c2902a', '#94660f', '#cf9f3b', '#8f6210']
+export const GOLD = ['#8a5f10', '#c2902a', '#94660f', '#cf9f3b', '#8f6210']
 /** For the dark backdrops. */
 const BRIGHT_GOLD = ['#a8781f', '#f6dc95', '#c48f2a', '#fff0c4', '#b07a1c']
 /** Deeper, because the date sits over the crowd and has to read at a glance. */
-const DEEP_GOLD = ['#6f4a07', '#966b18', '#7a5209', '#9c7019', '#744e08']
+export const DEEP_GOLD = ['#6f4a07', '#966b18', '#7a5209', '#9c7019', '#744e08']
 
 /** Polished gold foil for rules, frame and headline type. */
-function foil(ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number, stops = GOLD) {
+export function foil(ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number, stops = GOLD) {
   const g = ctx.createLinearGradient(x0, y0, x1, y1)
   ;[0, 0.22, 0.45, 0.7, 1].forEach((at, i) => g.addColorStop(at, stops[i]))
   return g
@@ -299,7 +299,7 @@ function drawStatement(
   }
 }
 
-function spaced(ctx: CanvasRenderingContext2D, px: number) {
+export function spaced(ctx: CanvasRenderingContext2D, px: number) {
   if ('letterSpacing' in ctx) (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = `${px}px`
 }
 

@@ -1042,3 +1042,118 @@ body:has([data-sleeve-scene]) .footer-top {
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * The reminder to invite someone (a Sonner toast): light on the dark site so it can't be missed, with a
+ * shine that crosses it, an envelope that gives a little shake, and a gold ring that pulses.
+ */
+@layer components {
+  .invite-nudge {
+    box-shadow:
+      0 28px 70px -14px rgb(0 0 0 / 0.9),
+      0 0 0 1px rgb(240 169 43 / 0.5);
+    animation: invite-nudge-ring 2.4s ease-out 0.4s infinite;
+  }
+  .invite-nudge-shine {
+    transform: translateX(-130%) skewX(-18deg);
+    animation: invite-nudge-shine 3.6s ease-in-out 0.5s infinite;
+  }
+  .invite-nudge-envelope {
+    transform-origin: 50% 70%;
+    filter: drop-shadow(0 10px 14px rgb(60 36 4 / 0.35));
+    animation: invite-nudge-shake 3.6s ease-in-out 0.9s infinite;
+  }
+  @keyframes invite-nudge-ring {
+    0% {
+      box-shadow:
+        0 28px 70px -14px rgb(0 0 0 / 0.9),
+        0 0 0 1px rgb(240 169 43 / 0.5),
+        0 0 0 0 rgb(240 169 43 / 0.55);
+    }
+    70%,
+    100% {
+      box-shadow:
+        0 28px 70px -14px rgb(0 0 0 / 0.9),
+        0 0 0 1px rgb(240 169 43 / 0.5),
+        0 0 0 14px rgb(240 169 43 / 0);
+    }
+  }
+  @keyframes invite-nudge-shine {
+    0%,
+    45% {
+      transform: translateX(-130%) skewX(-18deg);
+    }
+    80%,
+    100% {
+      transform: translateX(330%) skewX(-18deg);
+    }
+  }
+  @keyframes invite-nudge-shake {
+    0%,
+    62%,
+    100% {
+      rotate: 0deg;
+    }
+    67% {
+      rotate: -7deg;
+    }
+    72% {
+      rotate: 6deg;
+    }
+    77% {
+      rotate: -4deg;
+    }
+    82% {
+      rotate: 2deg;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .invite-nudge,
+    .invite-nudge-shine,
+    .invite-nudge-envelope {
+      animation: none;
+    }
+  }
+}
+
+/* The invitation opening: the page fades away behind the envelope, which stays where it was, then comes forward. */
+@layer components {
+  .invite-backdrop {
+    animation: invite-backdrop-in 0.7s ease-out both;
+  }
+  @keyframes invite-backdrop-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+/* Where the name goes on the invitation envelope, until it's written: a dashed gold line that breathes, and an arrow. */
+@layer components {
+  .invite-write-here {
+    border-bottom: 2px dashed rgb(240 169 43 / 0.85);
+    animation: invite-write-here 1.6s ease-in-out infinite;
+  }
+  @keyframes invite-write-here {
+    50% {
+      border-bottom-color: rgb(240 169 43 / 0.25);
+    }
+  }
+  .invite-hint-arrow {
+    animation: invite-hint-arrow 1.2s ease-in-out infinite;
+  }
+  @keyframes invite-hint-arrow {
+    50% {
+      translate: 0 -5px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .invite-write-here,
+    .invite-hint-arrow {
+      animation: none;
+    }
+  }
+}

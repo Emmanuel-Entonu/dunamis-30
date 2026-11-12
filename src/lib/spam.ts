@@ -19,6 +19,22 @@ export async function clientIp() {
 
 export type SpamVerdict = { ok: true } | { ok: false; silent: boolean; message?: string }
 
+/**
+ * True while this address is under `max` actions of this kind in the window, and counts this one. For the anonymous
+ * counters (visits, cards): a script can't flood the numbers, and a real visitor never comes near the limit.
+ */
+export async function underLimit(kind: string, max: number) {
+  const key = `${kind}:${await clientIp()}`
+  const now = Date.now()
+  const recent = (hits.get(key) ?? []).filter((t) => now - t < WINDOW_MS)
+  if (recent.length >= max) return false
+  hits.set(key, [...recent, now])
+  if (hits.size > 5000) {
+    for (const [k, times] of hits) if (!times.some((t) => now - t < WINDOW_MS)) hits.delete(k)
+  }
+  return true
+}
+
 export async function checkSubmission(formData: FormData, bucket: string): Promise<SpamVerdict> {
   if (String(formData.get('leave_empty') ?? '')) return { ok: false, silent: true }
 

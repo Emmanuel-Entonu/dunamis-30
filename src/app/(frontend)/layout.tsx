@@ -3,6 +3,7 @@ import localFont from 'next/font/local'
 import Script from 'next/script'
 import React from 'react'
 
+import { InviteNudge } from '@/components/InviteNudge'
 import { PageSkeleton } from '@/components/PageSkeleton'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
@@ -66,6 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <PageSkeleton />
         <PerformanceWatch />
         <VisitCount />
+        <InviteNudge />
         {gaId && (
           <>
             <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />

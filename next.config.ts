@@ -8,6 +8,8 @@ const dirname = path.dirname(__filename)
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  // Don't tell visitors which software runs the site (Next.js and Payload both added it).
+  poweredByHeader: false,
   // Testimony / story forms carry a photo (already shrunk in the browser to ~0.5 MB).
   experimental: { serverActions: { bodySizeLimit: '6mb' } },
   images: {
@@ -37,6 +39,8 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      // The home page's film carries its version in the address, so browsers can keep it.
+      { source: '/films/:file*', headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }] },
       {
         source: '/:path*',
         headers: [
@@ -45,6 +49,9 @@ const nextConfig: NextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           // The card generator can use the camera. Nothing on the site needs the rest.
           { key: 'Permissions-Policy', value: 'camera=(self), microphone=(), geolocation=()' },
+          // Only the parts of a security policy that can't break the site: no injected <base> tag or plugins,
+          // no framing by other sites, and forms only ever post to this site. Scripts and pictures aren't restricted.
+          { key: 'Content-Security-Policy', value: "base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'" },
         ],
       },
     ]

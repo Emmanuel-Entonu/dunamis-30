@@ -11,6 +11,7 @@ import { CrusadeStrip } from './CrusadeStrip'
 
 const takePart = [
   { href: '/social-card', label: 'I Am Attending' },
+  { href: '/invite', label: 'Invite Someone' },
   { href: '/international', label: 'International Guests' },
   { href: '/testimonies#share', label: 'Share Your Testimony' },
   { href: '/sons-of-the-prophet#share', label: 'Share Your Story' },
