@@ -17,7 +17,7 @@ import { HeroRing } from '@/components/home/HeroRing'
 import { InvitePreview } from '@/components/home/InvitePreview'
 import { SleeveCard } from '@/components/home/SleeveCard'
 import { YearStack } from '@/components/home/YearStack'
-import { ArrowRight, BookOpen, Calendar, CrossIcon, Crown, Flame, Globe, Heart, MapPin, Share, Sparkle } from '@/components/icons'
+import { ArrowRight, BookOpen, Calendar, CrossIcon, Crown, Envelope, Flame, Globe, Heart, MapPin, Share, Sparkle } from '@/components/icons'
 import { Reveal } from '@/components/Reveal'
 import { getHomepage, getSite, testimonyFormOpen } from '@/lib/content'
 import { faqsFor, directionsUrl } from '@/lib/ministry'
@@ -117,7 +117,14 @@ export default async function HomePage() {
             </span>
           </Link>
           <Link href="/invite" className="group inline-flex items-center gap-2.5 text-left max-[300px]:flex-col sm:gap-3.5">
-            <span className="btn btn-outline relative shrink-0 bg-black/30 backdrop-blur-sm">Invite Someone</span>
+            <span className="relative shrink-0">
+              <span aria-hidden className="hero-button-pulse hero-invite-pulse" />
+              <span className="btn btn-outline hero-invite relative overflow-hidden bg-black/40 backdrop-blur-sm">
+                <Envelope width={18} height={18} className="hero-invite-envelope shrink-0 text-gold" />
+                Invite Someone
+                <span aria-hidden className="hero-invite-shine" />
+              </span>
+            </span>
             <span className="flex items-center gap-1.5 text-[13px] leading-[1.25] text-fg [text-shadow:0_1px_12px_rgb(0_0_0/0.9)] sm:gap-2 sm:text-[15px]">
               <svg aria-hidden width="24" height="22" viewBox="0 0 24 22" fill="none" className="hero-note-arrow shrink-0 text-gold">
                 <path d="M22 3C17 2 9 4 3.5 14.5M3 8.5l.2 6.6 6.2-2.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
