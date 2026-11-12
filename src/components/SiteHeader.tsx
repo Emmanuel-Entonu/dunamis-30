@@ -115,9 +115,10 @@ export function SiteHeader() {
         <div className="flex items-center gap-1.5">
           <Link
             href="/invite"
-            className={`${pathname === '/' ? 'hidden' : ''} btn btn-outline !min-h-[40px] !gap-2 !px-3.5 !text-[14px] max-[359px]:!px-2.5 sm:!min-h-[44px] sm:!px-4 sm:!text-[15px] xl:!px-3.5 2xl:!px-4 ${isActive('/invite') ? '!bg-gold !text-gold-ink' : ''}`}
+            className={`nav-invite relative overflow-hidden btn btn-outline !min-h-[40px] !gap-2 !px-3.5 !text-[14px] max-[359px]:!px-2.5 sm:!min-h-[44px] sm:!px-4 sm:!text-[15px] xl:!px-3.5 2xl:!px-4 ${isActive('/invite') ? '!bg-gold !text-gold-ink' : ''}`}
           >
-            <Envelope width={17} height={17} className="shrink-0" />
+            <Envelope width={17} height={17} className="nav-invite-envelope shrink-0" />
+            <span aria-hidden className="nav-invite-shine" />
             {/* With the full menu in the bar, there's only room for the short name until the screen is wide. On the smallest phones, the envelope alone. */}
             <span className="max-[359px]:sr-only sm:hidden xl:inline 2xl:hidden">Invite</span>
             <span className="hidden sm:inline xl:hidden 2xl:inline">Invite Someone</span>
