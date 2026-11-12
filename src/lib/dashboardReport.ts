@@ -16,6 +16,8 @@ export type ReportDay = {
   cards: number
   downloads: number
   shares: number
+  invites: number
+  inviteShares: number
   testimonies: number | null
   stories: number | null
   guests: number | null
@@ -26,7 +28,7 @@ export type Report = {
   generatedAt: string
   firstDay: string
   lastDay: string
-  totals: { visitors: number; visits: number; cards: number; downloads: number; shares: number; phones: number; computers: number; unknownCountry: number }
+  totals: { visitors: number; visits: number; cards: number; downloads: number; shares: number; invites: number; inviteDownloads: number; inviteShares: number; inviteVideos: number; phones: number; computers: number; unknownCountry: number }
   countries: { name: string; visits: number; visitors: number }[]
   cardDesigns: { name: string; downloads: number; shares: number }[]
   days: ReportDay[]
@@ -62,7 +64,11 @@ export async function readReport(payload: Payload, user: TypedUser, now: Date): 
       `select to_char(day, 'YYYY-MM-DD') as day,
               count(*) filter (where kind = 'visit') as visits,
               count(*) filter (where kind = 'visit' and first) as new_visitors,
-              count(*) filter (where kind = 'card') as cards
+              count(*) filter (where kind = 'card') as cards,
+              count(*) filter (where kind = 'invite') as invites,
+              count(*) filter (where kind = 'invite-download') as invite_downloads,
+              count(*) filter (where kind = 'invite-share') as invite_shares,
+              count(*) filter (where kind = 'invite-video') as invite_videos
          from payload.site_events group by 1`,
     ),
     db.query(`select ${LAGOS_DAY('created_at')} as day, count(*) filter (where action = 'download') as downloads, count(*) filter (where action = 'share') as shares from payload.card_events group by 1`),
@@ -109,6 +115,8 @@ export async function readReport(payload: Payload, user: TypedUser, now: Date): 
       cards: n(t.get(day)?.cards),
       downloads: n(c.get(day)?.downloads),
       shares: n(c.get(day)?.shares),
+      invites: n(t.get(day)?.invites),
+      inviteShares: n(t.get(day)?.invite_shares),
       testimonies: reviews ? n(ts.get(day)?.n) : null,
       stories: reviews ? n(ss.get(day)?.n) : null,
       guests: logistics ? n(gs.get(day)?.n) : null,
@@ -130,6 +138,10 @@ export async function readReport(payload: Payload, user: TypedUser, now: Date): 
       cards: sum((day) => day.cards),
       downloads: sum((day) => day.downloads),
       shares: sum((day) => day.shares),
+      invites: sum((day) => day.invites),
+      inviteDownloads: [...t.values()].reduce((total, row) => total + n(row.invite_downloads), 0),
+      inviteShares: sum((day) => day.inviteShares),
+      inviteVideos: [...t.values()].reduce((total, row) => total + n(row.invite_videos), 0),
       phones: device('phone'),
       computers: device('computer'),
       unknownCountry: n(unknown.rows[0]?.n),

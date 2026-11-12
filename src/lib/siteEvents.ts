@@ -11,8 +11,12 @@ const pool = (payload: Payload) => (payload.db as unknown as { pool: Pool }).poo
 
 const deviceOf = (userAgent: string) => (/Mobi|Android|iPhone|iPad/i.test(userAgent) ? 'phone' : 'computer')
 
+/** What gets counted: visits, cards made, and invitations made and what happened to them. */
+export const INVITE_ACTIONS = ['invite-download', 'invite-share', 'invite-video'] as const
+export type EventKind = 'visit' | 'card' | 'invite' | (typeof INVITE_ACTIONS)[number]
+
 /** One anonymous count. The country comes from the host, and the address it was worked out from is never kept. */
-export async function recordEvent(payload: Payload, kind: 'visit' | 'card', headers: Headers, first = false) {
+export async function recordEvent(payload: Payload, kind: EventKind, headers: Headers, first = false) {
   await pool(payload).query(`insert into payload.site_events (kind, day, first, country, device) values ($1, $2, $3, $4, $5)`, [
     kind,
     dayKey(new Date()),
@@ -27,6 +31,8 @@ export type TrafficCount = { today: number; week: number; total: number; days: T
 export type Traffic = {
   visitors: TrafficCount
   cards: TrafficCount & { downloads: number; shares: number }
+  /** Invitations opened (made), and how many were downloaded, shared or turned into a video. */
+  invites: TrafficCount & { downloads: number; shares: number; videos: number }
   countries: { name: string; count: number }[]
   phones: number
   computers: number
@@ -66,10 +72,20 @@ export async function readTraffic(payload: Payload, now: Date): Promise<Traffic 
 
     const visitorDays = series('visit')
     const cardDays = series('card')
+    const inviteDays = series('invite')
     return {
       // People, not visits: someone who comes back every day is counted once in the all-time figure.
       visitors: { today: visitorDays.at(-1)?.total ?? 0, week: lastWeek(visitorDays), total: count(total('visit')?.firsts), days: visitorDays },
       cards: { today: cardDays.at(-1)?.total ?? 0, week: lastWeek(cardDays), total: count(total('card')?.n), days: cardDays, downloads: action('download'), shares: action('share') },
+      invites: {
+        today: inviteDays.at(-1)?.total ?? 0,
+        week: lastWeek(inviteDays),
+        total: count(total('invite')?.n),
+        days: inviteDays,
+        downloads: count(total('invite-download')?.n),
+        shares: count(total('invite-share')?.n),
+        videos: count(total('invite-video')?.n),
+      },
       countries: places.rows.map((row) => ({ name: countryName(String(row.country)), count: count(row.n) })),
       phones: device('phone'),
       computers: device('computer'),

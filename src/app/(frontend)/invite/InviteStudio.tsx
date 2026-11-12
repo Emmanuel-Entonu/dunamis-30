@@ -13,8 +13,13 @@ import { drawInvite, FLAT, INVITE, paintButton, prepareInvite, prepareInviteSlow
 import { makeInviteVideo } from '@/lib/inviteVideo'
 import { isLite } from '@/lib/lite'
 
+import { logInvite, type InviteCount } from './actions'
+
 const SHARE_TEXT =
   'I’d love you to join me at the Dunamis 30th Anniversary Celebration, the Kingdom Power & Glory World Conference, from the 23rd to the 29th of November at the Glory Dome, Abuja. #DunamisAt30'
+
+/** Counting invitations is nice to have. If it fails, with no signal for example, nobody needs to know. */
+const count = (kind: InviteCount) => void logInvite(kind).catch(() => undefined)
 
 const loadImage = (src: string) =>
   new Promise<HTMLImageElement>((resolve, reject) => {
@@ -357,6 +362,7 @@ export function InviteStudio() {
     setSharePanel(false)
     field.current?.blur()
     setMode('opening')
+    count('invite')
   }
 
   const edit = () => {
@@ -413,9 +419,11 @@ export function InviteStudio() {
       const file = new File([await picture()], fileName('jpg'), { type: 'image/jpeg' })
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: 'Dunamis at 30', text: `${SHARE_TEXT} ${link()}` })
+        count('invite-share')
       } else {
         save(file, 'jpg')
         setSharePanel(true)
+        count('invite-download')
       }
     } catch (error) {
       // Closing the share sheet isn't a failure. Anything else is, and they still need a way to send it.
@@ -431,6 +439,7 @@ export function InviteStudio() {
   const download = async () => {
     try {
       save(await picture(), 'jpg')
+      count('invite-download')
     } catch {
       setNote('Your invitation couldn’t be saved. Please try again.')
     }
@@ -459,6 +468,7 @@ export function InviteStudio() {
       const file = new File([made.blob], fileName(made.ext), { type: made.blob.type })
       const canShare = Boolean(navigator.canShare?.({ files: [file] }))
       setVideo({ file, canShare })
+      count('invite-video')
       // Where it can't be handed to other apps, it goes straight to the device.
       if (!canShare) save(file, made.ext)
     } catch {
@@ -472,6 +482,7 @@ export function InviteStudio() {
     if (!video) return
     try {
       await navigator.share({ files: [video.file], title: 'Dunamis at 30', text: `${SHARE_TEXT} ${link()}` })
+      count('invite-share')
     } catch (error) {
       if ((error as Error).name !== 'AbortError') save(video.file, video.file.name.split('.').pop() ?? 'mp4')
     }

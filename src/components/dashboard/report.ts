@@ -221,6 +221,7 @@ export async function downloadReport() {
     report.countries.length ? `Visitors came from ${num(report.countries.length)} countries. ${report.countries[0].name} accounted for ${pct(report.countries[0].visits, countryVisits)} of visits.` : '',
     devices ? `${pct(totals.phones, devices)} of visits were on a phone.` : '',
     `${num(totals.cards)} social cards were made. They were downloaded ${num(totals.downloads)} times and shared ${num(totals.shares)} times.`,
+    `${num(totals.invites)} invitations were made. They were downloaded ${num(totals.inviteDownloads)} times and shared ${num(totals.inviteShares)} times, and ${num(totals.inviteVideos)} were made into a video.`,
     report.testimonies
       ? `${num(sent(report.testimonies.status))} testimonies were sent in${report.stories ? `, with ${num(sent(report.stories.status))} Sons of the Prophet stories` : ''}${report.guests ? ` and ${num(sent(report.guests.status))} international guest registrations` : ''}.`
       : '',
@@ -246,6 +247,10 @@ export async function downloadReport() {
     ['Social cards made', num(totals.cards)],
     ['Cards downloaded', num(totals.downloads)],
     ['Cards shared', num(totals.shares)],
+    ['Invitations made', num(totals.invites)],
+    ['Invitations downloaded', num(totals.inviteDownloads)],
+    ['Invitations shared', num(totals.inviteShares)],
+    ['Invitation videos', num(totals.inviteVideos)],
     ['Visits on a phone', pct(totals.phones, devices)],
   ]
   if (report.testimonies) figures.push(['Testimonies', num(sent(report.testimonies.status))])
@@ -275,6 +280,11 @@ export async function downloadReport() {
   key([{ label: 'Made', color: GOLD }, { label: 'Downloaded', color: BLUE }, { label: 'Shared', color: GREY }], y)
   y += 5
   bars(days, [{ label: 'Made', color: GOLD, values: days.map((d) => d.cards) }, { label: 'Downloaded', color: BLUE, values: days.map((d) => d.downloads) }, { label: 'Shared', color: GREY, values: days.map((d) => d.shares) }], 'grouped', 42)
+
+  section('Invitations each day', 'Made means opened in the Invite Someone page. One invitation can be shared more than once.', 60)
+  key([{ label: 'Made', color: GOLD }, { label: 'Shared', color: GREY }], y)
+  y += 5
+  bars(days, [{ label: 'Made', color: GOLD, values: days.map((d) => d.invites) }, { label: 'Shared', color: GREY, values: days.map((d) => d.inviteShares) }], 'grouped', 42)
 
   const sentIn: Series[] = []
   if (report.testimonies) sentIn.push({ label: 'Testimonies', color: TEAL, values: days.map((d) => d.testimonies ?? 0) })
@@ -367,19 +377,19 @@ export async function downloadReport() {
   }
 
   section('Every day', 'Newest first.', 30)
-  const head = ['Day', 'Visits', 'First-time', 'Cards made', 'Downloaded', 'Shared']
+  const head = ['Day', 'Visits', 'First-time', 'Cards made', 'Downloaded', 'Shared', 'Invitations']
   if (report.testimonies) head.push('Testimonies')
   if (report.stories) head.push('Stories')
   if (report.guests) head.push('Guests')
   const row = (d: ReportDay) => {
-    const cells: (string | number)[] = [tableDay(d.day), d.visits, d.newVisitors, d.cards, d.downloads, d.shares]
+    const cells: (string | number)[] = [tableDay(d.day), d.visits, d.newVisitors, d.cards, d.downloads, d.shares, d.invites]
     if (report.testimonies) cells.push(d.testimonies ?? 0)
     if (report.stories) cells.push(d.stories ?? 0)
     if (report.guests) cells.push(d.guests ?? 0)
     return cells
   }
   const all = (pick: (d: ReportDay) => number | null) => days.reduce((s, d) => s + (pick(d) ?? 0), 0)
-  const foot: (string | number)[] = ['Total', totals.visits, totals.visitors, totals.cards, totals.downloads, totals.shares]
+  const foot: (string | number)[] = ['Total', totals.visits, totals.visitors, totals.cards, totals.downloads, totals.shares, totals.invites]
   if (report.testimonies) foot.push(all((d) => d.testimonies))
   if (report.stories) foot.push(all((d) => d.stories))
   if (report.guests) foot.push(all((d) => d.guests))

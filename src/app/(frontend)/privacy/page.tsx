@@ -43,7 +43,10 @@ const sections: LegalSection[] = [
           <strong className="text-fg">“I Am Attending” card:</strong> no registration is needed. Your photo and name are processed in your own browser to make your card and are not uploaded to us. We only count anonymous activity, such as how many
           cards were downloaded or shared.
         </p>
-        <p>We also collect standard technical information, such as your IP address, which is used briefly to protect the forms from spam. We also count visitors and the cards people make, so the church can see how the anniversary is reaching people. Those counts are anonymous: your device remembers the last day it was counted, and we keep only the day, the country and whether it was a phone or a computer, never your name or IP address. If analytics are switched on, Google Analytics records anonymous usage such as pages visited and country.</p>
+        <p>
+          <strong className="text-fg">Invite Someone:</strong> your name and the name of the person you invite are written onto the invitation in your own browser and are never uploaded to us. We only count, anonymously, how many invitations are made, downloaded, shared or turned into a video.
+        </p>
+        <p>We also collect standard technical information, such as your IP address, which is used briefly to protect the forms from spam. We also count visitors and the cards and invitations people make, so the church can see how the anniversary is reaching people. Those counts are anonymous: your device remembers the last day it was counted, and we keep only the day, the country and whether it was a phone or a computer, never your name or IP address. If analytics are switched on, Google Analytics records anonymous usage such as pages visited and country.</p>
       </>
     ),
   },

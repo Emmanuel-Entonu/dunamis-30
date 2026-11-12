@@ -34,6 +34,7 @@ import {
   downloadIcon,
   forwardIcon,
   globeIcon,
+  letterIcon,
   planeIcon,
   smartphoneIcon,
   usersIcon,
@@ -151,7 +152,7 @@ function Bars({ days, noun }: { days: TrafficDay[]; noun: string }) {
   )
 }
 
-type TrafficTab = 'visitors' | 'cards'
+type TrafficTab = 'visitors' | 'cards' | 'invites'
 
 function Traffic({
   data,
@@ -167,7 +168,7 @@ function Traffic({
     return (
       <div id="traffic" className="scroll-mt-6">
         <Tile tone="butter">
-          <h3 className="text-xl font-medium">Visitors and social cards</h3>
+          <h3 className="text-xl font-medium">Visitors, cards and invitations</h3>
           <p className="mt-2 text-[15px] text-soft">
             These numbers start counting when this update goes live.
           </p>
@@ -195,6 +196,12 @@ function Traffic({
               >
                 <Glyph icon={cardIcon} className="size-4" /> Social cards
               </TabsTrigger>
+              <TabsTrigger
+                value="invites"
+                className="h-auto flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-0 pt-1 pb-1.5 text-[15px] font-medium text-soft shadow-none data-[state=active]:border-ink data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:text-ink data-[state=active]:shadow-none"
+              >
+                <Glyph icon={letterIcon} className="size-4" /> Invitations
+              </TabsTrigger>
             </TabsList>
           </div>
         </Tabs>
@@ -213,11 +220,17 @@ function Traffic({
           ))}
         </dl>
         <div className="mt-6">
-          <Bars days={count.days} noun={tab === 'visitors' ? 'Visitors' : 'Cards'} />
+          <Bars days={count.days} noun={tab === 'visitors' ? 'Visitors' : tab === 'cards' ? 'Cards' : 'Invitations'} />
         </div>
         {tab === 'cards' && (
           <p className="mt-4 text-sm font-medium">
             {number(traffic.cards.downloads)} downloaded · {number(traffic.cards.shares)} shared
+          </p>
+        )}
+        {tab === 'invites' && (
+          <p className="mt-4 text-sm font-medium">
+            {number(traffic.invites.downloads)} downloaded · {number(traffic.invites.shares)} shared ·{' '}
+            {number(traffic.invites.videos)} {traffic.invites.videos === 1 ? 'video' : 'videos'} made
           </p>
         )}
       </Tile>
@@ -563,7 +576,7 @@ export function Overview({ you }: { you: string }) {
           </div>
           {data ? (
             <>
-              <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Stat
                   tone="teal"
                   label="Visitors today"
@@ -575,6 +588,12 @@ export function Overview({ you }: { you: string }) {
                   label="Cards made"
                   value={data.traffic?.cards.total ?? 0}
                   onClick={() => show('cards')}
+                />
+                <Stat
+                  tone="pink"
+                  label="Invitations made"
+                  value={data.traffic?.invites.total ?? 0}
+                  onClick={() => show('invites')}
                 />
                 <Stat
                   tone="lilac"
@@ -589,7 +608,8 @@ export function Overview({ you }: { you: string }) {
               </div>
             </>
           ) : (
-            <div className="mt-5 grid gap-4 sm:grid-cols-3">
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <Skeleton className="h-[160px] rounded-[28px] bg-white" />
               <Skeleton className="h-[160px] rounded-[28px] bg-white" />
               <Skeleton className="h-[160px] rounded-[28px] bg-white" />
               <Skeleton className="h-[160px] rounded-[28px] bg-white" />
